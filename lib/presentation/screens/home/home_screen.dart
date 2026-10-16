@@ -183,11 +183,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(width: 12),
 
-        // 2. Add button (warm orange accent fill)
+        // 2. Add button
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.orange,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
@@ -199,8 +199,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Center(
                   child: Icon(
                     Icons.add,
-                    size: 32,
-                    color: AppColors.controlText,
+                    size: 28,
+                    color: AppColors.primaryText,
                   ),
                 ),
               ),

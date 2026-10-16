@@ -92,7 +92,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: widget.isSelected
-            ? const BorderSide(color: AppColors.orange, width: 2)
+            ? BorderSide(color: habitColor, width: 2)
             : BorderSide(color: habitColor.withValues(alpha: 0.22), width: 1),
       ),
       clipBehavior: Clip.antiAlias,
@@ -150,30 +150,16 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      habit.name,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.primaryText,
-                                        fontFamily: AppTheme.fontPrimary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Icon(
-                                    _isExpanded
-                                        ? Icons.keyboard_arrow_up
-                                        : Icons.keyboard_arrow_down,
-                                    size: 20,
-                                    color: AppColors.mutedGrey,
-                                  ),
-                                ],
+                              Text(
+                                habit.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primaryText,
+                                  fontFamily: AppTheme.fontPrimary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 6),
                               _buildSubtitle(context, streakAsync.valueOrNull),
