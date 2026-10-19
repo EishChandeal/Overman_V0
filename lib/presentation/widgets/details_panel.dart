@@ -7,6 +7,7 @@ import 'package:habit_tracker/presentation/theme/app_theme.dart';
 /// Panel displaying configuration details and start date for a habit.
 class DetailsPanel extends StatelessWidget {
   final HabitDto habit;
+  final Color? habitColor;
   final HabitScheduleDto? activeSchedule;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -14,6 +15,7 @@ class DetailsPanel extends StatelessWidget {
   const DetailsPanel({
     super.key,
     required this.habit,
+    this.habitColor,
     this.activeSchedule,
     this.onEdit,
     this.onDelete,
@@ -23,6 +25,7 @@ class DetailsPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final createdFormatted = DateFormat('d MMMM yyyy').format(habit.createdAt.toLocal());
     final scheduleLabel = activeSchedule?.scheduleType.displayName ?? 'Daily';
+    final accentColor = habitColor ?? HabitVisuals.parseColor(habit.colorHex);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -37,12 +40,14 @@ class DetailsPanel extends StatelessWidget {
             icon: Icons.calendar_today_outlined,
             title: 'Start Date',
             value: createdFormatted,
+            iconColor: accentColor,
           ),
           const Divider(color: AppColors.surface, height: 18),
           _buildDetailRow(
             icon: Icons.repeat,
             title: 'Schedule',
             value: scheduleLabel,
+            iconColor: accentColor,
           ),
           const Divider(color: AppColors.surface, height: 18),
           _buildDetailRow(
@@ -53,6 +58,7 @@ class DetailsPanel extends StatelessWidget {
             value: habit.type == HabitType.boolean
                 ? 'Checkmark (Yes / No)'
                 : 'Numeric (${_formatVal(habit.targetValue ?? 0)} ${habit.unit ?? ''})',
+            iconColor: accentColor,
           ),
           if (onEdit != null || onDelete != null) ...[
             const Divider(color: AppColors.surface, height: 20),
@@ -109,10 +115,11 @@ class DetailsPanel extends StatelessWidget {
     required IconData icon,
     required String title,
     required String value,
+    required Color iconColor,
   }) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.blue),
+        Icon(icon, size: 16, color: iconColor),
         const SizedBox(width: 10),
         Text(
           title,

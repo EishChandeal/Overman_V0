@@ -567,17 +567,31 @@ void main() {
     await tester.longPress(find.text('Morning Meditation'));
     await tester.pumpAndSettle();
 
-    // Selection mode active in top header row
-    expect(find.text('1 selected'), findsOneWidget);
+    // Selection mode active in top header row: 4 square-like containers (Close, Note, Edit, Delete)
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.byIcon(Icons.note_alt_outlined), findsOneWidget);
+    expect(find.text('Close'), findsOneWidget);
+    expect(find.text('Note'), findsOneWidget);
     expect(find.text('Edit'), findsOneWidget);
     expect(find.text('Delete'), findsOneWidget);
 
-    // Tap cancel (close icon / '1 selected' card)
-    await tester.tap(find.text('1 selected'));
+    // Tap Note button to verify note sheet design opens
+    await tester.tap(find.text('Note'));
+    await tester.pumpAndSettle();
+    expect(find.text('Note for Today'), findsOneWidget);
+    expect(find.text('Save Note'), findsOneWidget);
+
+    // Close note sheet
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    // Tap Close (cross icon button) to deselect habit
+    await tester.tap(find.text('Close'));
     await tester.pumpAndSettle();
 
     // Selection mode exited, normal header restored
-    expect(find.text('1 selected'), findsNothing);
+    expect(find.text('Close'), findsNothing);
+    expect(find.text('Note'), findsNothing);
     final formattedDate = DateFormat('d MMM').format(DateTime.now());
     expect(find.text(formattedDate), findsOneWidget);
   });

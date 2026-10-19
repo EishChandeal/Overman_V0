@@ -187,6 +187,32 @@ void main() {
       );
     });
 
+    test('upsertEntry allows creating entry for today in user local timezone', () async {
+      final store = AppDatabase.instance;
+      final scheduleRepo = HabitScheduleRepository(store);
+      final habitRepo = HabitRepository(store, scheduleRepo);
+      final entryRepo = HabitEntryRepository(store);
+
+      final created = await habitRepo.createHabit(
+        name: 'Today Habit',
+        type: HabitType.boolean,
+        colorHex: '#FFFFFF',
+        iconName: 'check',
+        scheduleType: ScheduleType.daily,
+      );
+
+      final now = DateTime.now();
+      final todayUtc = DateTime.utc(now.year, now.month, now.day);
+      final entry = await entryRepo.upsertEntry(
+        habitId: created.id,
+        date: todayUtc,
+        value: 1.0,
+      );
+
+      expect(entry.value, 1.0);
+      expect(entry.date, todayUtc);
+    });
+
     test('upsertEntry throws StateError when habit does not exist', () async {
       final store = AppDatabase.instance;
       final entryRepo = HabitEntryRepository(store);

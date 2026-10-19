@@ -24,10 +24,12 @@ class HabitEntryRepository {
     final normalizedDate = _normalizeDate(date);
     
     // Intentional: reject future dates but allow past dates for backfilling.
+    // The user's "today" corresponds to their local calendar day.
+    final localNow = DateTime.now();
     final todayMidnightUtc = DateTime.utc(
-      DateTime.now().toUtc().year,
-      DateTime.now().toUtc().month,
-      DateTime.now().toUtc().day,
+      localNow.year,
+      localNow.month,
+      localNow.day,
     );
     if (normalizedDate.isAfter(todayMidnightUtc)) {
       throw ArgumentError('Cannot create entry for future date.');

@@ -153,3 +153,24 @@
 7. Do not rewrite the entire file: preserve useful history and update only the relevant sections.
 8. Always run `flutter analyze lib/` (not full project) to check for errors in production code after changes.
 9. Run `flutter test` after any change that touches domain or data layers.
+
+# ---- Prompt =====
+
+for this project. Create a "Production_status.md" file look through the [PROTOTYPE_STATUS.md](file;file:///c:/Users/HP/Desktop/aoos/habit_v1/skills/PROTOTYPE_STATUS.md) to know the format being followed , the purpose of the file would be similar to the prior file, it will work as the guide for gemini flash models to build the project properly. The next set of tasks , features that I want to be implemented:
+
+For making the following updates it will be essential that data is managed and stored in a structured way in the database, such that it can be retrieved and showed on screen without failure. Later on there will be features such as "import data (csv, json etc)" or "export data" in different formats as well.
+
+1. One off habit. a change of some sort would be required for object box data models for this one think, the purpose that one of tasks will have, as the name suggests, quick day to day , or moment to moment tasks the user wants to store somewhere, tasks which are not exactly repeating and hence don't need to be stored as a "habit" . The Ui screen for them will not be separate. These tasks can be added with the same add button, but the now the add button UI will include another option ("one-time" task) , which won't be selected by default, by default the "habit" option would be selected. The user will have the ability to change that, and store their task as a one-time task not a habit.
+
+2. Descriptions. Habit and tasks can have descriptions. Essentially a message that includes the reason,descripition for the habit/task. They are optional , there should be in a wide small box in add habit/ new habit screen, right below the select Icon option
+
+3. Days notes. just told the gemini agent to create the note button before. essentially to store the days note, how the habit went for the day , how the user was feeling etc. the user can write that for the day. When the user holds the habit container the notepad button would appear on the left side of the header and with that the user can write the note for the day. The days note would then be shown in the sliding window in its own panel.
+
+4. LLM layer. The data, overall can be provided to a large language model, the model can be added via an api entered by the user. There will be an option in the settings menu named "api for ai suggestions" and when the user clicks on that container/button in settings then a new screen would open up where the user can provide their specific api link and also below that input field would be a "personality" button/container, each personality type (thinking about including anime characters and movie personas), which would send a "pre-created" system prompt to the LLM. Certain characters can be tyler durden from fight girl, the bunny girl from bunny girl senpai etc. The data in proper easy to understand format , along with the system prompt assigning the LLM his persona and way of writing responses, will be sent initially and then the user can talk to the model however they like. selecting the "persona" would be an optional thing for the user, if they like mechanical usual conversations thats fine, but there needs to be that select feature. The characters and their system prompts are:
+
+5. Quotes, this is more of a design attribute that I want at the loading screen of the app, the loading screen at the start of the app wont show the flutter icon, rather the icon design would be that of a muscular man and the angle of the visual would be primarily his muscular back and arm as he looks behind, this visual would be a box with rounded corners and this would be the same design the app's front on the home screen in android. At the botton there will be a random quote (I will provide you the list of quotes to cycle between and we can even program that feature such that only specific quotes are shown on specific days.)
+
+## to change
+
+1. the insights screen
+2. the history page, make it vertical and concise

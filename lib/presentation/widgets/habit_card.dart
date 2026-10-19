@@ -305,6 +305,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
       // Last: Details
       return DetailsPanel(
         habit: habit,
+        habitColor: habitColor,
         activeSchedule: widget.item.activeSchedule,
         onEdit: widget.onEdit,
         onDelete: widget.onDelete,
@@ -314,6 +315,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
   Widget _buildSubtitle(BuildContext context, dynamic streakResult) {
     final habit = widget.item.habit;
+    final habitColor = HabitVisuals.parseColor(habit.colorHex);
     final List<Widget> metaItems = [];
 
     // Streak count if meaningful (> 0)
@@ -323,18 +325,18 @@ class _HabitCardState extends ConsumerState<HabitCard> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.local_fire_department,
               size: 15,
-              color: AppColors.orange,
+              color: habitColor,
             ),
             const SizedBox(width: 3),
             Text(
               '$streakCount ${streakCount == 1 ? 'day' : 'days'}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.orange,
+                color: habitColor,
                 fontFamily: AppTheme.fontPrimary,
               ),
             ),

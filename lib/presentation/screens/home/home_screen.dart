@@ -239,9 +239,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   /// Selection header row exposing:
-  /// 1. Close/Selected habit name (approx 171 x 88)
-  /// 2. Edit button (approx 92 x 88)
-  /// 3. Delete button (approx 92 x 88)
+  /// 1. Close/Deselect button (approx 92 x 88)
+  /// 2. Note button (approx 92 x 88)
+  /// 3. Edit button (approx 92 x 88)
+  /// 4. Delete button (approx 92 x 88)
   Widget _buildSelectionHeaderRow(
     HabitDayStatus selectedItem,
   ) {
@@ -250,9 +251,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Row(
       children: [
-        // 1. Cancel / Selected info button (flex 2)
+        // 1. Close / Deselect button (flex 1)
         Expanded(
-          flex: 2,
+          flex: 1,
           child: Material(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
@@ -261,43 +262,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               onTap: () {
                 setState(() => _selectedHabitStatus = null);
               },
-              child: Container(
+              child: const SizedBox(
                 height: headerHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                child: Row(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.close,
-                      color: AppColors.mutedGrey,
-                      size: 20,
+                      size: 26,
+                      color: AppColors.primaryText,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            '1 selected',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.mutedGrey,
-                              fontFamily: AppTheme.fontPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            habit.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryText,
-                              fontFamily: AppTheme.fontPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                    SizedBox(height: 4),
+                    Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryText,
+                        fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
                   ],
@@ -309,7 +291,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(width: 12),
 
-        // 2. Edit button (flex 1)
+        // 2. Note button (flex 1)
+        Expanded(
+          flex: 1,
+          child: Material(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => _openNoteDialog(habit),
+              child: const SizedBox(
+                height: headerHeight,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.note_alt_outlined,
+                      size: 26,
+                      color: AppColors.primaryText,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Note',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryText,
+                        fontFamily: AppTheme.fontPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // 3. Edit button (flex 1)
         Expanded(
           flex: 1,
           child: Material(
@@ -347,7 +367,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         const SizedBox(width: 12),
 
-        // 3. Delete button (flex 1)
+        // 4. Delete button (flex 1)
         Expanded(
           flex: 1,
           child: Material(
@@ -383,6 +403,133 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _openNoteDialog(HabitDto habit) {
+    final textController = TextEditingController();
+    final todayFormatted = DateFormat('d MMM yyyy').format(DateTime.now());
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+            left: 20,
+            right: 20,
+            top: 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.note_alt_outlined,
+                        color: AppColors.orange,
+                        size: 24,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Note for Today',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryText,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.mutedGrey),
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${habit.name}  •  $todayFormatted',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.mutedGrey,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: textController,
+                autofocus: true,
+                maxLines: 4,
+                style: const TextStyle(
+                  color: AppColors.primaryText,
+                  fontSize: 15,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Write a note about today\'s progress...',
+                  hintStyle: const TextStyle(color: AppColors.mutedGrey),
+                  filled: true,
+                  fillColor: AppColors.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(14),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: AppColors.mutedGrey),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Note draft saved for today (Design preview)'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      setState(() => _selectedHabitStatus = null);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Save Note',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

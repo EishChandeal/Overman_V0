@@ -67,7 +67,7 @@ class HeatmapPanel extends ConsumerWidget {
             Expanded(
               child: _buildBadge(
                 icon: Icons.local_fire_department,
-                iconColor: AppColors.orange,
+                iconColor: habitColor ?? AppColors.orange,
                 label: 'Current Streak',
                 value: '${streak.currentStreak} ${streak.currentStreak == 1 ? 'day' : 'days'}',
               ),
@@ -76,7 +76,7 @@ class HeatmapPanel extends ConsumerWidget {
             Expanded(
               child: _buildBadge(
                 icon: Icons.emoji_events_outlined,
-                iconColor: AppColors.blue,
+                iconColor: habitColor ?? AppColors.blue,
                 label: 'Best Streak',
                 value: '${streak.longestStreak} ${streak.longestStreak == 1 ? 'day' : 'days'}',
               ),
