@@ -1089,4 +1089,209 @@ void main() {
     expect(find.text('Completed 10 km run today!'), findsOneWidget);
     expect(find.text('No notes yet. Hold the card to add one.'), findsNothing);
   });
+
+  testWidgets(
+      'HistoryScreen hides habits on dates before createdAt and displays on or after createdAt',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
+    await habitRepo.createHabit(
+      name: 'Today Only Habit',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'check',
+      scheduleType: ScheduleType.daily,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const HistoryScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // On Today, habit is visible
+    expect(find.text('Today Only Habit'), findsOneWidget);
+
+    // Tap on Yesterday in the horizontal date strip
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final yesterdayDayStr = DateFormat('d').format(yesterday);
+
+    await tester.tap(find.text(yesterdayDayStr).first);
+    await tester.pumpAndSettle();
+
+    // Habit should NOT be visible on yesterday since createdAt is today
+    expect(find.text('Today Only Habit'), findsNothing);
+    expect(find.text('No habits found for this date.'), findsOneWidget);
+  });
+
+  testWidgets(
+      'HistoryScreen one-time task lifecycle: visible on created date and until completed date, then disappears on subsequent days',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+
+    final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
+    final task = await habitRepo.createHabit(
+      name: 'Walk the dog yesterday',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'check',
+      isOneTime: true,
+      scheduleType: ScheduleType.daily,
+    );
+    // Update its createdAt to yesterday and completedAt to yesterday
+    final updatedTask = task.copyWith(
+      createdAt: DateTime.utc(yesterday.year, yesterday.month, yesterday.day, 10, 0),
+      completedAt: DateTime.utc(yesterday.year, yesterday.month, yesterday.day, 18, 0),
+    );
+    await habitRepo.updateHabit(updatedTask);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const HistoryScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // On Today: task should have disappeared since it completed yesterday!
+    expect(find.text('Walk the dog yesterday'), findsNothing);
+
+    // Tap Yesterday in date strip
+    final yesterdayDayStr = DateFormat('d').format(yesterday);
+    await tester.tap(find.text(yesterdayDayStr).first);
+    await tester.pumpAndSettle();
+
+    // On Yesterday: task was completed yesterday, so it IS visible!
+    expect(find.text('Walk the dog yesterday'), findsOneWidget);
+    expect(find.text('One-time'), findsOneWidget);
+
+    // Tap 2 days ago (before created date)
+    final twoDaysAgo = now.subtract(const Duration(days: 2));
+    final twoDaysAgoDayStr = DateFormat('d').format(twoDaysAgo);
+    await tester.tap(find.text(twoDaysAgoDayStr).first);
+    await tester.pumpAndSettle();
+
+    // On 2 days ago: task did not exist yet, so NOT visible!
+    expect(find.text('Walk the dog yesterday'), findsNothing);
+  });
+
+  testWidgets(
+      'HistoryScreen tapping habit row opens DayNoteBottomSheet for selected date and saves note',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
+    await habitRepo.createHabit(
+      name: 'History Note Habit',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'check',
+      scheduleType: ScheduleType.daily,
+    );
+
+    final noteRepo = DayNoteRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          dayNoteRepositoryProvider.overrideWith((ref) async => noteRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const HistoryScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Tap the habit row text
+    await tester.tap(find.text('History Note Habit'));
+    await tester.pumpAndSettle();
+
+    // DayNoteBottomSheet should be open
+    final todayFormatted = DateFormat('E, d MMM').format(DateTime.now());
+    expect(find.text('Note for $todayFormatted'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Save'), findsOneWidget);
+
+    // Enter note and save
+    await tester.enterText(find.byType(TextField), 'Historical note from history screen');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    // Note preview appears on history row
+    expect(find.text('Historical note from history screen'), findsOneWidget);
+  });
+
+  testWidgets(
+      'HomeScreen one-time task deletion deletes immediately without confirmation dialog',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
+    await habitRepo.createHabit(
+      name: 'Quick Task Delete',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'check',
+      isOneTime: true,
+      scheduleType: ScheduleType.daily,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: const HabitTrackerApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quick Task Delete'), findsOneWidget);
+
+    // Long press to select
+    await tester.longPress(find.text('Quick Task Delete'));
+    await tester.pumpAndSettle();
+
+    // Tap Delete button
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    // No AlertDialog asking 'Are you sure'
+    expect(find.text('Delete habit'), findsNothing);
+    expect(find.text('Are you sure you want to delete'), findsNothing);
+
+    // Task is immediately deleted from list
+    expect(find.text('Quick Task Delete'), findsNothing);
+    expect(find.text('Deleted task "Quick Task Delete"'), findsOneWidget);
+  });
 }

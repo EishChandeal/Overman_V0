@@ -7,6 +7,7 @@ import '../../../domain/enums/enums.dart';
 import '../../navigation/app_router.dart';
 import '../../screens/insights/insights_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/day_note_bottom_sheet.dart';
 
 /// Screen displaying historical dates in reverse chronological order,
 /// allowing inspection and editing of habit entries on earlier dates.
@@ -214,16 +215,40 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final entryMap = {for (final e in entries) e.habitId: e};
     final now = DateTime.now();
     final isToday = _selectedDate == DateTime.utc(now.year, now.month, now.day);
+    final selectedCalendarDate =
+        DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+
+    // Filter habits/tasks visible on this selected date:
+    // 1. Habit/task must NOT be visible before its creation date.
+    // 2. One-time tasks: if completed, disappear after completion day.
+    final visibleHabits = activeHabits.where((habit) {
+      final createdLocal = habit.createdAt.toLocal();
+      final createdCalendarDate =
+          DateTime(createdLocal.year, createdLocal.month, createdLocal.day);
+      if (selectedCalendarDate.isBefore(createdCalendarDate)) {
+        return false;
+      }
+
+      if (habit.isOneTime && habit.completedAt != null) {
+        final completedLocal = habit.completedAt!.toLocal();
+        final completedCalendarDate = DateTime(
+          completedLocal.year,
+          completedLocal.month,
+          completedLocal.day,
+        );
+        if (selectedCalendarDate.isAfter(completedCalendarDate)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
 
     int completedCount = 0;
-    for (final h in activeHabits) {
+    for (final h in visibleHabits) {
       final entry = entryMap[h.id];
-      if (entry != null && entry.value > 0) {
-        if (h.type == HabitType.numeric && h.targetValue != null) {
-          if (entry.value >= h.targetValue!) completedCount++;
-        } else {
-          completedCount++;
-        }
+      if (_isCompletedOnDate(h, entry, _selectedDate)) {
+        completedCount++;
       }
     }
 
@@ -231,207 +256,210 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ? 'Today (${DateFormat('d MMMM yyyy').format(_selectedDate)})'
         : DateFormat('EEEE, d MMMM yyyy').format(_selectedDate);
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      children: [
-        // Date Summary Banner
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      dateFormatted,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryText,
-                        fontFamily: AppTheme.fontPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$completedCount of ${activeHabits.length} habits recorded',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.mutedGrey,
-                        fontFamily: AppTheme.fontPrimary,
-                      ),
-                    ),
-                  ],
+    if (visibleHabits.isEmpty) {
+      return ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        children: [
+          _buildDateSummaryBanner(dateFormatted, 0, 0),
+          const SizedBox(height: 60),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.event_busy_outlined,
+                  size: 48,
+                  color: AppColors.mutedGrey.withValues(alpha: 0.5),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: completedCount > 0
-                      ? AppColors.blue.withValues(alpha: 0.2)
-                      : AppColors.background,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$completedCount / ${activeHabits.length}',
+                const SizedBox(height: 12),
+                const Text(
+                  'No habits found for this date.',
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: completedCount > 0 ? AppColors.blue : AppColors.mutedGrey,
+                    color: AppColors.mutedGrey,
+                    fontSize: 14,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 12),
-
-        // Habits List for Selected Date
-        ...activeHabits.map((habit) {
-          final entry = entryMap[habit.id];
-          final isCompleted = entry != null && entry.value > 0;
-          final isNumeric = habit.type == HabitType.numeric;
-          final habitColor = HabitVisuals.parseColor(habit.colorHex);
-          final onHabitColor = HabitVisuals.getOnColor(habitColor);
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Material(
-              color: Color.alphaBlend(habitColor.withValues(alpha: 0.04), AppColors.surface),
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    // Color accent strip
-                    Container(
-                      width: 4,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isCompleted ? habitColor : habitColor.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-
-                    // Habit icon badge
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: habitColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        HabitVisuals.getIcon(habit.iconName),
-                        color: habitColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Habit title & details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            habit.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primaryText,
-                              fontFamily: AppTheme.fontPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            isNumeric
-                                ? 'Logged: ${_formatVal(entry?.value ?? 0)} / ${_formatVal(habit.targetValue ?? 0)} ${habit.unit ?? ''}'
-                                : (isCompleted ? 'Completed' : 'Not logged'),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isCompleted ? habitColor : AppColors.mutedGrey,
-                              fontFamily: AppTheme.fontPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Interactive Completion Control for this past date
-                    Material(
-                      color: isCompleted ? habitColor : AppColors.background,
-                      borderRadius: BorderRadius.circular(12),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () => _handleEntryTap(context, habit, entry),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          alignment: Alignment.center,
-                          child: isNumeric
-                              ? Text(
-                                  _formatVal(entry?.value ?? 0),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: isCompleted
-                                        ? onHabitColor
-                                        : AppColors.mutedGrey,
-                                  ),
-                                )
-                              : Icon(
-                                  isCompleted ? Icons.check : Icons.remove,
-                                  color: isCompleted
-                                      ? onHabitColor
-                                      : AppColors.mutedGrey,
-                                  size: 22,
-                                ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      children: [
+        _buildDateSummaryBanner(
+          dateFormatted,
+          completedCount,
+          visibleHabits.length,
+        ),
+        const SizedBox(height: 12),
+        ...visibleHabits.map((habit) {
+          final entry = entryMap[habit.id];
+          final isCompleted = _isCompletedOnDate(habit, entry, _selectedDate);
+
+          return _HistoryHabitRow(
+            key: ValueKey('history_${habit.id}_${_selectedDate.toIso8601String()}'),
+            habit: habit,
+            entry: entry,
+            selectedDate: _selectedDate,
+            isCompleted: isCompleted,
+            onTap: () => _openDayNoteSheet(context, habit),
+            onToggle: () => _handleEntryTap(context, habit, entry, isCompleted),
           );
         }),
       ],
     );
   }
 
-  void _handleEntryTap(
+  Widget _buildDateSummaryBanner(
+    String dateFormatted,
+    int completedCount,
+    int totalCount,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dateFormatted,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryText,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$completedCount of $totalCount habits recorded',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.mutedGrey,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: completedCount > 0
+                  ? AppColors.blue.withValues(alpha: 0.2)
+                  : AppColors.background,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '$completedCount / $totalCount',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: completedCount > 0 ? AppColors.blue : AppColors.mutedGrey,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isCompletedOnDate(
+    HabitDto habit,
+    HabitEntryDto? entry,
+    DateTime selectedDate,
+  ) {
+    if (habit.isOneTime) {
+      if (entry != null && entry.value > 0) return true;
+      if (habit.completedAt != null) {
+        final compLocal = habit.completedAt!.toLocal();
+        return DateTime(compLocal.year, compLocal.month, compLocal.day) ==
+            DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+      }
+      return false;
+    }
+    if (habit.type == HabitType.numeric && habit.targetValue != null) {
+      return entry != null && entry.value >= habit.targetValue!;
+    }
+    return entry != null && entry.value > 0;
+  }
+
+  void _openDayNoteSheet(BuildContext context, HabitDto habit) {
+    final habitColor = HabitVisuals.parseColor(habit.colorHex);
+    showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DayNoteBottomSheet(
+        habitId: habit.id,
+        habitColor: habitColor,
+        date: _selectedDate,
+      ),
+    );
+  }
+
+  Future<void> _handleEntryTap(
     BuildContext context,
     HabitDto habit,
     HabitEntryDto? entry,
-  ) {
+    bool isCompletedOnDate,
+  ) async {
+    if (habit.isOneTime) {
+      final repo = await ref.read(habitRepositoryProvider.future);
+      final actions = ref.read(entryActionsProvider.notifier);
+
+      if (isCompletedOnDate) {
+        final updated = habit.copyWith(completedAt: null);
+        await repo.updateHabit(updated);
+        if (entry != null) {
+          await actions.deleteEntry(
+            entryId: entry.id,
+            habitId: habit.id,
+          );
+        }
+      } else {
+        final updated = habit.copyWith(completedAt: _selectedDate);
+        await repo.updateHabit(updated);
+        await actions.logEntry(
+          habitId: habit.id,
+          date: _selectedDate,
+          value: habit.targetValue ?? 1.0,
+        );
+      }
+      ref.invalidate(todayDashboardProvider);
+      ref.invalidate(habitListProvider);
+      ref.invalidate(entriesForDateProvider(_selectedDate));
+      return;
+    }
+
     if (habit.type == HabitType.boolean) {
       if (entry != null && entry.value > 0) {
-        // Delete entry
         ref.read(entryActionsProvider.notifier).deleteEntry(
           entryId: entry.id,
           habitId: habit.id,
         );
       } else {
-        // Log entry
         ref.read(entryActionsProvider.notifier).logEntry(
           habitId: habit.id,
           date: _selectedDate,
           value: 1.0,
         );
       }
+      ref.invalidate(todayDashboardProvider);
+      ref.invalidate(entriesForDateProvider(_selectedDate));
     } else {
-      // Numeric entry dialog / bottom sheet
       _showNumericInputDialog(context, habit, entry);
     }
   }
@@ -511,6 +539,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             entryId: entry.id,
                             habitId: habit.id,
                           );
+                          ref.invalidate(todayDashboardProvider);
+                          ref.invalidate(entriesForDateProvider(_selectedDate));
                           Navigator.of(ctx).pop();
                         },
                         child: const Text('Clear'),
@@ -536,6 +566,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                             date: _selectedDate,
                             value: val,
                           );
+                          ref.invalidate(todayDashboardProvider);
+                          ref.invalidate(entriesForDateProvider(_selectedDate));
                         }
                         Navigator.of(ctx).pop();
                       },
@@ -554,10 +586,227 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     );
   }
 
-  String _formatVal(double val) {
+  static String _formatVal(double val) {
     if (val == val.roundToDouble()) {
       return val.toInt().toString();
     }
     return val.toStringAsFixed(1);
+  }
+}
+
+/// Individual habit row inside History screen.
+/// Tapping the card opens DayNoteBottomSheet for [selectedDate].
+/// Tapping the right-side button toggles or logs habit entry.
+class _HistoryHabitRow extends ConsumerWidget {
+  final HabitDto habit;
+  final HabitEntryDto? entry;
+  final DateTime selectedDate;
+  final bool isCompleted;
+  final VoidCallback onTap;
+  final VoidCallback onToggle;
+
+  const _HistoryHabitRow({
+    super.key,
+    required this.habit,
+    required this.entry,
+    required this.selectedDate,
+    required this.isCompleted,
+    required this.onTap,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final habitColor = HabitVisuals.parseColor(habit.colorHex);
+    final onHabitColor = HabitVisuals.getOnColor(habitColor);
+    final isNumeric = habit.type == HabitType.numeric;
+
+    // Check if a day note exists for this habit on [selectedDate]
+    final notesAsync = ref.watch(habitDayNotesProvider(habit.id));
+    final selectedUtc = DateTime.utc(selectedDate.year, selectedDate.month, selectedDate.day);
+    final noteForDay = notesAsync.whenOrNull(
+      data: (notes) => notes.cast<DayNoteDto?>().firstWhere(
+        (n) =>
+            n != null &&
+            n.date.year == selectedUtc.year &&
+            n.date.month == selectedUtc.month &&
+            n.date.day == selectedUtc.day,
+        orElse: () => null,
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: Color.alphaBlend(habitColor.withValues(alpha: 0.04), AppColors.surface),
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Color accent strip
+                Container(
+                  width: 4,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: isCompleted ? habitColor : habitColor.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 10),
+
+                // Habit icon badge
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: habitColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    HabitVisuals.getIcon(habit.iconName),
+                    color: habitColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Habit details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              habit.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryText,
+                                fontFamily: AppTheme.fontPrimary,
+                                decoration: (habit.isOneTime && isCompleted)
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                decorationColor: AppColors.mutedGrey,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (habit.isOneTime) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppColors.blue.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'One-time',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.blue,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        isNumeric
+                            ? 'Logged: ${_HistoryScreenState._formatVal(entry?.value ?? 0)} / ${_HistoryScreenState._formatVal(habit.targetValue ?? 0)} ${habit.unit ?? ''}'
+                            : (isCompleted ? 'Completed' : 'Not logged'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isCompleted ? habitColor : AppColors.mutedGrey,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                      ),
+                      if (noteForDay != null && noteForDay.note.trim().isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.background.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.note_alt_outlined,
+                                size: 12,
+                                color: habitColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  noteForDay.note,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.mutedGrey,
+                                    fontStyle: FontStyle.italic,
+                                    fontFamily: AppTheme.fontPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                // Interactive Completion Control for this past date
+                Material(
+                  color: isCompleted ? habitColor : AppColors.background,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: onToggle,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
+                      child: isNumeric
+                          ? Text(
+                              _HistoryScreenState._formatVal(entry?.value ?? 0),
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: isCompleted
+                                    ? onHabitColor
+                                    : AppColors.mutedGrey,
+                              ),
+                            )
+                          : Icon(
+                              isCompleted ? Icons.check : Icons.remove,
+                              color: isCompleted
+                                  ? onHabitColor
+                                  : AppColors.mutedGrey,
+                              size: 22,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

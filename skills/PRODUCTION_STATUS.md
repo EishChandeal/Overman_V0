@@ -973,11 +973,41 @@ Status: ⏳ Pending
   - `flutter analyze lib/` → `No issues found! (ran in 66.5s)`
   - `flutter test` → `All tests passed! (103/103 passed)`
 
+### Date Visibility & Lifecycle Fixes (Pre-PROD-04-B)
+
+- **Issue addressed**:
+  1. Creation date filter: Habits and one-time tasks created on date D appeared on dates prior to D in the History screen.
+  2. One-time task lifecycle: One-time tasks must remain visible on next days while pending; once completed, they disappear on subsequent days (both on History and Home/Today), remaining visible only from `createdAt` to `completedAt`.
+  3. Day notes in History screen: Tapping a habit on a date in History must open `DayNoteBottomSheet` for that date, allowing viewing and editing of previous notes.
+  4. Task deletion dialog: One-time tasks delete directly without caution dialog; recurring habits preserve confirmation dialog.
+- **Changes applied**:
+  - `lib/presentation/widgets/day_note_bottom_sheet.dart`:
+    - Added optional `DateTime? date` parameter. Loads, saves, and displays the formatted note date for the target date instead of hardcoding `DateTime.now()`.
+  - `lib/application/providers/dashboard_providers.dart`:
+    - Filtered out habits/tasks if today is before `habit.createdAt`.
+    - Filtered out one-time tasks if today is after `habit.completedAt` (tasks disappear from Today once completed on a prior day).
+  - `lib/data/repositories/habit_repository.dart`:
+    - Updated `updateHabit` to persist `createdAt`.
+  - `lib/presentation/screens/home/home_screen.dart`:
+    - Updated `_confirmDelete(HabitDto habit)`: checks `if (!habit.isOneTime)` before showing `AlertDialog`. For one-time tasks, deletes directly without confirmation dialog.
+  - `lib/presentation/screens/history/history_screen.dart`:
+    - Filtered habits/tasks by `createdAt` (hidden before creation date) and for completed one-time tasks by `completedAt` (hidden after completion date).
+    - Extracted `_HistoryHabitRow` `ConsumerWidget` with `InkWell` tapping to open `DayNoteBottomSheet(date: _selectedDate)`.
+    - Display note snippet if a note exists for `_selectedDate`.
+    - Implemented one-time task completion toggle for `_selectedDate`.
+  - `test/widget_test.dart`:
+    - Added 4 new automated widget tests covering History date filter, one-time task lifecycle, History day note tapping & saving, and one-time task direct deletion.
+- **Verification**:
+  - `flutter analyze lib/` → `No issues found!`
+  - `flutter test` → `All tests passed! (107/107 passed)`
+
 ## Previous completed tasks
 
 - **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
 - **PROD-02** — One-time task support (Toggle in Add screen, strikethrough, 50% opacity, badge, skip heatmap, 88/88 tests).
 - **PROD-03** — Descriptions + Day Notes (DayNoteRepository, DayNoteBottomSheet, NotesPanel, 96/96 tests).
+- **PROD-04-A** — AI context window control + Data formatter service (103/103 tests).
+- **Date Visibility & Lifecycle Refinements** — History date filtering, one-time task lifecycle, day notes in history, direct task deletion (107/107 tests).
 
 ## Current task
 

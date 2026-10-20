@@ -472,53 +472,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _confirmDelete(
     HabitDto habit,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            habit.isOneTime ? 'Delete Task' : 'Delete Habit',
-            style: const TextStyle(
-              color: AppColors.primaryText,
-              fontWeight: FontWeight.bold,
-              fontFamily: AppTheme.fontPrimary,
-            ),
-          ),
-          content: Text(
-            'Are you sure you want to delete "${habit.name}"? This will permanently delete all its logged entries and history.',
-            style: const TextStyle(
-              color: AppColors.mutedGrey,
-              fontFamily: AppTheme.fontPrimary,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: AppColors.mutedGrey),
-              ),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text(
-                'Delete',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    bool confirmed = true;
 
-    if (confirmed == true && mounted) {
+    // Only show confirmation dialog for recurring habits, not one-time tasks
+    if (!habit.isOneTime) {
+      final dialogResult = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Delete Habit',
+              style: TextStyle(
+                color: AppColors.primaryText,
+                fontWeight: FontWeight.bold,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            content: Text(
+              'Are you sure you want to delete "${habit.name}"? This will permanently delete all its logged entries and history.',
+              style: const TextStyle(
+                color: AppColors.mutedGrey,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: AppColors.mutedGrey),
+                ),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                ),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+      confirmed = dialogResult == true;
+    }
+
+    if (confirmed && mounted) {
       try {
         final repo = await ref.read(habitRepositoryProvider.future);
         await repo.deleteHabit(habit.id);

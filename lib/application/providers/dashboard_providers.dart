@@ -21,8 +21,26 @@ Future<List<HabitDayStatus>> todayDashboard(TodayDashboardRef ref) async {
 
   final List<HabitDayStatus> statusList = [];
 
+  final todayCalendarDate = DateTime(localNow.year, localNow.month, localNow.day);
+
   for (final habit in habits) {
     if (habit.isArchived) continue;
+
+    // Habits/tasks must not be seen on dates before they were created
+    final createdLocal = habit.createdAt.toLocal();
+    final createdCalendarDate = DateTime(createdLocal.year, createdLocal.month, createdLocal.day);
+    if (todayCalendarDate.isBefore(createdCalendarDate)) {
+      continue;
+    }
+
+    // One-time tasks disappear after the day they were completed
+    if (habit.isOneTime && habit.completedAt != null) {
+      final completedLocal = habit.completedAt!.toLocal();
+      final completedCalendarDate = DateTime(completedLocal.year, completedLocal.month, completedLocal.day);
+      if (todayCalendarDate.isAfter(completedCalendarDate)) {
+        continue;
+      }
+    }
 
     final activeSchedule = await scheduleRepo.getActiveScheduleForHabit(
       habit.id,

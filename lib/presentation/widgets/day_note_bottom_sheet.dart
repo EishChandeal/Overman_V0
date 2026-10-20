@@ -9,11 +9,13 @@ import 'package:habit_tracker/presentation/theme/app_theme.dart';
 class DayNoteBottomSheet extends ConsumerStatefulWidget {
   final String habitId;
   final Color? habitColor;
+  final DateTime? date;
 
   const DayNoteBottomSheet({
     super.key,
     required this.habitId,
     this.habitColor,
+    this.date,
   });
 
   @override
@@ -24,6 +26,11 @@ class _DayNoteBottomSheetState extends ConsumerState<DayNoteBottomSheet> {
   late final TextEditingController _controller;
   DayNoteDto? _existingNote;
   bool _isSaving = false;
+
+  DateTime get _effectiveDate {
+    final d = widget.date ?? DateTime.now();
+    return DateTime.utc(d.year, d.month, d.day);
+  }
 
   @override
   void initState() {
@@ -41,9 +48,7 @@ class _DayNoteBottomSheetState extends ConsumerState<DayNoteBottomSheet> {
   Future<void> _loadExistingNote() async {
     try {
       final repo = await ref.read(dayNoteRepositoryProvider.future);
-      final now = DateTime.now();
-      final todayMidnightUtc = DateTime.utc(now.year, now.month, now.day);
-      final existing = await repo.getNoteForDate(widget.habitId, todayMidnightUtc);
+      final existing = await repo.getNoteForDate(widget.habitId, _effectiveDate);
       if (existing != null && mounted) {
         _existingNote = existing;
         _controller.text = existing.note;
@@ -59,8 +64,7 @@ class _DayNoteBottomSheetState extends ConsumerState<DayNoteBottomSheet> {
 
     try {
       final repo = await ref.read(dayNoteRepositoryProvider.future);
-      final now = DateTime.now();
-      final todayMidnightUtc = DateTime.utc(now.year, now.month, now.day);
+      final targetDateUtc = _effectiveDate;
 
       if (text.isEmpty && _existingNote != null) {
         // Clear note
@@ -69,7 +73,7 @@ class _DayNoteBottomSheetState extends ConsumerState<DayNoteBottomSheet> {
         final noteDto = DayNoteDto(
           id: _existingNote?.id ?? const Uuid().v4(),
           habitId: widget.habitId,
-          date: todayMidnightUtc,
+          date: targetDateUtc,
           note: text,
           createdAt: _existingNote?.createdAt ?? DateTime.now().toUtc(),
           updatedAt: DateTime.now().toUtc(),
@@ -82,9 +86,9 @@ class _DayNoteBottomSheetState extends ConsumerState<DayNoteBottomSheet> {
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Note saved for today'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text('Note saved for ${DateFormat('E, d MMM').format(_effectiveDate)}'),
+            duration: const Duration(seconds: 2),
             backgroundColor: AppColors.surface,
           ),
         );
@@ -107,8 +111,7 @@ class _DayNoteBottomSheetState extends ConsumerState<DayNoteBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final todayFormatted = DateFormat('E, d MMM').format(now);
+    final todayFormatted = DateFormat('E, d MMM').format(_effectiveDate);
     final accentColor = widget.habitColor ?? AppColors.orange;
 
     return Padding(

@@ -82,6 +82,7 @@ class HabitRepository {
     entity.description = updated.description;
     entity.isOneTime = updated.isOneTime;
     entity.completedAt = updated.completedAt?.millisecondsSinceEpoch;
+    entity.createdAt = updated.createdAt.millisecondsSinceEpoch;
     entity.isArchived = updated.isArchived;
 
     _box.put(entity);
