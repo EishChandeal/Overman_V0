@@ -736,4 +736,92 @@ void main() {
     expect(find.widgetWithText(OutlinedButton, 'Edit'), findsOneWidget);
     expect(find.widgetWithText(OutlinedButton, 'Delete'), findsOneWidget);
   });
+
+  testWidgets(
+      'AddHabitScreen toggle switches between Habit and One-time Task and animates Schedule',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(
+          home: AddHabitScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Defaults to "Habit"
+    expect(find.text('Habit'), findsOneWidget);
+    expect(find.text('One-time Task'), findsOneWidget);
+    expect(find.text('SCHEDULE'), findsOneWidget);
+
+    // Tap "One-time Task"
+    await tester.tap(find.text('One-time Task'));
+    await tester.pumpAndSettle();
+
+    // Schedule section is collapsed/hidden
+    expect(find.text('SCHEDULE'), findsNothing);
+    expect(find.text('TASK NAME'), findsOneWidget);
+
+    // Tap back to "Habit"
+    await tester.tap(find.text('Habit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('SCHEDULE'), findsOneWidget);
+    expect(find.text('HABIT NAME'), findsOneWidget);
+  });
+
+  testWidgets(
+      'One-time task card renders badge, skips Heatmap panel, and applies strikethrough when completed',
+      (WidgetTester tester) async {
+    final habit = HabitDto(
+      id: 'task-1',
+      name: 'File Taxes',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'check',
+      isOneTime: true,
+      completedAt: DateTime.now().toUtc(),
+      createdAt: DateTime.now().toUtc(),
+      isArchived: false,
+    );
+
+    final item = HabitDayStatus(
+      habit: habit,
+      entry: null,
+      isScheduledToday: true,
+      status: DayStatus.met,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: HabitCard(item: item),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify "One-time" badge is rendered
+    expect(find.text('One-time'), findsOneWidget);
+    expect(find.text('File Taxes'), findsOneWidget);
+
+    // Verify strikethrough styling and 0.5 opacity
+    final textWidget = tester.widget<Text>(find.text('File Taxes'));
+    expect(textWidget.style?.decoration, TextDecoration.lineThrough);
+    final opacityWidget = tester.widget<Opacity>(find.byType(Opacity).first);
+    expect(opacityWidget.opacity, 0.5);
+
+    // Tap to expand
+    await tester.tap(find.text('File Taxes'));
+    await tester.pumpAndSettle();
+
+    // Heatmap should NOT be present; Details is shown directly
+    expect(find.text('HEATMAP'), findsNothing);
+    expect(find.text('DETAILS'), findsOneWidget);
+    expect(find.text('Task Type'), findsOneWidget);
+    expect(find.text('One-time Task'), findsOneWidget);
+  });
 }

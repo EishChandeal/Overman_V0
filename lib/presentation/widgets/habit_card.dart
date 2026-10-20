@@ -13,6 +13,7 @@ import 'package:habit_tracker/presentation/widgets/statistics_panel.dart';
 /// Supports in-place expansion with circular panel sequence:
 /// - Boolean habits: Heatmap → Statistics → Details → Heatmap
 /// - Numeric habits: Heatmap → Statistics → Graph → Details → Heatmap
+/// - One-off tasks: Details (Heatmap skipped)
 class HabitCard extends ConsumerStatefulWidget {
   final HabitDayStatus item;
   final bool isSelected;
@@ -42,10 +43,15 @@ class _HabitCardState extends ConsumerState<HabitCard> {
   int _activePanelIndex = 0;
 
   bool get _isCompleted =>
+      (widget.item.habit.isOneTime && widget.item.habit.completedAt != null) ||
       widget.item.status == DayStatus.met ||
       widget.item.status == DayStatus.exceeded;
 
   List<String> get _panelTitles {
+    // One-time tasks do not show the Heatmap panel
+    if (widget.item.habit.isOneTime) {
+      return ['Details'];
+    }
     if (widget.item.habit.type == HabitType.numeric) {
       return ['Heatmap', 'Statistics', 'Trend Graph', 'Details'];
     }
@@ -56,7 +62,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
-        // Design requirement: Reopening a collapsed card always resets to the heatmap
+        // Design requirement: Reopening a collapsed card always resets to the first panel
         _activePanelIndex = 0;
       }
     });
@@ -65,6 +71,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
   void _previousPanel() {
     final count = _panelTitles.length;
+    if (count <= 1) return;
     setState(() {
       _activePanelIndex = (_activePanelIndex - 1 + count) % count;
     });
@@ -72,6 +79,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
   void _nextPanel() {
     final count = _panelTitles.length;
+    if (count <= 1) return;
     setState(() {
       _activePanelIndex = (_activePanelIndex + 1) % count;
     });
@@ -84,112 +92,155 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     final streakAsync = ref.watch(habitStreakProvider(habit.id));
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
 
+    final isCheckedOneTime = habit.isOneTime && _isCompleted;
+
     // Accent color on the left edge: habit color if completed, subtle tint otherwise
     final accentColor = _isCompleted ? habitColor : habitColor.withValues(alpha: 0.35);
 
-    return Material(
-      color: Color.alphaBlend(habitColor.withValues(alpha: 0.05), AppColors.surface),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: widget.isSelected
-            ? BorderSide(color: habitColor, width: 2)
-            : BorderSide(color: habitColor.withValues(alpha: 0.22), width: 1),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: _toggleExpansion,
-        onLongPress: widget.onLongPress,
-        child: AnimatedSize(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          alignment: Alignment.topCenter,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 96),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Top Main Card Row
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Narrow left-edge status accent bar
-                      Container(
-                        width: 5,
-                        color: accentColor,
-                      ),
-                      const SizedBox(width: 12),
+    return Opacity(
+      opacity: isCheckedOneTime ? 0.5 : 1.0,
+      child: Material(
+        color: Color.alphaBlend(habitColor.withValues(alpha: 0.05), AppColors.surface),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: widget.isSelected
+              ? BorderSide(color: habitColor, width: 2)
+              : BorderSide(color: habitColor.withValues(alpha: 0.22), width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: _toggleExpansion,
+          onLongPress: widget.onLongPress,
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 96),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Top Main Card Row
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Narrow left-edge status accent bar
+                        Container(
+                          width: 5,
+                          color: accentColor,
+                        ),
+                        const SizedBox(width: 12),
 
-                      // Habit Icon Badge in selected habit color
-                      Center(
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: habitColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: habitColor.withValues(alpha: 0.35),
-                              width: 1,
+                        // Habit Icon Badge in selected habit color
+                        Center(
+                          child: Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: habitColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: habitColor.withValues(alpha: 0.35),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              HabitVisuals.getIcon(habit.iconName),
+                              color: habitColor,
+                              size: 22,
                             ),
                           ),
-                          child: Icon(
-                            HabitVisuals.getIcon(habit.iconName),
-                            color: habitColor,
-                            size: 22,
-                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
+                        const SizedBox(width: 12),
 
-                      // Habit details (Title, schedule/streak, target)
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                habit.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryText,
-                                  fontFamily: AppTheme.fontPrimary,
+                        // Habit details (Title, badge, schedule/streak, target)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        habit.name,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: isCheckedOneTime
+                                              ? AppColors.primaryText.withValues(alpha: 0.7)
+                                              : AppColors.primaryText,
+                                          decoration: isCheckedOneTime
+                                              ? TextDecoration.lineThrough
+                                              : null,
+                                          decorationColor: AppColors.primaryText.withValues(alpha: 0.7),
+                                          fontFamily: AppTheme.fontPrimary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (habit.isOneTime) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surface,
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: AppColors.mutedGrey.withValues(alpha: 0.25),
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'One-time',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.mutedGrey,
+                                            fontFamily: AppTheme.fontPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 6),
-                              _buildSubtitle(context, streakAsync.valueOrNull),
-                            ],
+                                const SizedBox(height: 6),
+                                _buildSubtitle(context, streakAsync.valueOrNull),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                      const SizedBox(width: 8),
+                        const SizedBox(width: 8),
 
-                      // Completion / Value logging control
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Center(
-                          child: _buildCompletionControl(context, habit, entry, habitColor),
+                        // Completion / Value logging control
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Center(
+                            child: _buildCompletionControl(context, habit, entry, habitColor),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
 
-                // Expanded Panel Section
-                if (_isExpanded) ...[
-                  const Divider(color: AppColors.background, height: 1),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    child: _buildExpandedSection(context, habitColor),
-                  ),
+                  // Expanded Panel Section
+                  if (_isExpanded) ...[
+                    const Divider(color: AppColors.background, height: 1),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      child: _buildExpandedSection(context, habitColor),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
@@ -199,7 +250,8 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
   Widget _buildExpandedSection(BuildContext context, Color habitColor) {
     final titles = _panelTitles;
-    final currentTitle = titles[_activePanelIndex];
+    final safeIndex = _activePanelIndex.clamp(0, titles.length - 1);
+    final currentTitle = titles[safeIndex];
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -222,7 +274,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
               // Previous button (<)
               IconButton(
                 icon: const Icon(Icons.chevron_left, color: AppColors.primaryText),
-                onPressed: _previousPanel,
+                onPressed: titles.length > 1 ? _previousPanel : null,
                 splashRadius: 20,
                 tooltip: 'Previous panel',
               ),
@@ -245,7 +297,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(titles.length, (index) {
-                      final isActive = index == _activePanelIndex;
+                      final isActive = index == safeIndex;
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 2.5),
                         width: isActive ? 12 : 5,
@@ -263,7 +315,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
               // Next button (>)
               IconButton(
                 icon: const Icon(Icons.chevron_right, color: AppColors.primaryText),
-                onPressed: _nextPanel,
+                onPressed: titles.length > 1 ? _nextPanel : null,
                 splashRadius: 20,
                 tooltip: 'Next panel',
               ),
@@ -276,8 +328,8 @@ class _HabitCardState extends ConsumerState<HabitCard> {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: KeyedSubtree(
-              key: ValueKey<int>(_activePanelIndex),
-              child: _buildPanelContent(habitColor),
+              key: ValueKey<int>(safeIndex),
+              child: _buildPanelContent(habitColor, currentTitle),
             ),
           ),
         ],
@@ -285,31 +337,28 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     );
   }
 
-  Widget _buildPanelContent(Color habitColor) {
+  Widget _buildPanelContent(Color habitColor, String panelTitle) {
     final habit = widget.item.habit;
-    final isNumeric = habit.type == HabitType.numeric;
 
-    if (_activePanelIndex == 0) {
-      // 0: Heatmap (always first)
-      return HeatmapPanel(
-        habitId: habit.id,
-        habitColor: habitColor,
-      );
-    } else if (_activePanelIndex == 1) {
-      // 1: Statistics
-      return StatisticsPanel(habit: habit);
-    } else if (isNumeric && _activePanelIndex == 2) {
-      // 2: Numeric Graph (numeric only)
-      return NumericGraphPanel(habit: habit);
-    } else {
-      // Last: Details
-      return DetailsPanel(
-        habit: habit,
-        habitColor: habitColor,
-        activeSchedule: widget.item.activeSchedule,
-        onEdit: widget.onEdit,
-        onDelete: widget.onDelete,
-      );
+    switch (panelTitle) {
+      case 'Heatmap':
+        return HeatmapPanel(
+          habitId: habit.id,
+          habitColor: habitColor,
+        );
+      case 'Statistics':
+        return StatisticsPanel(habit: habit);
+      case 'Trend Graph':
+        return NumericGraphPanel(habit: habit);
+      case 'Details':
+      default:
+        return DetailsPanel(
+          habit: habit,
+          habitColor: habitColor,
+          activeSchedule: widget.item.activeSchedule,
+          onEdit: widget.onEdit,
+          onDelete: widget.onDelete,
+        );
     }
   }
 
@@ -318,45 +367,71 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
     final List<Widget> metaItems = [];
 
-    // Streak count if meaningful (> 0)
-    final streakCount = streakResult?.currentStreak ?? 0;
-    if (streakCount > 0) {
-      metaItems.add(
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.local_fire_department,
-              size: 15,
-              color: habitColor,
+    if (habit.isOneTime) {
+      if (_isCompleted) {
+        metaItems.add(
+          const Text(
+            'Completed',
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.mutedGrey,
+              fontFamily: AppTheme.fontPrimary,
             ),
-            const SizedBox(width: 3),
-            Text(
-              '$streakCount ${streakCount == 1 ? 'day' : 'days'}',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: habitColor,
-                fontFamily: AppTheme.fontPrimary,
-              ),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Schedule or target information
-      final scheduleName =
-          widget.item.activeSchedule?.scheduleType.displayName ?? 'Daily';
-      metaItems.add(
-        Text(
-          scheduleName,
-          style: const TextStyle(
-            fontSize: 13,
-            color: AppColors.mutedGrey,
-            fontFamily: AppTheme.fontPrimary,
           ),
-        ),
-      );
+        );
+      } else {
+        metaItems.add(
+          const Text(
+            'One-time task',
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.mutedGrey,
+              fontFamily: AppTheme.fontPrimary,
+            ),
+          ),
+        );
+      }
+    } else {
+      // Streak count if meaningful (> 0)
+      final streakCount = streakResult?.currentStreak ?? 0;
+      if (streakCount > 0) {
+        metaItems.add(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.local_fire_department,
+                size: 15,
+                color: habitColor,
+              ),
+              const SizedBox(width: 3),
+              Text(
+                '$streakCount ${streakCount == 1 ? 'day' : 'days'}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: habitColor,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        // Schedule or target information
+        final scheduleName =
+            widget.item.activeSchedule?.scheduleType.displayName ?? 'Daily';
+        metaItems.add(
+          Text(
+            scheduleName,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.mutedGrey,
+              fontFamily: AppTheme.fontPrimary,
+            ),
+          ),
+        );
+      }
     }
 
     if (habit.type == HabitType.numeric && habit.targetValue != null) {
@@ -414,8 +489,8 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                 child: isDone
                     ? Icon(
                         Icons.check,
-                        color: onHabitColor,
                         size: 32,
+                        color: onHabitColor,
                       )
                     : Text(
                         '—',
@@ -431,9 +506,9 @@ class _HabitCardState extends ConsumerState<HabitCard> {
         ),
       );
     } else {
-      // Numeric Habit
-      final hasValue = entry != null && entry.value > 0;
+      // Numeric entry control
       final isDone = _isCompleted;
+      final hasValue = entry != null && entry.value > 0;
 
       return Semantics(
         button: true,

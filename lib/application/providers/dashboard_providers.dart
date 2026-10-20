@@ -31,7 +31,9 @@ Future<List<HabitDayStatus>> todayDashboard(TodayDashboardRef ref) async {
     final entry = entryMap[habit.id];
 
     bool isScheduledToday = false;
-    if (activeSchedule != null) {
+    if (habit.isOneTime) {
+      isScheduledToday = true;
+    } else if (activeSchedule != null) {
       switch (activeSchedule.scheduleType) {
         case ScheduleType.daily:
         case ScheduleType.timesPerWeek:
@@ -49,6 +51,8 @@ Future<List<HabitDayStatus>> todayDashboard(TodayDashboardRef ref) async {
     DayStatus status;
     if (!isScheduledToday) {
       status = DayStatus.notScheduled;
+    } else if (habit.isOneTime && habit.completedAt != null) {
+      status = DayStatus.met;
     } else if (entry != null && entry.value > 0) {
       if (activeLimit?.minValue != null &&
           entry.value < activeLimit!.minValue!) {

@@ -27,6 +27,8 @@ class HabitRepository {
     required ScheduleType scheduleType,
     List<Weekday>? scheduledWeekdays,
     int? targetCount,
+    String? description,
+    bool isOneTime = false,
   }) async {
     final id = const Uuid().v4();
     final createdAt = DateTime.now().toUtc();
@@ -39,6 +41,8 @@ class HabitRepository {
       targetValue: targetValue,
       colorHex: colorHex,
       iconName: iconName,
+      description: description,
+      isOneTime: isOneTime,
       createdAt: createdAt,
       isArchived: false,
     );
@@ -74,6 +78,9 @@ class HabitRepository {
     entity.targetValue = updated.targetValue;
     entity.colorHex = updated.colorHex;
     entity.iconName = updated.iconName;
+    entity.description = updated.description;
+    entity.isOneTime = updated.isOneTime;
+    entity.completedAt = updated.completedAt?.millisecondsSinceEpoch;
     entity.isArchived = updated.isArchived;
 
     _box.put(entity);

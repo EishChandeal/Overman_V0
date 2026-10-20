@@ -44,11 +44,20 @@ class DetailsPanel extends StatelessWidget {
           ),
           const Divider(color: AppColors.surface, height: 18),
           _buildDetailRow(
-            icon: Icons.repeat,
-            title: 'Schedule',
-            value: scheduleLabel,
+            icon: habit.isOneTime ? Icons.task_alt : Icons.repeat,
+            title: habit.isOneTime ? 'Task Type' : 'Schedule',
+            value: habit.isOneTime ? 'One-time Task' : scheduleLabel,
             iconColor: accentColor,
           ),
+          if (habit.isOneTime && habit.completedAt != null) ...[
+            const Divider(color: AppColors.surface, height: 18),
+            _buildDetailRow(
+              icon: Icons.check_circle_outline,
+              title: 'Completed',
+              value: DateFormat('d MMMM yyyy, HH:mm').format(habit.completedAt!.toLocal()),
+              iconColor: accentColor,
+            ),
+          ],
           const Divider(color: AppColors.surface, height: 18),
           _buildDetailRow(
             icon: habit.type == HabitType.boolean

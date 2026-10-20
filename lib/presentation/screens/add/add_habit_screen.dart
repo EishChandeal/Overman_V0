@@ -5,8 +5,7 @@ import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 import 'package:habit_tracker/presentation/theme/app_theme.dart';
 
-/// Screen for creating or editing a habit (Boolean or Numeric).
-/// Corresponds to Section 76-78 of PROJECT_BRIEF.md.
+/// Screen for creating or editing a habit or one-time task (Boolean or Numeric).
 class AddHabitScreen extends ConsumerStatefulWidget {
   final HabitDto? habitToEdit;
   final HabitScheduleDto? scheduleToEdit;
@@ -27,6 +26,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
   final _unitController = TextEditingController();
   final _targetValueController = TextEditingController();
 
+  bool _isOneTime = false;
   HabitType _habitType = HabitType.boolean;
   ScheduleType _scheduleType = ScheduleType.daily;
   final Set<Weekday> _selectedWeekdays = {
@@ -48,6 +48,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
     if (widget.habitToEdit != null) {
       final h = widget.habitToEdit!;
       _nameController.text = h.name;
+      _isOneTime = h.isOneTime;
       _habitType = h.type;
       _unitController.text = h.unit ?? '';
       if (h.targetValue != null) {
@@ -127,22 +128,25 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           targetValue: targetVal,
           colorHex: _selectedColorHex,
           iconName: _selectedIconName,
+          isOneTime: _isOneTime,
         );
         await repo.updateHabit(updatedHabit);
 
-        final scheduleRepo = await ref.read(habitScheduleRepositoryProvider.future);
-        await scheduleRepo.setSchedule(
-          habitId: widget.habitToEdit!.id,
-          scheduleType: _scheduleType,
-          scheduledWeekdays: _scheduleType == ScheduleType.specificWeekdays
-              ? _selectedWeekdays.toList()
-              : null,
-          targetCount: _scheduleType == ScheduleType.timesPerWeek ||
-                  _scheduleType == ScheduleType.timesPerMonth
-              ? _targetCount
-              : null,
-          effectiveFrom: DateTime.now().toUtc(),
-        );
+        if (!_isOneTime) {
+          final scheduleRepo = await ref.read(habitScheduleRepositoryProvider.future);
+          await scheduleRepo.setSchedule(
+            habitId: widget.habitToEdit!.id,
+            scheduleType: _scheduleType,
+            scheduledWeekdays: _scheduleType == ScheduleType.specificWeekdays
+                ? _selectedWeekdays.toList()
+                : null,
+            targetCount: _scheduleType == ScheduleType.timesPerWeek ||
+                    _scheduleType == ScheduleType.timesPerMonth
+                ? _targetCount
+                : null,
+            effectiveFrom: DateTime.now().toUtc(),
+          );
+        }
 
         // Invalidate dashboard and streak providers so Home and panels update
         ref.invalidate(todayDashboardProvider);
@@ -152,7 +156,9 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Updated habit "${_nameController.text.trim()}"'),
+              content: Text(
+                'Updated ${_isOneTime ? "task" : "habit"} "${_nameController.text.trim()}"',
+              ),
               backgroundColor: AppColors.surface,
               duration: const Duration(seconds: 2),
             ),
@@ -167,14 +173,15 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           targetValue: targetVal,
           colorHex: _selectedColorHex,
           iconName: _selectedIconName,
-          scheduleType: _scheduleType,
-          scheduledWeekdays: _scheduleType == ScheduleType.specificWeekdays
+          scheduleType: _isOneTime ? ScheduleType.daily : _scheduleType,
+          scheduledWeekdays: !_isOneTime && _scheduleType == ScheduleType.specificWeekdays
               ? _selectedWeekdays.toList()
               : null,
-          targetCount: _scheduleType == ScheduleType.timesPerWeek ||
-                  _scheduleType == ScheduleType.timesPerMonth
+          targetCount: !_isOneTime && (_scheduleType == ScheduleType.timesPerWeek ||
+                  _scheduleType == ScheduleType.timesPerMonth)
               ? _targetCount
               : null,
+          isOneTime: _isOneTime,
         );
 
         // Invalidate dashboard provider so Home updates immediately
@@ -184,7 +191,9 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Created habit "${_nameController.text.trim()}"'),
+              content: Text(
+                'Created ${_isOneTime ? "task" : "habit"} "${_nameController.text.trim()}"',
+              ),
               backgroundColor: AppColors.surface,
               duration: const Duration(seconds: 2),
             ),
@@ -196,7 +205,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save habit: $e'),
+            content: Text('Failed to save: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -210,6 +219,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final habitColor = HabitVisuals.parseColor(_selectedColorHex);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -220,7 +231,9 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          widget.habitToEdit != null ? 'Edit Habit' : 'New Habit',
+          widget.habitToEdit != null
+              ? (_isOneTime ? 'Edit Task' : 'Edit Habit')
+              : (_isOneTime ? 'New One-time Task' : 'New Habit'),
           style: const TextStyle(
             color: AppColors.primaryText,
             fontSize: 20,
@@ -235,8 +248,13 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
-              // 1. Habit Name
-              _buildSectionLabel('HABIT NAME'),
+              // 0. Segmented Toggle (Habit vs One-time Task)
+              _buildTypeToggle(habitColor),
+
+              const SizedBox(height: 12),
+
+              // 1. Habit/Task Name
+              _buildSectionLabel(_isOneTime ? 'TASK NAME' : 'HABIT NAME'),
               TextFormField(
                 controller: _nameController,
                 style: const TextStyle(
@@ -244,12 +262,16 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                   fontSize: 16,
                   fontFamily: AppTheme.fontPrimary,
                 ),
-                decoration: const InputDecoration(
-                  hintText: 'e.g. Read 20 pages, Morning Jog',
+                decoration: InputDecoration(
+                  hintText: _isOneTime
+                      ? 'e.g. Finish Tax Forms, Pick up parcel'
+                      : 'e.g. Read 20 pages, Morning Jog',
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
-                    return 'Please enter a habit name';
+                    return _isOneTime
+                        ? 'Please enter a task name'
+                        : 'Please enter a habit name';
                   }
                   return null;
                 },
@@ -257,7 +279,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
               const SizedBox(height: 24),
 
-              // 2. Habit Type (Checkmark vs Numeric)
+              // 2. Tracking Type (Checkmark vs Numeric)
               _buildSectionLabel('TRACKING TYPE'),
               Row(
                 children: [
@@ -345,21 +367,29 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                 ),
               ],
 
-              const SizedBox(height: 24),
-
-              // 4. Schedule Type
-              _buildSectionLabel('SCHEDULE'),
-              _buildScheduleSelector(),
-
-              if (_scheduleType == ScheduleType.specificWeekdays) ...[
-                const SizedBox(height: 12),
-                _buildWeekdaySelector(),
-              ],
-
-              if (_scheduleType == ScheduleType.timesPerWeek) ...[
-                const SizedBox(height: 12),
-                _buildTimesPerWeekSelector(),
-              ],
+              // 4. Schedule Type (Animated collapse for one-time task)
+              AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: _isOneTime
+                    ? const SizedBox.shrink()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 24),
+                          _buildSectionLabel('SCHEDULE'),
+                          _buildScheduleSelector(),
+                          if (_scheduleType == ScheduleType.specificWeekdays) ...[
+                            const SizedBox(height: 12),
+                            _buildWeekdaySelector(),
+                          ],
+                          if (_scheduleType == ScheduleType.timesPerWeek) ...[
+                            const SizedBox(height: 12),
+                            _buildTimesPerWeekSelector(),
+                          ],
+                        ],
+                      ),
+              ),
 
               const SizedBox(height: 24),
 
@@ -375,7 +405,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
 
               const SizedBox(height: 36),
 
-              // 7. Create Habit Button
+              // 7. Save / Create Button
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
@@ -398,7 +428,9 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                           ),
                         )
                       : Text(
-                          widget.habitToEdit != null ? 'Save Changes' : 'Create Habit',
+                          widget.habitToEdit != null
+                              ? 'Save Changes'
+                              : (_isOneTime ? 'Create Task' : 'Create Habit'),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -412,6 +444,71 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTypeToggle(Color accentColor) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isOneTime = false),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: !_isOneTime ? accentColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Habit',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: !_isOneTime
+                        ? HabitVisuals.getOnColor(accentColor)
+                        : AppColors.mutedGrey,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isOneTime = true),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: _isOneTime ? accentColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'One-time Task',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _isOneTime
+                        ? HabitVisuals.getOnColor(accentColor)
+                        : AppColors.mutedGrey,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

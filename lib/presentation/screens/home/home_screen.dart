@@ -62,60 +62,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     }
                     return _buildHabitList(habits, selectedStatus);
                   },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.blue,
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.blue,
+                    ),
                   ),
-                ),
-                error: (err, stack) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 48,
-                          color: AppColors.orange,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Failed to load habits',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryText,
+                  error: (err, stack) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: AppColors.orange,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          err.toString(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.mutedGrey,
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Failed to load habits',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryText,
+                            ),
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () => ref.invalidate(todayDashboardProvider),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            err.toString(),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.mutedGrey,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () => ref.invalidate(todayDashboardProvider),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   /// Header row containing:
   /// 1. History / Date button (approx 171 x 88)
@@ -591,9 +591,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text(
-            'Delete Habit',
-            style: TextStyle(
+          title: Text(
+            habit.isOneTime ? 'Delete Task' : 'Delete Habit',
+            style: const TextStyle(
               color: AppColors.primaryText,
               fontWeight: FontWeight.bold,
               fontFamily: AppTheme.fontPrimary,
@@ -646,7 +646,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Deleted habit "${habit.name}"'),
+              content: Text(
+                'Deleted ${habit.isOneTime ? "task" : "habit"} "${habit.name}"',
+              ),
               backgroundColor: AppColors.surface,
               duration: const Duration(seconds: 2),
             ),
@@ -656,7 +658,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to delete habit: $e'),
+              content: Text('Failed to delete: $e'),
               backgroundColor: Colors.redAccent,
             ),
           );
@@ -669,10 +671,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context,
     WidgetRef ref,
     HabitDayStatus item,
-  ) {
+  ) async {
     final now = DateTime.now();
     final todayUtc = DateTime.utc(now.year, now.month, now.day);
     final actions = ref.read(entryActionsProvider.notifier);
+
+    if (item.habit.isOneTime) {
+      final repo = await ref.read(habitRepositoryProvider.future);
+      final isCompleted = item.habit.completedAt != null ||
+          item.status == DayStatus.met ||
+          item.status == DayStatus.exceeded;
+
+      if (isCompleted) {
+        // Toggle off
+        final updated = item.habit.copyWith(completedAt: null);
+        await repo.updateHabit(updated);
+        if (item.entry != null) {
+          await actions.deleteEntry(
+            entryId: item.entry!.id,
+            habitId: item.habit.id,
+          );
+        }
+      } else {
+        // Mark complete
+        final updated = item.habit.copyWith(completedAt: now.toUtc());
+        await repo.updateHabit(updated);
+        await actions.logEntry(
+          habitId: item.habit.id,
+          date: todayUtc,
+          value: item.habit.targetValue ?? 1.0,
+        );
+      }
+      ref.invalidate(todayDashboardProvider);
+      ref.invalidate(habitListProvider);
+      return;
+    }
 
     if (item.habit.type == HabitType.boolean) {
       final isCompleted =
@@ -761,12 +794,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   if (item.entry != null)
                     TextButton(
-                      onPressed: () {
-                        ref.read(entryActionsProvider.notifier).deleteEntry(
-                              entryId: item.entry!.id,
-                              habitId: item.habit.id,
+                      onPressed: () async {
+                        final entryId = item.entry!.id;
+                        final habitId = item.habit.id;
+                        final isOneTime = item.habit.isOneTime;
+                        final habitDto = item.habit;
+
+                        Navigator.of(sheetContext).pop();
+
+                        await ref.read(entryActionsProvider.notifier).deleteEntry(
+                              entryId: entryId,
+                              habitId: habitId,
                             );
-                        Navigator.pop(sheetContext);
+                        if (isOneTime) {
+                          final repo = await ref.read(habitRepositoryProvider.future);
+                          await repo.updateHabit(habitDto.copyWith(completedAt: null));
+                          ref.invalidate(todayDashboardProvider);
+                          ref.invalidate(habitListProvider);
+                        }
                       },
                       child: const Text(
                         'Clear',
@@ -775,7 +820,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   const Spacer(),
                   TextButton(
-                    onPressed: () => Navigator.pop(sheetContext),
+                    onPressed: () => Navigator.of(sheetContext).pop(),
                     child: const Text(
                       'Cancel',
                       style: TextStyle(color: AppColors.mutedGrey),
@@ -783,16 +828,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final val = double.tryParse(controller.text.trim());
+                      Navigator.of(sheetContext).pop();
+
                       if (val != null) {
-                        ref.read(entryActionsProvider.notifier).logEntry(
+                        await ref.read(entryActionsProvider.notifier).logEntry(
                               habitId: item.habit.id,
                               date: date,
                               value: val,
                             );
+                        if (item.habit.isOneTime) {
+                          final repo = await ref.read(habitRepositoryProvider.future);
+                          final isMet = val >= (item.habit.targetValue ?? 1.0);
+                          await repo.updateHabit(item.habit.copyWith(
+                            completedAt: isMet ? DateTime.now().toUtc() : null,
+                          ));
+                          ref.invalidate(todayDashboardProvider);
+                          ref.invalidate(habitListProvider);
+                        }
                       }
-                      Navigator.pop(sheetContext);
                     },
                     child: const Text('Save'),
                   ),

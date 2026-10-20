@@ -170,14 +170,14 @@ small toggle at the top.
    panel navigation skips Heatmap for `isOneTime == true`.
 
 **Acceptance criteria for PROD-02:**
-- [ ] Toggle appears at top of Add screen; defaults to "Habit."
-- [ ] Schedule section animates in/out based on toggle selection.
-- [ ] Saving with "One-time Task" sets `isOneTime = true` in ObjectBox.
-- [ ] Home screen renders one-time task cards with "One-time" badge.
-- [ ] Checked one-time tasks show strikethrough + reduced opacity.
-- [ ] Heatmap panel hidden for one-time tasks.
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] Toggle appears at top of Add screen; defaults to "Habit."
+- [x] Schedule section animates in/out based on toggle selection.
+- [x] Saving with "One-time Task" sets `isOneTime = true` in ObjectBox.
+- [x] Home screen renders one-time task cards with "One-time" badge.
+- [x] Checked one-time tasks show strikethrough + reduced opacity.
+- [x] Heatmap panel hidden for one-time tasks.
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass.
 
 ---
 
@@ -639,47 +639,57 @@ isActive   bool
 
 ## Latest completed task
 
-**Task ID:** PROD-01 — Data model expansion
+**Task ID:** PROD-02 — One-time task support
 
 - Implemented:
-  - `HabitEntity` (`lib/data/database/habit_entity.dart`): Added `description` (`String?`), `isOneTime` (`bool`, default `false`), and `completedAt` (`int?`).
-  - `HabitDto` (`lib/data/models/dtos/habit_dto.dart`): Added `description`, `isOneTime`, and `completedAt` with updated `copyWith`, `toJson`, `fromJson`, `operator ==`, `hashCode`, and `toString`.
-  - `DayNoteDto` (`lib/data/models/dtos/day_note_dto.dart`) & `DayNoteEntity` (`lib/data/database/day_note_entity.dart`): Scoped day note with `id`, `habitId`, `date`, `note`, `createdAt`, `updatedAt`.
-  - `AiSettingsDto` (`lib/data/models/dtos/ai_settings_dto.dart`) & `AiSettingsEntity` (`lib/data/database/ai_settings_entity.dart`): LLM API settings singleton storing `apiEndpoint`, `apiKey`, `selectedPersona`, and `updatedAt`.
-  - `QuoteDto` (`lib/data/models/dtos/quote_dto.dart`) & `QuoteEntity` (`lib/data/database/quote_entity.dart`): Splash quote pool model storing `id`, `text`, `author`, `dayOfYear`, and `isActive`.
-  - Registered all new entities and added typed box accessors in `lib/data/database/app_database.dart` (`habitBox`, `habitEntryBox`, `habitLimitBox`, `habitScheduleBox`, `dayNoteBox`, `aiSettingsBox`, `quoteBox`).
-  - Exported all new DTOs in `lib/data/models/dtos/dtos.dart`.
-  - Regenerated `lib/objectbox.g.dart` and `lib/objectbox-model.json` via `dart run build_runner build --delete-conflicting-outputs`.
-  - Added comprehensive entity mapping, CRUD, and DTO round-trip tests to `test/database_test.dart`.
+  - `lib/presentation/screens/add/add_habit_screen.dart`:
+    - Added minimal 40 px segmented toggle between "Habit" (default) and "One-time Task" using `AppColors.surface` and selected `habitColor` chip.
+    - Animated collapse/expand (`AnimatedSize`) of the Schedule section when toggling between habit and one-time task.
+    - Dynamic labels, hints, and validators for habit vs task.
+    - Persisting `isOneTime: _isOneTime` via `HabitRepository`.
+  - `lib/data/repositories/habit_repository.dart`:
+    - Extended `createHabit` with optional `isOneTime` parameter.
+    - Extended `updateHabit` to update `description`, `isOneTime`, and `completedAt`.
+  - `lib/application/providers/dashboard_providers.dart`:
+    - Updated `todayDashboardProvider` to treat one-time tasks as scheduled for today and mark status as `DayStatus.met` when `completedAt != null` or `entry.value > 0`.
+  - `lib/presentation/widgets/habit_card.dart`:
+    - Added "One-time" badge next to task name with muted `AppColors.mutedGrey`.
+    - Subtle strikethrough decoration on task name and 50% opacity on card when checked/completed.
+    - Omitted Heatmap from panel sequence for one-time tasks (`_panelTitles` returns `['Details']`), skipping heatmap directly.
+  - `lib/presentation/widgets/details_panel.dart`:
+    - Displays `Task Type: One-time Task` and formatted `Completed: ...` date timestamp when finished.
+  - `lib/presentation/screens/home/home_screen.dart`:
+    - Wired checkmark and numeric completion tapping to set/clear `completedAt` on one-time tasks.
+    - Updated delete dialog and snackbars to recognize tasks vs habits.
+  - `test/widget_test.dart`:
+    - Added widget test verifying AddHabitScreen toggle and Schedule section animation.
+    - Added widget test verifying one-time task card badge, completion strikethrough, 50% opacity, and Heatmap panel omission.
 - Files changed:
-  - `lib/data/database/habit_entity.dart` (modified)
-  - `lib/data/models/dtos/habit_dto.dart` (modified)
-  - `lib/data/database/day_note_entity.dart` (created)
-  - `lib/data/models/dtos/day_note_dto.dart` (created)
-  - `lib/data/database/ai_settings_entity.dart` (created)
-  - `lib/data/models/dtos/ai_settings_dto.dart` (created)
-  - `lib/data/database/quote_entity.dart` (created)
-  - `lib/data/models/dtos/quote_dto.dart` (created)
-  - `lib/data/database/app_database.dart` (modified)
-  - `lib/data/models/dtos/dtos.dart` (modified)
-  - `lib/objectbox.g.dart` (regenerated)
-  - `lib/objectbox-model.json` (regenerated)
-  - `test/database_test.dart` (modified)
+  - `lib/presentation/screens/add/add_habit_screen.dart` (modified)
+  - `lib/data/repositories/habit_repository.dart` (modified)
+  - `lib/application/providers/dashboard_providers.dart` (modified)
+  - `lib/presentation/widgets/habit_card.dart` (modified)
+  - `lib/presentation/widgets/details_panel.dart` (modified)
+  - `lib/presentation/screens/home/home_screen.dart` (modified)
   - `test/widget_test.dart` (modified)
 - Tests/checks run:
-  - `flutter analyze lib/` → `No issues found! (ran in 4.1s)`
-  - `flutter test` → `All tests passed! (86/86 passed)`
+  - `flutter analyze lib/` → `No issues found! (ran in 5.5s)`
+  - `flutter test` → `All tests passed! (88/88 passed)`
 - Observed result:
-  - Zero analysis errors or warnings in `lib/`.
-  - All 86 tests pass across database, repository, domain, and widget suites.
+  - Zero analysis issues in `lib/`.
+  - All 88 tests pass across all suites.
+
+## Previous completed tasks
+
+- **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
 
 ## Current task
 
-**PROD-02** — One-time task support
+**PROD-03** — Descriptions + Day Notes
 
 - Status: Not started
-- Goal: Add toggle to Add Habit screen, conditionally show/hide schedule section, render "One-time" badge, strikethrough/opacity upon completion on HabitCard, and adjust panel sequence to omit Heatmap for one-time tasks.
+- Goal: Add optional description field in Add/Edit habit screen (below icon picker); surface descriptions in expanded details panel; surface notepad button on single card selection in header to open DayNoteBottomSheet; add Notes panel to card carousel showing recent 7 notes; implement DayNoteRepository and providers.
 
 ## Next action
 
-Execute **PROD-02**: Update `add_habit_screen.dart`, `habit_card.dart`, and `home_screen.dart` to support one-time tasks.
+Execute **PROD-03**: Create `DayNoteRepository`, wire providers, add description field to Add screen, create `DayNoteBottomSheet`, and add Notes panel to expanded habit card.
