@@ -116,5 +116,25 @@ final aiSettingsRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AiSettingsRepositoryRef = FutureProviderRef<AiSettingsRepository>;
+String _$aiConversationRepositoryHash() =>
+    r'4a3dd89426c23241d944d06da96bb8cb1886feed';
+
+/// See also [aiConversationRepository].
+@ProviderFor(aiConversationRepository)
+final aiConversationRepositoryProvider =
+    FutureProvider<AiConversationRepository>.internal(
+      aiConversationRepository,
+      name: r'aiConversationRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$aiConversationRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AiConversationRepositoryRef =
+    FutureProviderRef<AiConversationRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -6,6 +6,8 @@ import 'habit_limit_entity.dart';
 import 'habit_schedule_entity.dart';
 import 'day_note_entity.dart';
 import 'ai_settings_entity.dart';
+import 'ai_conversation_entity.dart';
+import 'ai_message_entity.dart';
 import 'quote_entity.dart';
 
 class AppDatabase {
@@ -46,5 +48,7 @@ class AppDatabase {
   static Box<HabitScheduleEntity> get habitScheduleBox => instance.box<HabitScheduleEntity>();
   static Box<DayNoteEntity> get dayNoteBox => instance.box<DayNoteEntity>();
   static Box<AiSettingsEntity> get aiSettingsBox => instance.box<AiSettingsEntity>();
+  static Box<AiConversationEntity> get aiConversationBox => instance.box<AiConversationEntity>();
+  static Box<AiMessageEntity> get aiMessageBox => instance.box<AiMessageEntity>();
   static Box<QuoteEntity> get quoteBox => instance.box<QuoteEntity>();
 }

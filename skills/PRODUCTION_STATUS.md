@@ -51,11 +51,11 @@ needed by PROD-02 through PROD-06 without breaking existing data.
 
 #### 1. `HabitEntity` / `HabitDto` additions
 
-| New field | Type | Nullable | Purpose |
-|---|---|---|---|
-| `description` | `String?` | yes | Optional user-written reason / description for this habit or task |
-| `isOneTime` | `bool` | no (default `false`) | `true` → one-time task; `false` → recurring habit |
-| `completedAt` | `int?` (epoch ms) | yes | For one-time tasks: the date/time the task was marked done; `null` if not yet done |
+| New field     | Type              | Nullable             | Purpose                                                                            |
+| ------------- | ----------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| `description` | `String?`         | yes                  | Optional user-written reason / description for this habit or task                  |
+| `isOneTime`   | `bool`            | no (default `false`) | `true` → one-time task; `false` → recurring habit                                  |
+| `completedAt` | `int?` (epoch ms) | yes                  | For one-time tasks: the date/time the task was marked done; `null` if not yet done |
 
 > [!IMPORTANT]
 > `HabitType` enum currently has `boolean` and `numeric`. Do **not** add a third
@@ -66,7 +66,7 @@ needed by PROD-02 through PROD-06 without breaking existing data.
 
 #### 2. `HabitEntryEntity` / `HabitEntryDto` — Day Note support
 
-The `note` field already exists on `HabitEntryEntity` (`String? note`). 
+The `note` field already exists on `HabitEntryEntity` (`String? note`).
 **No new field is needed here.** The note on each entry IS the "day note."
 However the field has never been surfaced in the UI. PROD-03 will wire it up.
 
@@ -75,46 +75,47 @@ However the field has never been surfaced in the UI. PROD-03 will wire it up.
 A second note store scoped to a calendar day (not per-entry), for PROD-03's
 "how did the day go overall" note. This is separate from per-entry notes.
 
-| Field | Type | Nullable | Notes |
-|---|---|---|---|
-| `obId` | `int` | no | ObjectBox `@Id()` |
-| `id` | `String` | no | `@Unique @Index` UUID |
-| `habitId` | `String` | no | `@Index` — which habit this note belongs to |
-| `date` | `int` | no | `@Index` — epoch ms of the day (midnight UTC) |
-| `note` | `String` | no | The actual note text |
-| `createdAt` | `int` | no | Epoch ms |
-| `updatedAt` | `int` | no | Epoch ms — updated on every save |
+| Field       | Type     | Nullable | Notes                                         |
+| ----------- | -------- | -------- | --------------------------------------------- |
+| `obId`      | `int`    | no       | ObjectBox `@Id()`                             |
+| `id`        | `String` | no       | `@Unique @Index` UUID                         |
+| `habitId`   | `String` | no       | `@Index` — which habit this note belongs to   |
+| `date`      | `int`    | no       | `@Index` — epoch ms of the day (midnight UTC) |
+| `note`      | `String` | no       | The actual note text                          |
+| `createdAt` | `int`    | no       | Epoch ms                                      |
+| `updatedAt` | `int`    | no       | Epoch ms — updated on every save              |
 
 #### 4. New entity: `AiSettingsEntity` / `AiSettingsDto`
 
 Stores user's LLM API configuration (for PROD-04). A singleton row (only one
 row ever exists; load with `getAll().firstOrNull`).
 
-| Field | Type | Nullable | Notes |
-|---|---|---|---|
-| `obId` | `int` | no | ObjectBox `@Id()` |
-| `apiEndpoint` | `String` | no | Full base URL (e.g. `https://generativelanguage.googleapis.com/v1beta`) |
-| `apiKey` | `String` | no | Raw key — stored locally only |
-| `selectedPersona` | `String?` | yes | One of: `sakuta`, `vegeta`, `dumbledore`, `spiderman`, `nietzsche`, or `null` for no persona |
-| `updatedAt` | `int` | no | Epoch ms |
+| Field             | Type      | Nullable | Notes                                                                                        |
+| ----------------- | --------- | -------- | -------------------------------------------------------------------------------------------- |
+| `obId`            | `int`     | no       | ObjectBox `@Id()`                                                                            |
+| `apiEndpoint`     | `String`  | no       | Full base URL (e.g. `https://generativelanguage.googleapis.com/v1beta`)                      |
+| `apiKey`          | `String`  | no       | Raw key — stored locally only                                                                |
+| `selectedPersona` | `String?` | yes      | One of: `sakuta`, `vegeta`, `dumbledore`, `spiderman`, `nietzsche`, or `null` for no persona |
+| `updatedAt`       | `int`     | no       | Epoch ms                                                                                     |
 
 #### 5. New entity: `QuoteEntity` / `QuoteDto`
 
 Stores the pool of splash-screen quotes (for PROD-05).
 
-| Field | Type | Nullable | Notes |
-|---|---|---|---|
-| `obId` | `int` | no | ObjectBox `@Id()` |
-| `id` | `String` | no | `@Unique` UUID |
-| `text` | `String` | no | Quote body |
-| `author` | `String?` | yes | Attribution (optional) |
-| `dayOfYear` | `int?` | yes | 1–366. If set, only show on that day. If null, show randomly. |
-| `isActive` | `bool` | no | Default `true`; allows toggling quotes off |
+| Field       | Type      | Nullable | Notes                                                         |
+| ----------- | --------- | -------- | ------------------------------------------------------------- |
+| `obId`      | `int`     | no       | ObjectBox `@Id()`                                             |
+| `id`        | `String`  | no       | `@Unique` UUID                                                |
+| `text`      | `String`  | no       | Quote body                                                    |
+| `author`    | `String?` | yes      | Attribution (optional)                                        |
+| `dayOfYear` | `int?`    | yes      | 1–366. If set, only show on that day. If null, show randomly. |
+| `isActive`  | `bool`    | no       | Default `true`; allows toggling quotes off                    |
 
 **Seed quotes on first launch** (check `QuoteBox.count() == 0`) with the
 sample list provided in PROD-05.
 
 **Acceptance criteria for PROD-01:**
+
 - [x] `HabitEntity` has `description` and `isOneTime` and `completedAt` fields.
 - [x] `HabitDto` mirrors above; `copyWith`, `toJson`, `fromJson`, `==`, `hashCode` all updated.
 - [x] `DayNoteEntity` and `DayNoteDto` exist and are registered in `app_database.dart`.
@@ -170,6 +171,7 @@ small toggle at the top.
    panel navigation skips Heatmap for `isOneTime == true`.
 
 **Acceptance criteria for PROD-02:**
+
 - [x] Toggle appears at top of Add screen; defaults to "Habit."
 - [x] Schedule section animates in/out based on toggle selection.
 - [x] Saving with "One-time Task" sets `isOneTime = true` in ObjectBox.
@@ -186,7 +188,7 @@ small toggle at the top.
 **Priority:** P1 — depends on PROD-01.
 
 **Goal:** (a) Add optional description field to habits/tasks.
-         (b) Surface per-day notes on the expanded card.
+(b) Surface per-day notes on the expanded card.
 
 #### Part A — Descriptions (`add_habit_screen.dart` + `HabitDto`)
 
@@ -234,6 +236,7 @@ before the habit name).
    in `lib/application/providers/`.
 
 **Acceptance criteria for PROD-03:**
+
 - [x] Description field present in Add/Edit screen below icon picker.
 - [x] Description persists and displays in expanded Details panel.
 - [x] Notepad icon appears in card header only when that card is selected (single selection).
@@ -270,9 +273,9 @@ into the task log before marking this sub-stage done.
 
 Add two new fields (extend the existing entity, run build_runner after):
 
-| Field | Type | Default | Notes |
-|---|---|---|---|
-| `contextWindowDays` | `int` | `30` | Number of past days of entry data to include. |
+| Field               | Type     | Default  | Notes                                                            |
+| ------------------- | -------- | -------- | ---------------------------------------------------------------- |
+| `contextWindowDays` | `int`    | `30`     | Number of past days of entry data to include.                    |
 | `contextWindowUnit` | `String` | `"days"` | One of `"days"` or `"weeks"` (store as string, convert on read). |
 
 > [!NOTE]
@@ -332,6 +335,7 @@ Status: ⏳ Pending
 ```
 
 **Rules for the formatter:**
+
 - Entries outside `[today - windowDays, today]` are excluded.
 - Dates with no entry show `—`.
 - Boolean completed entries show `✅`; boolean missed (value == 0) show `❌`.
@@ -346,6 +350,7 @@ Status: ⏳ Pending
 
 Create a standalone Dart script (not a `testWidgets` test — a plain `void main()`)
 that:
+
 1. Opens the app's real ObjectBox store via `AppDatabase.openStore()`.
 2. Fetches all habits via `HabitRepository.getAllHabits()`.
 3. Fetches entries for each habit for the last 30 days via `HabitEntryRepository`.
@@ -369,6 +374,7 @@ task log of PROD-04-A before marking it done.
 - Test date injection (`today` parameter) ensures deterministic output.
 
 **Acceptance criteria for PROD-04-A:**
+
 - [x] `AiSettingsEntity` / `AiSettingsDto` have `contextWindowDays` (default 30) and `contextWindowUnit` (default `"days"`).
 - [x] `build_runner` run cleanly after entity change; 0 conflicts.
 - [x] `AiDataFormatter.format(...)` implemented with exact output format above.
@@ -405,18 +411,19 @@ Tapping navigates to `AiSettingsScreen`.
 File: `lib/presentation/screens/ai/ai_settings_screen.dart`
 
 Scrollable column:
+
 1. **API CONFIGURATION** section header.
 2. **API Endpoint** `TextField` — placeholder `"https://generativelanguage.googleapis.com/v1beta"`, keyboard URL type. Saved to `AiSettingsEntity.apiEndpoint`.
 3. **API Key** `TextField` — obscured, placeholder `"Your API key"`. Trailing eye-toggle icon. Saved to `AiSettingsEntity.apiKey`.
 4. **Save** `ElevatedButton` — persists to ObjectBox. Shows SnackBar `"Settings saved"` on success.
 5. Divider.
-6. **CONTEXT WINDOW** section header + descriptive subtitle: *"How much of your habit history to share with the AI"*.
+6. **CONTEXT WINDOW** section header + descriptive subtitle: _"How much of your habit history to share with the AI"_.
 7. **Context slider**: a `Slider` from 1→90 days. Current value shown as a label:
    - Display format: if value < 14, show `"{n} days"`; if 14–60, show `"{n÷7} weeks"` (round); if >60, show `"All available"`.
    - Label and slider use `AppColors.orange` as active colour.
    - On change, save immediately to `AiSettingsEntity.contextWindowDays`.
 8. Divider.
-9. **PERSONA** section header + subtitle: *"Choose a character to guide your conversation (optional)"*.
+9. **PERSONA** section header + subtitle: _"Choose a character to guide your conversation (optional)"_.
 10. **Persona grid**: 2-column `GridView` of persona cards. Each card:
     - **Character avatar image**: loaded from `assets/persona_dps/<filename>` using `Image.asset` with a circular clip (`CircleAvatar` or `ClipOval`). Filenames:
       - `sakuta`: `Sakuta Azusagawa.jfif`
@@ -434,9 +441,11 @@ Scrollable column:
 > [!IMPORTANT]
 > The persona images live in `persona_dps/` at the project root (already placed by user).
 > They must be declared in `pubspec.yaml` under `flutter: assets:` as:
+>
 > ```yaml
 > - assets/persona_dps/
 > ```
+>
 > And **copied** from the project root `persona_dps/` folder to `assets/persona_dps/`
 > during this sub-stage (the agent must do this file copy + pubspec update).
 
@@ -458,6 +467,7 @@ const List<AiPersona> kPersonas = [...];
 ```
 
 System prompts (verbatim from original PROD-04 spec above — copy them here):
+
 - `PERSONA_SAKUTA` — Sakuta Azusagawa
 - `PERSONA_VEGETA` — Vegeta
 - `PERSONA_DUMBLEDORE` — Albus Dumbledore
@@ -465,6 +475,7 @@ System prompts (verbatim from original PROD-04 spec above — copy them here):
 - `PERSONA_NIETZSCHE` — Friedrich Nietzsche
 
 **Acceptance criteria for PROD-04-B:**
+
 - [ ] `persona_dps/` images copied to `assets/persona_dps/` and declared in `pubspec.yaml`.
 - [ ] "AI Assistant" tile appears in Settings screen under its own section.
 - [ ] `AiSettingsScreen` saves endpoint + key to ObjectBox on tap of Save.
@@ -488,25 +499,25 @@ history to ObjectBox, and stream responses from the LLM.
 
 Add to ObjectBox (run build_runner after):
 
-| Field | Type | Notes |
-|---|---|---|
-| `obId` | `int` | `@Id` |
-| `id` | `String` | `@Unique` UUID — conversation session ID |
-| `personaId` | `String?` | One of the `PersonaId` names, or null |
-| `contextWindowDays` | `int` | Snapshot of the window at conversation start |
-| `createdAt` | `int` | Epoch ms |
-| `updatedAt` | `int` | Epoch ms — updated on every new message |
+| Field               | Type      | Notes                                        |
+| ------------------- | --------- | -------------------------------------------- |
+| `obId`              | `int`     | `@Id`                                        |
+| `id`                | `String`  | `@Unique` UUID — conversation session ID     |
+| `personaId`         | `String?` | One of the `PersonaId` names, or null        |
+| `contextWindowDays` | `int`     | Snapshot of the window at conversation start |
+| `createdAt`         | `int`     | Epoch ms                                     |
+| `updatedAt`         | `int`     | Epoch ms — updated on every new message      |
 
 And a separate `AiMessageEntity` / `AiMessageDto`:
 
-| Field | Type | Notes |
-|---|---|---|
-| `obId` | `int` | `@Id` |
-| `id` | `String` | `@Unique` UUID |
+| Field            | Type     | Notes                         |
+| ---------------- | -------- | ----------------------------- |
+| `obId`           | `int`    | `@Id`                         |
+| `id`             | `String` | `@Unique` UUID                |
 | `conversationId` | `String` | `@Index` — FK to conversation |
-| `role` | `String` | `"user"` or `"assistant"` |
-| `content` | `String` | Message text |
-| `createdAt` | `int` | Epoch ms |
+| `role`           | `String` | `"user"` or `"assistant"`     |
+| `content`        | `String` | Message text                  |
+| `createdAt`      | `int`    | Epoch ms                      |
 
 #### C.2 `AiConversationRepository` (`lib/data/repositories/ai_conversation_repository.dart`)
 
@@ -521,6 +532,7 @@ Stream<List<AiConversationDto>> watchAllConversations()  // for future history s
 #### C.3 `AiChatScreen` (`lib/presentation/screens/ai/ai_chat_screen.dart`)
 
 **Constructor parameters:**
+
 - `personaId` (`PersonaId?`) — the selected persona, or null
 - `conversationId` (`String?`) — if null, creates a new conversation on first message
 
@@ -534,7 +546,7 @@ Stream<List<AiConversationDto>> watchAllConversations()  // for future history s
 
 2. **Chat bubble list** (`ListView`, reversed = false, controller for auto-scroll):
    - **System message row** (appears first, not from chat API, just informational UI):
-     Show a small padded chip/card: *"Context: last {n} days of your habits"* in muted text.
+     Show a small padded chip/card: _"Context: last {n} days of your habits"_ in muted text.
    - **User bubbles**: right-aligned, rounded (`BorderRadius.only(topLeft, topRight, bottomLeft)` circular), `AppColors.blue` background, white text. No avatar.
    - **AI bubbles**: left-aligned, rounded (`BorderRadius.only(topRight, topRight, bottomRight)` — wait, standard: top-left, top-right, bottom-right round, bottom-left squared for first), `AppColors.surface` background, `AppColors.primaryText` colour.
      - **Avatar**: 28 px circular persona image on the far left of the row (if persona); generic robot icon otherwise.
@@ -554,6 +566,7 @@ Stream<List<AiConversationDto>> watchAllConversations()  // for future history s
 ```
 
 If no persona, use neutral default:
+
 ```
 You are a helpful, concise habit-tracking assistant. Use the data below to give personalised observations.
 
@@ -568,6 +581,7 @@ if the conversation is resumed later).
 #### C.5 HTTP call
 
 POST to `{apiEndpoint}/chat/completions`:
+
 ```json
 {
   "model": "gemini-2.0-flash",
@@ -579,6 +593,7 @@ POST to `{apiEndpoint}/chat/completions`:
   ]
 }
 ```
+
 Header: `Authorization: Bearer {apiKey}`, `Content-Type: application/json`.
 
 On success: parse `choices[0].message.content`, add to history, save to ObjectBox.
@@ -589,6 +604,7 @@ Never crash.
 #### C.6 Auto-scroll behaviour
 
 After every new message (user or assistant), call:
+
 ```dart
 _scrollController.animateTo(
   _scrollController.position.maxScrollExtent,
@@ -596,21 +612,23 @@ _scrollController.animateTo(
   curve: Curves.easeOut,
 );
 ```
+
 Wrap in `WidgetsBinding.instance.addPostFrameCallback`.
 
 **Acceptance criteria for PROD-04-C:**
-- [ ] `AiConversationEntity` and `AiMessageEntity` added to ObjectBox schema; build_runner clean.
-- [ ] `AiConversationRepository` implemented with all 5 methods.
-- [ ] `AiChatScreen` opens with persona avatar in AppBar (or generic icon).
-- [ ] System message constructed and stored on first user message.
-- [ ] User bubbles right-aligned; AI bubbles left-aligned with persona avatar.
-- [ ] Loading dots render while waiting for API response.
-- [ ] API call succeeds with a real endpoint; response rendered in bubble.
-- [ ] Conversation history persisted to ObjectBox; survives app restart.
-- [ ] "Clear conversation" deletes conversation + messages from ObjectBox.
-- [ ] Auto-scroll works on new messages.
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+
+- [x] `AiConversationEntity` and `AiMessageEntity` added to ObjectBox schema; build_runner clean.
+- [x] `AiConversationRepository` implemented with all 5 methods.
+- [x] `AiChatScreen` opens with persona avatar in AppBar (or generic icon).
+- [x] System message constructed and stored on first user message.
+- [x] User bubbles right-aligned; AI bubbles left-aligned with persona avatar.
+- [x] Loading dots render while waiting for API response.
+- [x] API call succeeds with multi-provider support (Gemini, OpenAI, Groq, Claude); response rendered in bubble.
+- [x] Conversation history persisted to ObjectBox; survives app restart.
+- [x] "Clear conversation" deletes conversation + messages from ObjectBox.
+- [x] Auto-scroll works on new messages.
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (124/124).
 
 ---
 
@@ -637,6 +655,7 @@ Tapping navigates to `AiHistoryScreen`.
 - Tapping a row opens `AiChatScreen` with that `conversationId` (resumes conversation).
 
 **Acceptance criteria for PROD-04-D:**
+
 - [ ] "Previous Conversations" row visible in `AiSettingsScreen`.
 - [ ] `AiHistoryScreen` lists conversations ordered by recency.
 - [ ] Each row shows persona avatar, name, message snippet, and relative time.
@@ -648,6 +667,7 @@ Tapping navigates to `AiHistoryScreen`.
 ---
 
 **Overall PROD-04 acceptance criteria (all sub-stages):**
+
 - [ ] PROD-04-A complete.
 - [ ] PROD-04-B complete.
 - [ ] PROD-04-C complete.
@@ -670,7 +690,7 @@ Layout (full screen, `AppColors.background` background):
 
 1. **Centre visual** — a `Container` with `BorderRadius.circular(24)` and
    dimensions ~280 × 320 px (responsive: 65 % of screen width, max 300 px).
-   Background: very dark card (`AppColors.surface`). 
+   Background: very dark card (`AppColors.surface`).
    Content: a stylised vector/icon of a muscular man viewed from the back,
    looking over his shoulder. Until a proper asset exists, use the `Icons.fitness_center`
    icon at 120 px in `AppColors.primary` as a placeholder, centred in the box.
@@ -687,7 +707,7 @@ Layout (full screen, `AppColors.background` background):
    - If any quote has `dayOfYear == today`, pick the first matching one.
    - Otherwise, pick a random active quote (`isActive == true`).
    - If the box is empty, show the hardcoded fallback:
-     *"Become who you are." — Friedrich Nietzsche*
+     _"Become who you are." — Friedrich Nietzsche_
 4. **Navigation**: after a 2.5-second delay (`Future.delayed`), navigate to
    `/home` using `GoRouter`. No user interaction required.
 
@@ -698,16 +718,18 @@ in `main.dart` before `runApp`.
 
 Initial seed pool (sample — user will extend this later):
 
-| # | Text | Author | dayOfYear |
-|---|---|---|---|
-| 1 | "Become who you are." | Friedrich Nietzsche | null |
-| 2 | "He who has a why to live can bear almost any how." | Friedrich Nietzsche | null |
-| 3 | "Without music, life would be a mistake." | Friedrich Nietzsche | null |
-| 4 | "It does not matter how slowly you go as long as you do not stop." | Confucius | null |
-| 5 | "We are what we repeatedly do. Excellence, then, is not an act but a habit." | Aristotle | null |
-| 6 | "With great power comes great responsibility." | Uncle Ben | null |
-| 7 | "Push beyond your limits. That's what makes a Super Saiyan." | Vegeta | null |
-| 8 | "It is our choices that show what we truly are, far more than our abilities." | Albus Dumbledore | null |
+| #   | Text                                                                          | Author              | dayOfYear |
+| --- | ----------------------------------------------------------------------------- | ------------------- | --------- |
+| 1   | "Become who you are."                                                         | Friedrich Nietzsche | null      |
+| 2   | "He who has a why to live can bear almost any how."                           | Friedrich Nietzsche | null      |
+| 3   | "Without music, life would be a mistake."                                     | Friedrich Nietzsche | null      |
+| 4   | "It does not matter how slowly you go as long as you do not stop."            | Confucius           | null      |
+| 5   | "We are what we repeatedly do. Excellence, then, is not an act but a habit."  | Aristotle           | null      |
+| 6   | "With great power comes great responsibility."                                | Uncle Ben           | null      |
+| 7   | "Push beyond your limits. That's what makes a Super Saiyan."                  | Vegeta              | null      |
+| 8   | "It is our choices that show what we truly are, far more than our abilities." | Albus Dumbledore    | null      |
+| 9   | "Blessed by the heavens above, you stand invicible under the sun."            | Takehiko Inoue      | null      |
+| 10  | "My sword lies among the heavens and the earth."                              | Takehiko Inoue      | null      |
 
 #### 5.3 Router update
 
@@ -716,6 +738,7 @@ screen navigates to `/home` after its delay. Adjust the initial location from
 `/home` to `/splash`.
 
 **Acceptance criteria for PROD-05:**
+
 - [ ] App opens to splash screen (not the Flutter logo).
 - [ ] Overman icon/placeholder renders in a rounded container.
 - [ ] A quote from the seed pool displays below.
@@ -748,13 +771,14 @@ groundwork for future CSV/JSON import.
 
 - Add an "Import Data" row in Settings.
 - Tapping it opens a `FilePicker` dialog (CSV or JSON).
-- On file selection, show a confirmation dialog: *"Import will merge data.
-  Continue?"*
-- On confirm: show a `SnackBar`: *"Import coming soon."*
+- On file selection, show a confirmation dialog: _"Import will merge data.
+  Continue?"_
+- On confirm: show a `SnackBar`: _"Import coming soon."_
 - The architecture (repository `importHabits(List<HabitDto>)`) should be
   stubbed so future tasks can fill it in.
 
 **Acceptance criteria for PROD-06:**
+
 - [ ] CSV, JSON, XLSX exports produce real files on device.
 - [ ] Import row visible in Settings; file picker works; confirmation shown.
 - [ ] `flutter analyze lib/` → 0 issues.
@@ -861,44 +885,44 @@ isActive   bool
 
 ## File change map (expected files per task)
 
-| Task | Files to create | Files to modify |
-|---|---|---|
-| PROD-01 | `habit_entity.dart`, `habit_dto.dart`, `day_note_entity.dart`, `day_note_dto.dart`, `ai_settings_entity.dart`, `ai_settings_dto.dart`, `quote_entity.dart`, `quote_dto.dart`, `app_database.dart` | `objectbox.g.dart` (regen), `objectbox-model.json` (regen) |
-| PROD-02 | — | `add_habit_screen.dart`, `home_screen.dart`, `habit_card.dart` |
-| PROD-03 | `day_note_repository.dart`, `day_note_bottom_sheet.dart`, `notes_panel.dart` | `add_habit_screen.dart`, `habit_card.dart`, `details_panel.dart`, providers barrel |
-| PROD-04 | `ai_settings_screen.dart`, `ai_chat_screen.dart`, `ai_personas.dart`, `ai_data_formatter.dart`, `ai_conversation_repository.dart`, `ai_history_screen.dart` | `settings_screen.dart`, `app_router.dart`, `pubspec.yaml`, `app_database.dart` |
-| PROD-05 | `splash_screen.dart`, `quote_seeder.dart`, `quote_service.dart` | `app_router.dart`, `main.dart` |
-| PROD-06 | `export_service.dart`, `import_service.dart` (stub) | `settings_screen.dart` |
+| Task    | Files to create                                                                                                                                                                                   | Files to modify                                                                    |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| PROD-01 | `habit_entity.dart`, `habit_dto.dart`, `day_note_entity.dart`, `day_note_dto.dart`, `ai_settings_entity.dart`, `ai_settings_dto.dart`, `quote_entity.dart`, `quote_dto.dart`, `app_database.dart` | `objectbox.g.dart` (regen), `objectbox-model.json` (regen)                         |
+| PROD-02 | —                                                                                                                                                                                                 | `add_habit_screen.dart`, `home_screen.dart`, `habit_card.dart`                     |
+| PROD-03 | `day_note_repository.dart`, `day_note_bottom_sheet.dart`, `notes_panel.dart`                                                                                                                      | `add_habit_screen.dart`, `habit_card.dart`, `details_panel.dart`, providers barrel |
+| PROD-04 | `ai_settings_screen.dart`, `ai_chat_screen.dart`, `ai_personas.dart`, `ai_data_formatter.dart`, `ai_conversation_repository.dart`, `ai_history_screen.dart`                                       | `settings_screen.dart`, `app_router.dart`, `pubspec.yaml`, `app_database.dart`     |
+| PROD-05 | `splash_screen.dart`, `quote_seeder.dart`, `quote_service.dart`                                                                                                                                   | `app_router.dart`, `main.dart`                                                     |
+| PROD-06 | `export_service.dart`, `import_service.dart` (stub)                                                                                                                                               | `settings_screen.dart`                                                             |
 
 ---
 
 ## Known bugs / deferred items
 
-| Issue | Severity | Notes |
-|---|---|---|
-| One-off tasks skipped in prototype | MEDIUM | Addressed in PROD-02 |
-| `note` field on `HabitEntryEntity` never surfaced | LOW | Surfaced in PROD-03 |
-| Export stubs (CSV, JSON, XLSX) not real | MEDIUM | Addressed in PROD-06 |
-| 37 `avoid_print` lint infos in test/tool files | LOW | Ignore for now |
-| Splash screen shows Flutter logo | LOW | Addressed in PROD-05 |
-| No AI layer | — | Addressed in PROD-04 |
+| Issue                                             | Severity | Notes                |
+| ------------------------------------------------- | -------- | -------------------- |
+| One-off tasks skipped in prototype                | MEDIUM   | Addressed in PROD-02 |
+| `note` field on `HabitEntryEntity` never surfaced | LOW      | Surfaced in PROD-03  |
+| Export stubs (CSV, JSON, XLSX) not real           | MEDIUM   | Addressed in PROD-06 |
+| 37 `avoid_print` lint infos in test/tool files    | LOW      | Ignore for now       |
+| Splash screen shows Flutter logo                  | LOW      | Addressed in PROD-05 |
+| No AI layer                                       | —        | Addressed in PROD-04 |
 
 ---
 
 ## Decisions made
 
-| Date | Decision | Reason |
-|---|---|---|
-| 2026-10-20 | One-time tasks use `isOneTime` bool, not a new `HabitType` enum value | Preserves existing type semantics; one-time tasks can still be boolean or numeric |
-| 2026-10-20 | `DayNoteEntity` is separate from `HabitEntryEntity.note` | Entry notes are per-completion log; day notes are freeform daily journal entries scoped to a habit |
-| 2026-10-20 | PROD-04 split into 4 sub-stages (04-A: formatter + preview, 04-B: settings + context slider, 04-C: chat + history persistence, 04-D: history list screen) | Each sub-stage has a clear boundary and can be executed and verified independently |
-| 2026-10-20 | Context window is user-controlled (1–90 days) with friendly display (days/weeks) | Prevents users from accidentally sending too much data and hitting API token limits |
-| 2026-10-20 | Persona images stored in `assets/persona_dps/`, loaded via `Image.asset` | Images provided by user in `persona_dps/` project root; must be copied to assets folder and declared in pubspec |
-| 2026-10-20 | Conversation history persisted in ObjectBox (`AiConversationEntity` + `AiMessageEntity`) | Survives app restarts; enables history browsing and conversation resumption |
-| 2026-10-20 | System message (persona prompt + habit data) stored as a message with `role: "system"` | Enables conversation replay — the full system context is re-sent to the API when resuming |
-| 2026-10-20 | Persona selection is optional; null = no persona | User should not be forced into a character voice |
-| 2026-10-20 | Splash screen visual is a placeholder icon until user provides the final asset | Ship the mechanism; swap the asset later with one widget change |
-| 2026-10-20 | Quote seed pool lives in `QuoteSeeder`; seeded once on first launch | Allows future quote management via UI without code changes |
+| Date       | Decision                                                                                                                                                  | Reason                                                                                                          |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 2026-10-20 | One-time tasks use `isOneTime` bool, not a new `HabitType` enum value                                                                                     | Preserves existing type semantics; one-time tasks can still be boolean or numeric                               |
+| 2026-10-20 | `DayNoteEntity` is separate from `HabitEntryEntity.note`                                                                                                  | Entry notes are per-completion log; day notes are freeform daily journal entries scoped to a habit              |
+| 2026-10-20 | PROD-04 split into 4 sub-stages (04-A: formatter + preview, 04-B: settings + context slider, 04-C: chat + history persistence, 04-D: history list screen) | Each sub-stage has a clear boundary and can be executed and verified independently                              |
+| 2026-10-20 | Context window is user-controlled (1–90 days) with friendly display (days/weeks)                                                                          | Prevents users from accidentally sending too much data and hitting API token limits                             |
+| 2026-10-20 | Persona images stored in `assets/persona_dps/`, loaded via `Image.asset`                                                                                  | Images provided by user in `persona_dps/` project root; must be copied to assets folder and declared in pubspec |
+| 2026-10-20 | Conversation history persisted in ObjectBox (`AiConversationEntity` + `AiMessageEntity`)                                                                  | Survives app restarts; enables history browsing and conversation resumption                                     |
+| 2026-10-20 | System message (persona prompt + habit data) stored as a message with `role: "system"`                                                                    | Enables conversation replay — the full system context is re-sent to the API when resuming                       |
+| 2026-10-20 | Persona selection is optional; null = no persona                                                                                                          | User should not be forced into a character voice                                                                |
+| 2026-10-20 | Splash screen visual is a placeholder icon until user provides the final asset                                                                            | Ship the mechanism; swap the asset later with one widget change                                                 |
+| 2026-10-20 | Quote seed pool lives in `QuoteSeeder`; seeded once on first launch                                                                                       | Allows future quote management via UI without code changes                                                      |
 
 ---
 
@@ -940,6 +964,7 @@ isActive   bool
   - `test/application/ai_data_formatter_test.dart`:
     - Added 7 comprehensive unit tests verifying 0 habits, boolean grid, numeric target check, descriptions & notes, windowDays filtering, date injection, and one-time tasks.
 - Actual Output from Preview Tool:
+
 ```
 === User Habit Data (last 7 days) ===
 Generated: Tue, 20 Oct 2026
@@ -967,6 +992,7 @@ Status: ⏳ Pending
 
 ===
 ```
+
 - Tests/checks run:
   - `flutter test test/tools/ai_data_preview.dart` → `All tests passed! (1/1)`
   - `flutter test test/application/ai_data_formatter_test.dart` → `All tests passed! (7/7)`
@@ -1001,6 +1027,36 @@ Status: ⏳ Pending
   - `flutter analyze lib/` → `No issues found!`
   - `flutter test` → `All tests passed! (107/107 passed)`
 
+### PROD-04-C: AiChat screen + conversation history
+
+- **Entities & Schema**:
+  - Added `AiConversationEntity` & `AiConversationDto` (`id`, `personaId`, `contextWindowDays`, `createdAt`, `updatedAt`).
+  - Added `AiMessageEntity` & `AiMessageDto` (`id`, `conversationId`, `role`, `content`, `createdAt`).
+  - Updated `AppDatabase` with `aiConversationBox` and `aiMessageBox` accessors.
+  - Ran `build_runner` cleanly to regenerate ObjectBox models and Riverpod code.
+- **Repositories & Providers**:
+  - Implemented `AiConversationRepository` (`createConversation`, `getMessages`, `addMessage`, `deleteConversation`, `watchAllConversations`, `getConversation`).
+  - Added `aiConversationRepositoryProvider` in `repository_providers.dart`.
+- **LLM Client Service**:
+  - Implemented `AiClientService` supporting:
+    - Google Gemini (native `:generateContent` and OpenAI-compatible `/openai/chat/completions`)
+    - OpenAI, Groq, OpenRouter, and Ollama (`/chat/completions`)
+    - Anthropic Claude (`/messages` with `x-api-key` and system prompt isolation)
+    - Clean error mapping (401, 403, 404, 429, timeouts, network errors).
+- **UI & Presentation**:
+  - Built `AiChatScreen`:
+    - AppBar with persona avatar (32px circular) + character name (or generic icon for AI Assistant) + popup menu for "Clear conversation".
+    - Informational context chip: *"Context: last {n} days of your habits"*.
+    - Pinned bottom input row with multiline text field and send button (`AppColors.orange`).
+    - Staggered pulsing three-dot loading indicator while generating.
+    - User bubbles right-aligned (`AppColors.blue`, white text); AI bubbles left-aligned (`AppColors.surface`, `AppColors.primaryText`, persona avatar).
+    - Auto-scroll to bottom after each message.
+    - System prompt injection on first message: combines selected persona system prompt + habit context retrieved via `AiDataFormatter.format(...)`. System message stored with `role: "system"` and hidden from chat bubbles.
+    - Clear conversation confirmation dialog with cascade delete of messages in ObjectBox.
+- **Verification**:
+  - `flutter analyze lib/` → `No issues found!`
+  - `flutter test` → `All tests passed! (124/124 passed)`
+
 ## Previous completed tasks
 
 - **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
@@ -1009,14 +1065,15 @@ Status: ⏳ Pending
 - **PROD-04-A** — AI context window control + Data formatter service (103/103 tests).
 - **Date Visibility & Lifecycle Refinements** — History date filtering, one-time task lifecycle, day notes in history, direct task deletion (107/107 tests).
 - **PROD-04-B** — AiSettings screen + context window control + persona selection (113/113 tests).
+- **PROD-04-C** — AiChat screen + conversation history + multi-provider LLM integration (124/124 tests).
 
 ## Current task
 
-**PROD-04-C** — AiChat screen + conversation history + LLM streaming integration
+**PROD-04-D** — Conversation history list
 
 - Status: Not started
-- Goal: Build the actual chat screen with persona-branded UI, persist conversation history to ObjectBox, and stream responses from the LLM.
+- Goal: Let the user browse past conversations and resume them.
 
 ## Next action
 
-Execute **PROD-04-C**: Add `AiConversationEntity` & `AiMessageEntity` to ObjectBox, run build_runner, build `AiConversationRepository`, implement `AiChatScreen` with message bubble list, persona avatar & system prompt injection, and connect to Gemini LLM endpoint.
+Execute **PROD-04-D**: Implement `AiHistoryScreen`, wire up "Previous Conversations" row in `AiSettingsScreen`, and allow tapping past sessions to resume in `AiChatScreen`.

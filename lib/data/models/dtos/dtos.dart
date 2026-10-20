@@ -4,5 +4,7 @@ export 'habit_limit_dto.dart';
 export 'habit_schedule_dto.dart';
 export 'day_note_dto.dart';
 export 'ai_settings_dto.dart';
+export 'ai_conversation_dto.dart';
+export 'ai_message_dto.dart';
 export 'quote_dto.dart';
 export 'package:habit_tracker/domain/models/models.dart';

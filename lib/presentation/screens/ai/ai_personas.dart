@@ -25,6 +25,11 @@ class AiPersona {
     if (idStr == null) return null;
     return kPersonas.where((p) => p.id.name == idStr).firstOrNull;
   }
+
+  static AiPersona? fromId(PersonaId? id) {
+    if (id == null) return null;
+    return kPersonas.where((p) => p.id == id).firstOrNull;
+  }
 }
 
 const List<AiPersona> kPersonas = [

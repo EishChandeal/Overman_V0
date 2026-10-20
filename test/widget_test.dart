@@ -159,7 +159,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       const ProviderScope(
@@ -191,7 +194,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       ProviderScope(
@@ -244,7 +250,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final habit = HabitDto(
       id: 'test-expand-bool',
@@ -357,7 +366,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final habit = HabitDto(
       id: 'test-expand-num',
@@ -443,7 +455,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       ProviderScope(
@@ -480,7 +495,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       ProviderScope(
@@ -535,7 +553,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       ProviderScope(
@@ -564,7 +585,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final repo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await repo.createHabit(
@@ -627,7 +651,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final repo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await repo.createHabit(
@@ -678,7 +705,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final repo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await repo.createHabit(
@@ -727,7 +757,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final repo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await repo.createHabit(
@@ -1099,7 +1132,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await habitRepo.createHabit(
@@ -1144,7 +1180,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final now = DateTime.now();
     final yesterday = now.subtract(const Duration(days: 1));
@@ -1205,7 +1244,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await habitRepo.createHabit(
@@ -1258,7 +1300,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
     await habitRepo.createHabit(
@@ -1304,7 +1349,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     await tester.pumpWidget(
       ProviderScope(
@@ -1334,7 +1382,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final aiRepo = AiSettingsRepository(testStore);
 
@@ -1398,7 +1449,10 @@ void main() {
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
-    addTearDown(() => tester.view.resetPhysicalSize());
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
     final aiRepo = AiSettingsRepository(testStore);
     // Clear API key
@@ -1457,6 +1511,133 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(AiChatScreen), findsOneWidget);
-    expect(find.text('Ready to chat with Vegeta'), findsOneWidget);
+    expect(find.text('Chat with Vegeta'), findsOneWidget);
+  });
+
+  testWidgets('AiChatScreen renders persona header, context chip, and user/assistant messages',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final aiConvRepo = AiConversationRepository(testStore);
+    final conv = await aiConvRepo.createConversation(
+      personaId: 'sakuta',
+      contextWindowDays: 14,
+    );
+
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'system',
+      content: 'System instruction hidden from UI',
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'user',
+      content: 'How are my habits doing?',
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'assistant',
+      content: 'You are doing great, keep going!',
+    );
+
+    final aiSettingsRepo = AiSettingsRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiConversationRepositoryProvider.overrideWith((ref) async => aiConvRepo),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiSettingsRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: AiChatScreen(
+            conversationId: conv.id,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify AppBar shows persona name
+    expect(find.text('Sakuta Azusagawa'), findsOneWidget);
+
+    // Verify context chip
+    expect(find.text('Context: last 14 days of your habits'), findsOneWidget);
+
+    // System message should NOT be in the widget tree
+    expect(find.text('System instruction hidden from UI'), findsNothing);
+
+    // User and assistant bubbles should be visible
+    expect(find.text('How are my habits doing?'), findsOneWidget);
+    expect(find.text('You are doing great, keep going!'), findsOneWidget);
+
+    // Input field should be present
+    expect(find.widgetWithText(TextField, 'Message...'), findsOneWidget);
+
+    // Clear conversation option in popup menu
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    expect(find.text('Clear conversation'), findsOneWidget);
+
+    // Tap Clear conversation -> dialog appears
+    await tester.tap(find.text('Clear conversation'));
+    await tester.pumpAndSettle();
+    expect(find.text('Clear conversation?'), findsOneWidget);
+
+    // Confirm clear
+    await tester.tap(find.widgetWithText(TextButton, 'Clear'));
+    await tester.pumpAndSettle();
+
+    // Messages should be cleared and empty state displayed
+    expect(find.text('How are my habits doing?'), findsNothing);
+    expect(find.text('Chat with Sakuta Azusagawa'), findsOneWidget);
+  });
+
+  testWidgets('AiChatScreen renders generic AI Assistant header when no persona selected',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final aiConvRepo = AiConversationRepository(testStore);
+    final aiSettingsRepo = AiSettingsRepository(testStore);
+    await aiSettingsRepo.saveSettings(
+      AiSettingsDto(
+        apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta',
+        apiKey: 'key',
+        selectedPersona: null,
+        contextWindowDays: 30,
+        contextWindowUnit: 'days',
+        updatedAt: DateTime.utc(2026, 10, 20),
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiConversationRepositoryProvider.overrideWith((ref) async => aiConvRepo),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiSettingsRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AiChatScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('AI Assistant'), findsOneWidget);
+    expect(find.text('Start a Conversation'), findsOneWidget);
+    expect(find.byIcon(Icons.smart_toy_outlined), findsWidgets);
   });
 }

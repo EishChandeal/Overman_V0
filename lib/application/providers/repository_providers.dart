@@ -52,3 +52,12 @@ Future<AiSettingsRepository> aiSettingsRepository(
   final store = await ref.watch(objectBoxStoreProvider.future);
   return AiSettingsRepository(store);
 }
+
+@Riverpod(keepAlive: true)
+Future<AiConversationRepository> aiConversationRepository(
+  AiConversationRepositoryRef ref,
+) async {
+  final store = await ref.watch(objectBoxStoreProvider.future);
+  return AiConversationRepository(store);
+}
+
