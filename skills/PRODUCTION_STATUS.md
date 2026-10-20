@@ -16,7 +16,7 @@
 
 - Overall: Prototype complete (TASK-01 → TASK-12 done). Production phase begins here.
 - Last updated: 2026-10-20
-- Branch/commit: `overman` (continue from last prototype commit)
+- Branch/commit: `overman` (ea99957 — PROD-03 complete)
 - Target devices: Windows desktop (dev/test) + Android compact (412 × 917 px, primary)
 - App launches: ✅ Verified (81/81 tests passing from prototype)
 
@@ -249,158 +249,411 @@ before the habit name).
 
 **Priority:** P1 — depends on PROD-01.
 
-**Goal:** Let the user connect any OpenAI-compatible API endpoint, choose a
-persona, and have a chat conversation about their habits, powered by the live
-ObjectBox data.
+**Goal:** Let the user connect any OpenAI-compatible API endpoint, choose a persona with a character profile picture, control how much historical data is sent, persist conversation history, and have an immersive chat experience about their habits.
 
-#### 4.1 Settings entry point (`settings_screen.dart`)
+> [!IMPORTANT]
+> PROD-04 is divided into **4 explicit sub-stages** (04-A → 04-D). Execute them in order.
+> Do not combine sub-stages into a single commit. Each sub-stage has its own acceptance criteria.
 
-Add a settings row labelled **"AI Suggestions"** (use a brain/sparkle icon).
-Tapping it navigates to the new `AiSettingsScreen`.
+---
 
-#### 4.2 `AiSettingsScreen` (`lib/presentation/screens/ai/ai_settings_screen.dart`)
+### PROD-04-A — Data formatter + Preview tool
 
-Layout (top to bottom):
+**Priority:** P0 within PROD-04 — all other sub-stages depend on this.
 
-1. **API Endpoint field** — `TextField`, placeholder `"https://..."`,
-   keyboard type URL, stores to `AiSettingsDto.apiEndpoint`.
-2. **API Key field** — `TextField`, obscure text, placeholder `"sk-..."`,
-   stores to `AiSettingsDto.apiKey`. Show a small eye-toggle icon.
-3. **"Save" button** — persists `AiSettingsEntity` to ObjectBox.
-4. Divider + section header: **"Persona (optional)"**
-5. **Persona grid**: 2-column grid of persona cards. Each card shows:
-   - Character name
-   - Short 1-sentence tagline (see list below)
-   - A selection ring when active (uses `habitColor`-style accent, here use
-     the app's orange accent `AppColors.primary`).
-   - Selecting a card sets `selectedPersona`; selecting the same card again
-     deselects (sets to `null` — "no persona / default").
-6. **"Start Chat" button** (bottom, primary style) — navigates to `AiChatScreen`.
-   Disabled if `apiEndpoint` or `apiKey` is empty.
+**Goal:** Build `AiDataFormatter`, wire it to live ObjectBox data, and produce a
+**console-visible and document-exportable preview** of exactly what will be sent
+to the LLM. The agent must run the preview script and paste the actual output
+into the task log before marking this sub-stage done.
 
-#### 4.3 Personas — full system prompt catalogue
+#### A.1 Schema additions to `AiSettingsEntity` / `AiSettingsDto`
 
-Store these verbatim as constants in
-`lib/presentation/screens/ai/ai_personas.dart`:
+Add two new fields (extend the existing entity, run build_runner after):
 
-```
-PERSONA_SAKUTA
-Name: Sakuta Azusagawa
-Tagline: Laid-back, warm, and oddly wise.
-System prompt:
-"You are Sakuta Azusagawa from 'Rascal Does Not Dream of Bunny Girl Senpai'.
-You help the user reflect on their habits in a calm, cheerful, and supportive way.
-You listen carefully, ask thoughtful follow-up questions, and create a safe space
-where the user feels comfortable talking about their struggles. You are respectful,
-never dismissive, and always a little dry-witted. Never say anything inappropriate.
-The user's habit data will be provided at the start of the conversation; use it
-to give personalised observations."
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `contextWindowDays` | `int` | `30` | Number of past days of entry data to include. |
+| `contextWindowUnit` | `String` | `"days"` | One of `"days"` or `"weeks"` (store as string, convert on read). |
 
-PERSONA_VEGETA
-Name: Vegeta
-Tagline: The Prince of all Saiyans demands your best.
-System prompt:
-"You are Vegeta, Prince of all Saiyans. You are proud, fiercely competitive, and
-will accept nothing less than absolute effort. You push the user to be stronger
-every single day. You acknowledge no excuses, only results. Your tone is sharp and
-demanding — but underneath it all, you know that pushing people hard is how they
-grow. Use the user's habit data to call out weakness and demand improvement."
+> [!NOTE]
+> `contextWindowDays` stores the raw integer. When unit is `"weeks"`, the UI shows
+> the value as weeks (e.g. 4 = 4 weeks = 28 days internally). The formatter always
+> works in calendar days.
 
-PERSONA_DUMBLEDORE
-Name: Albus Dumbledore
-Tagline: Ancient wisdom, patient guidance.
-System prompt:
-"You are Albus Dumbledore, Headmaster of Hogwarts, the greatest sorcerer of the
-age. You speak with patience, warmth, and a gravity that makes every word feel
-meaningful. You draw on deep wisdom to gently guide the user toward better habits,
-using metaphor, reflection, and the occasional touch of gentle humour. Use the
-user's habit data as your 'pensive' — a window into their inner world — and help
-them understand themselves better."
+#### A.2 `AiDataFormatter` (`lib/application/services/ai_data_formatter.dart`)
 
-PERSONA_SPIDERMAN
-Name: Peter Parker / Spider-Man
-Tagline: With great power comes great responsibility.
-System prompt:
-"You are Peter Parker — Spider-Man. Life hasn't been easy for you: loss, hardship,
-and sacrifice have followed you everywhere. And yet, every single time, you get
-back up. You inspire the user with that same resilience: no matter how many times
-they've failed their habit goals, what matters is that they keep showing up. Your
-tone is warm, relatable, a little self-deprecating, and deeply encouraging.
-Use the user's habit data to remind them that being their best self is always
-worth the effort."
+Static class. Single public method:
 
-PERSONA_NIETZSCHE
-Name: Friedrich Nietzsche
-Tagline: Become who you are — ruthlessly.
-System prompt:
-"You are Friedrich Nietzsche — the philosopher, the hammer, the prophet of the
-Übermensch. You do not console; you confront. You strip away comfortable illusions
-and present the user with the raw truth of their habits and choices. Your words
-carry weight, your insights are sharp, and your standard is nothing less than the
-ideal: the Übermensch — the person who creates their own values and masters
-themselves absolutely. Reference Nietzsche's philosophy: the will to power, eternal
-recurrence, amor fati, self-overcoming. Speak with authority and poetic force.
-This app is named after your philosophy — live up to it. Use the user's habit data
-to deliver an honest, unflinching assessment."
-```
-
-#### 4.4 `AiChatScreen` (`lib/presentation/screens/ai/ai_chat_screen.dart`)
-
-1. **System message construction** (sent as the first message, never shown to user):
-   - Persona system prompt (if selected), or a neutral default: `"You are a
-     helpful habit-tracking assistant. Be concise and supportive."`.
-   - Followed by a structured data dump of all habits + recent 30 days of
-     entries, formatted as human-readable plain text (not raw JSON). Example
-     structure:
-     ```
-     === User Habit Data (last 30 days) ===
-     Habit: "Morning Run" | Type: boolean | Streak: 5 days
-       Mon 14 Oct: ✅  Tue 15 Oct: ✅  ...
-     Habit: "Water intake" | Type: numeric | Unit: glasses | Target: 8
-       Mon 14 Oct: 7  Tue 15 Oct: 8  ...
-     One-time Task: "Read 50 pages" | Status: Pending
-     ===
-     ```
-2. **Chat UI**: standard bubble layout.
-   - User messages: right-aligned, `AppColors.primary` background.
-   - AI messages: left-aligned, `AppColors.surface` background.
-   - Scrollable `ListView` that snaps to the bottom on new messages.
-3. **Input row** at the bottom: `TextField` + send `IconButton`.
-4. **HTTP call**: use `http` package (already in `pubspec.yaml` — add if
-   missing). POST to `{apiEndpoint}/chat/completions` with:
-   ```json
-   {
-     "model": "gemini-2.0-flash",
-     "messages": [ ... full history ... ]
-   }
-   ```
-   Include `Authorization: Bearer {apiKey}` header.
-   This is deliberately generic so it works with any OpenAI-compatible endpoint
-   (Gemini, OpenAI, Groq, etc.).
-5. Show a loading indicator (three animated dots) while awaiting response.
-6. Error handling: on HTTP error, show a `SnackBar` with the error message.
-   Do not crash.
-
-#### 4.5 Data formatter
-
-Create `lib/application/services/ai_data_formatter.dart` with a single
-static method:
 ```dart
-static String formatHabitsForAi(List<HabitDto> habits, Map<String, List<HabitEntryDto>> entries)
+class AiDataFormatter {
+  /// Formats [habits] and their [entriesByHabitId] (only entries within
+  /// [windowDays] calendar days back from [today]) into a plain-text block
+  /// suitable for sending to an LLM as part of a system prompt.
+  ///
+  /// [dayNotesByHabitId] is optional — include if not null/empty.
+  static String format({
+    required List<HabitDto> habits,
+    required Map<String, List<HabitEntryDto>> entriesByHabitId,
+    Map<String, List<DayNoteDto>>? dayNotesByHabitId,
+    required int windowDays,
+    DateTime? today,         // injectable for testability; defaults to DateTime.now()
+  })
+}
 ```
-Returns the plain-text structured dump described in 4.4.
 
-**Acceptance criteria for PROD-04:**
-- [ ] "AI Suggestions" row visible in Settings screen.
-- [ ] `AiSettingsScreen` saves endpoint + key + persona to ObjectBox.
-- [ ] All 5 persona cards render with correct names and taglines.
-- [ ] Selecting / deselecting a persona updates stored `selectedPersona`.
-- [ ] `AiChatScreen` constructs and sends system message with habit data on first open.
-- [ ] Chat bubbles render correctly; scroll to bottom on new message.
-- [ ] HTTP errors shown as SnackBar; app does not crash.
-- [ ] `AiDataFormatter.formatHabitsForAi` covered by a unit test.
+**Output format (exact structure — copy this verbatim into the implementation):**
+
+```
+=== User Habit Data (last {windowDays} days) ===
+Generated: {Mon, 20 Oct 2026}
+
+--- Habit: "Morning Run" ---
+Type: Habit (boolean) | Schedule: Daily | Streak: 5 days | Started: 1 Jan 2026
+Description: Run at least 3 km each morning to build cardiovascular endurance.
+  Mon 14 Oct ✅   Tue 15 Oct ✅   Wed 16 Oct ❌   Thu 17 Oct ✅   Fri 18 Oct ✅
+  Sat 19 Oct ✅   Sun 20 Oct —
+  Notes:
+    [Mon 14 Oct] "Felt strong today, hit 4 km."
+    [Wed 16 Oct] "Skipped due to rain."
+
+--- Habit: "Water Intake" ---
+Type: Habit (numeric) | Unit: glasses | Target: 8 | Schedule: Daily | Streak: 3 days
+  Mon 14 Oct  7   Tue 15 Oct  8 ✅  Wed 16 Oct  5   Thu 17 Oct  8 ✅  Fri 18 Oct  8 ✅
+  Sat 19 Oct  6   Sun 20 Oct  —
+
+--- One-time Task: "Read 50 Pages" ---
+Status: ✅ Completed on Mon 14 Oct 2026
+Description: Finish chapter 3 of Atomic Habits.
+
+--- One-time Task: "File Taxes" ---
+Status: ⏳ Pending
+
+===
+```
+
+**Rules for the formatter:**
+- Entries outside `[today - windowDays, today]` are excluded.
+- Dates with no entry show `—`.
+- Boolean completed entries show `✅`; boolean missed (value == 0) show `❌`.
+- Numeric entries show the raw value; if value >= target, append `✅`.
+- For one-time tasks, skip the entry day grid. Show status and completedAt only.
+- Day notes for a habit are shown under the entry grid (if any notes exist for
+  the window period).
+- Descriptions are shown when non-null/non-empty.
+- If no habits exist, return `"No habit data available."`.
+
+#### A.3 Preview script (`test/tools/ai_data_preview.dart`)
+
+Create a standalone Dart script (not a `testWidgets` test — a plain `void main()`)
+that:
+1. Opens the app's real ObjectBox store via `AppDatabase.openStore()`.
+2. Fetches all habits via `HabitRepository.getAllHabits()`.
+3. Fetches entries for each habit for the last 30 days via `HabitEntryRepository`.
+4. Fetches day notes for each habit via `DayNoteRepository.getNotesForHabit`.
+5. Calls `AiDataFormatter.format(...)` with the live data.
+6. Prints the result to stdout (plain text — no ANSI colours).
+7. Also writes the result to `test/tools/ai_data_preview_output.txt`.
+
+Run with: `dart run test/tools/ai_data_preview.dart`
+
+The agent **must** run this script and paste the actual terminal output into the
+task log of PROD-04-A before marking it done.
+
+#### A.4 Unit tests (`test/application/ai_data_formatter_test.dart`)
+
+- Test with 0 habits → returns `"No habit data available."`.
+- Test with 1 boolean habit, 3 entries in window → correct ✅/❌/— grid.
+- Test with 1 numeric habit, entry at target → appends ✅.
+- Test with description and day notes → both appear in output.
+- Test with `windowDays = 7` → entries older than 7 days not shown.
+- Test date injection (`today` parameter) ensures deterministic output.
+
+**Acceptance criteria for PROD-04-A:**
+- [ ] `AiSettingsEntity` / `AiSettingsDto` have `contextWindowDays` (default 30) and `contextWindowUnit` (default `"days"`).
+- [ ] `build_runner` run cleanly after entity change; 0 conflicts.
+- [ ] `AiDataFormatter.format(...)` implemented with exact output format above.
+- [ ] Preview script runs: `dart run test/tools/ai_data_preview.dart` produces output.
+- [ ] Actual terminal output pasted into task log (copy of real output, not a mock).
+- [ ] `ai_data_preview_output.txt` written to `test/tools/`.
+- [ ] All unit tests in `ai_data_formatter_test.dart` pass.
 - [ ] `flutter analyze lib/` → 0 issues.
 - [ ] `flutter test` → all tests pass.
+
+---
+
+### PROD-04-B — AiSettings screen + context window control
+
+**Priority:** Depends on PROD-04-A.
+
+**Goal:** Surface the AI configuration in Settings, let the user set their API
+credentials, choose a persona (with character avatar), and control how many
+days/weeks of history to send.
+
+#### B.1 Settings entry point
+
+In `settings_screen.dart`, add a new settings tile **above** the DATA EXPORT section:
+
+```
+Section header: AI ASSISTANT
+Row: brain/spark icon | "AI Assistant"  | subtitle: "Chat with your habit data" | › chevron
+```
+
+Tapping navigates to `AiSettingsScreen`.
+
+#### B.2 `AiSettingsScreen` layout
+
+File: `lib/presentation/screens/ai/ai_settings_screen.dart`
+
+Scrollable column:
+1. **API CONFIGURATION** section header.
+2. **API Endpoint** `TextField` — placeholder `"https://generativelanguage.googleapis.com/v1beta"`, keyboard URL type. Saved to `AiSettingsEntity.apiEndpoint`.
+3. **API Key** `TextField` — obscured, placeholder `"Your API key"`. Trailing eye-toggle icon. Saved to `AiSettingsEntity.apiKey`.
+4. **Save** `ElevatedButton` — persists to ObjectBox. Shows SnackBar `"Settings saved"` on success.
+5. Divider.
+6. **CONTEXT WINDOW** section header + descriptive subtitle: *"How much of your habit history to share with the AI"*.
+7. **Context slider**: a `Slider` from 1→90 days. Current value shown as a label:
+   - Display format: if value < 14, show `"{n} days"`; if 14–60, show `"{n÷7} weeks"` (round); if >60, show `"All available"`.
+   - Label and slider use `AppColors.orange` as active colour.
+   - On change, save immediately to `AiSettingsEntity.contextWindowDays`.
+8. Divider.
+9. **PERSONA** section header + subtitle: *"Choose a character to guide your conversation (optional)"*.
+10. **Persona grid**: 2-column `GridView` of persona cards. Each card:
+    - **Character avatar image**: loaded from `assets/persona_dps/<filename>` using `Image.asset` with a circular clip (`CircleAvatar` or `ClipOval`). Filenames:
+      - `sakuta`: `Sakuta Azusagawa.jfif`
+      - `vegeta`: `Vegeta.jpg`
+      - `dumbledore`: `Albus Dumbledore.jpg`
+      - `spiderman`: `Spider-Man.jpg`
+      - `nietzsche`: `Friedrich Nietzsche.jpg`
+    - Character **name** (bold, 13 sp).
+    - Short **tagline** (11 sp, muted grey, italic).
+    - A coloured **border ring** (`AppColors.orange`, width 2.5) when selected; subtle border otherwise.
+    - Tapping selects; tapping again deselects (sets to null).
+11. **"Start Chat"** `ElevatedButton` at bottom — navigates to `AiChatScreen`.
+    - Disabled (greyed out) if `apiEndpoint` or `apiKey` is empty.
+
+> [!IMPORTANT]
+> The persona images live in `persona_dps/` at the project root (already placed by user).
+> They must be declared in `pubspec.yaml` under `flutter: assets:` as:
+> ```yaml
+> - assets/persona_dps/
+> ```
+> And **copied** from the project root `persona_dps/` folder to `assets/persona_dps/`
+> during this sub-stage (the agent must do this file copy + pubspec update).
+
+#### B.3 Persona definitions (`lib/presentation/screens/ai/ai_personas.dart`)
+
+```dart
+enum PersonaId { sakuta, vegeta, dumbledore, spiderman, nietzsche }
+
+class AiPersona {
+  final PersonaId id;
+  final String name;
+  final String tagline;
+  final String assetPath;   // e.g. 'assets/persona_dps/Vegeta.jpg'
+  final String systemPrompt;
+  const AiPersona({...});
+}
+
+const List<AiPersona> kPersonas = [...];
+```
+
+System prompts (verbatim from original PROD-04 spec above — copy them here):
+- `PERSONA_SAKUTA` — Sakuta Azusagawa
+- `PERSONA_VEGETA` — Vegeta
+- `PERSONA_DUMBLEDORE` — Albus Dumbledore
+- `PERSONA_SPIDERMAN` — Peter Parker / Spider-Man
+- `PERSONA_NIETZSCHE` — Friedrich Nietzsche
+
+**Acceptance criteria for PROD-04-B:**
+- [ ] `persona_dps/` images copied to `assets/persona_dps/` and declared in `pubspec.yaml`.
+- [ ] "AI Assistant" tile appears in Settings screen under its own section.
+- [ ] `AiSettingsScreen` saves endpoint + key to ObjectBox on tap of Save.
+- [ ] Context slider renders, saves `contextWindowDays` immediately on change.
+- [ ] All 5 persona cards render with avatar image, name, tagline, and correct selection ring.
+- [ ] Selecting / deselecting updates stored `selectedPersona`.
+- [ ] "Start Chat" button is disabled when credentials are empty.
+- [ ] `flutter analyze lib/` → 0 issues.
+- [ ] `flutter test` → all tests pass.
+
+---
+
+### PROD-04-C — AiChat screen + conversation history
+
+**Priority:** Depends on PROD-04-B.
+
+**Goal:** Build the actual chat screen with persona-branded UI, persist conversation
+history to ObjectBox, and stream responses from the LLM.
+
+#### C.1 New entity: `AiConversationEntity` / `AiConversationDto`
+
+Add to ObjectBox (run build_runner after):
+
+| Field | Type | Notes |
+|---|---|---|
+| `obId` | `int` | `@Id` |
+| `id` | `String` | `@Unique` UUID — conversation session ID |
+| `personaId` | `String?` | One of the `PersonaId` names, or null |
+| `contextWindowDays` | `int` | Snapshot of the window at conversation start |
+| `createdAt` | `int` | Epoch ms |
+| `updatedAt` | `int` | Epoch ms — updated on every new message |
+
+And a separate `AiMessageEntity` / `AiMessageDto`:
+
+| Field | Type | Notes |
+|---|---|---|
+| `obId` | `int` | `@Id` |
+| `id` | `String` | `@Unique` UUID |
+| `conversationId` | `String` | `@Index` — FK to conversation |
+| `role` | `String` | `"user"` or `"assistant"` |
+| `content` | `String` | Message text |
+| `createdAt` | `int` | Epoch ms |
+
+#### C.2 `AiConversationRepository` (`lib/data/repositories/ai_conversation_repository.dart`)
+
+```dart
+Future<AiConversationDto> createConversation({String? personaId, required int contextWindowDays})
+Future<List<AiMessageDto>> getMessages(String conversationId)
+Future<AiMessageDto> addMessage({required String conversationId, required String role, required String content})
+Future<void> deleteConversation(String conversationId)   // cascade deletes messages
+Stream<List<AiConversationDto>> watchAllConversations()  // for future history screen
+```
+
+#### C.3 `AiChatScreen` (`lib/presentation/screens/ai/ai_chat_screen.dart`)
+
+**Constructor parameters:**
+- `personaId` (`PersonaId?`) — the selected persona, or null
+- `conversationId` (`String?`) — if null, creates a new conversation on first message
+
+**Layout:**
+
+1. **AppBar**:
+   - If persona selected: circular avatar image (32 px) + character name as title.
+   - If no persona: generic brain icon + "AI Assistant" as title.
+   - Background: `AppColors.surface`.
+   - Trailing: menu button (⋮) with option "Clear conversation" (calls `deleteConversation` after confirm dialog).
+
+2. **Chat bubble list** (`ListView`, reversed = false, controller for auto-scroll):
+   - **System message row** (appears first, not from chat API, just informational UI):
+     Show a small padded chip/card: *"Context: last {n} days of your habits"* in muted text.
+   - **User bubbles**: right-aligned, rounded (`BorderRadius.only(topLeft, topRight, bottomLeft)` circular), `AppColors.blue` background, white text. No avatar.
+   - **AI bubbles**: left-aligned, rounded (`BorderRadius.only(topRight, topRight, bottomRight)` — wait, standard: top-left, top-right, bottom-right round, bottom-left squared for first), `AppColors.surface` background, `AppColors.primaryText` colour.
+     - **Avatar**: 28 px circular persona image on the far left of the row (if persona); generic robot icon otherwise.
+   - **Loading indicator**: when waiting for response, show an AI bubble with three animated dots (use three `AnimatedContainer`s that pulse their opacity: 0.3 → 1.0 → 0.3 staggered by 200 ms each).
+
+3. **Input row** (pinned at bottom above keyboard):
+   - `TextField` (no border, hint `"Message..."`, max lines 4 for multiline), expands with content.
+   - Send `IconButton` (`Icons.send_rounded`, `AppColors.orange`). Disabled while loading.
+
+#### C.4 System message construction (first message, sent as `role: "system"`, never rendered in UI)
+
+```
+{persona system prompt}
+
+=== User Habit Data (last {windowDays} days) ===
+{AiDataFormatter.format(...) output}
+```
+
+If no persona, use neutral default:
+```
+You are a helpful, concise habit-tracking assistant. Use the data below to give personalised observations.
+
+=== User Habit Data (last {windowDays} days) ===
+{AiDataFormatter.format(...) output}
+```
+
+The system message is the **first element** of the `messages` array sent to the API.
+It is **stored** in `AiMessageEntity` with `role: "system"` (so it can be replayed
+if the conversation is resumed later).
+
+#### C.5 HTTP call
+
+POST to `{apiEndpoint}/chat/completions`:
+```json
+{
+  "model": "gemini-2.0-flash",
+  "messages": [
+    { "role": "system", "content": "..." },
+    { "role": "user",   "content": "..." },
+    { "role": "assistant", "content": "..." },
+    ...
+  ]
+}
+```
+Header: `Authorization: Bearer {apiKey}`, `Content-Type: application/json`.
+
+On success: parse `choices[0].message.content`, add to history, save to ObjectBox.
+On HTTP error (non-200): show SnackBar with `"Error {statusCode}: {body snippet}"`.
+On network error: show SnackBar `"Network error. Check your connection."`.
+Never crash.
+
+#### C.6 Auto-scroll behaviour
+
+After every new message (user or assistant), call:
+```dart
+_scrollController.animateTo(
+  _scrollController.position.maxScrollExtent,
+  duration: const Duration(milliseconds: 300),
+  curve: Curves.easeOut,
+);
+```
+Wrap in `WidgetsBinding.instance.addPostFrameCallback`.
+
+**Acceptance criteria for PROD-04-C:**
+- [ ] `AiConversationEntity` and `AiMessageEntity` added to ObjectBox schema; build_runner clean.
+- [ ] `AiConversationRepository` implemented with all 5 methods.
+- [ ] `AiChatScreen` opens with persona avatar in AppBar (or generic icon).
+- [ ] System message constructed and stored on first user message.
+- [ ] User bubbles right-aligned; AI bubbles left-aligned with persona avatar.
+- [ ] Loading dots render while waiting for API response.
+- [ ] API call succeeds with a real endpoint; response rendered in bubble.
+- [ ] Conversation history persisted to ObjectBox; survives app restart.
+- [ ] "Clear conversation" deletes conversation + messages from ObjectBox.
+- [ ] Auto-scroll works on new messages.
+- [ ] `flutter analyze lib/` → 0 issues.
+- [ ] `flutter test` → all tests pass.
+
+---
+
+### PROD-04-D — Conversation history list
+
+**Priority:** Depends on PROD-04-C. Can be deferred if P2 is acceptable.
+
+**Goal:** Let the user browse past conversations and resume them.
+
+#### D.1 "History" tab or button in AI Settings screen
+
+Add a "Previous Conversations" row in `AiSettingsScreen` (above "Start Chat").
+Tapping navigates to `AiHistoryScreen`.
+
+#### D.2 `AiHistoryScreen` (`lib/presentation/screens/ai/ai_history_screen.dart`)
+
+- Displays a `ListView` of past conversations, ordered by `updatedAt` descending.
+- Each row shows:
+  - Persona avatar (or robot icon if null) — 40 px circular.
+  - Persona name (or "No Persona") — bold.
+  - Snippet of last message (first 60 chars) — muted.
+  - Relative timestamp ("2 hours ago", "Yesterday") — trailing.
+- Swipe-to-delete (with confirm dialog): calls `AiConversationRepository.deleteConversation`.
+- Tapping a row opens `AiChatScreen` with that `conversationId` (resumes conversation).
+
+**Acceptance criteria for PROD-04-D:**
+- [ ] "Previous Conversations" row visible in `AiSettingsScreen`.
+- [ ] `AiHistoryScreen` lists conversations ordered by recency.
+- [ ] Each row shows persona avatar, name, message snippet, and relative time.
+- [ ] Swipe-to-delete works with confirmation.
+- [ ] Tapping a row resumes the conversation (existing messages reload).
+- [ ] `flutter analyze lib/` → 0 issues.
+- [ ] `flutter test` → all tests pass.
+
+---
+
+**Overall PROD-04 acceptance criteria (all sub-stages):**
+- [ ] PROD-04-A complete.
+- [ ] PROD-04-B complete.
+- [ ] PROD-04-C complete.
+- [ ] PROD-04-D complete.
+- [ ] `flutter analyze lib/` → 0 issues across all new files.
+- [ ] `flutter test` → all tests pass (all new tests included).
 
 ---
 
@@ -559,14 +812,38 @@ createdAt  int
 updatedAt  int
 ```
 
-### `AiSettingsEntity` (ObjectBox) — NEW in PROD-01
+### `AiSettingsEntity` (ObjectBox) — NEW in PROD-01, extended in PROD-04-A
 
 ```
-obId             int     @Id
-apiEndpoint      String
-apiKey           String
-selectedPersona  String?
-updatedAt        int
+obId                int     @Id
+apiEndpoint         String
+apiKey              String
+selectedPersona     String?
+contextWindowDays   int     NEW (default 30)   — calendar days of history to include
+contextWindowUnit   String  NEW (default "days") — "days" or "weeks" (display only)
+updatedAt           int
+```
+
+### `AiConversationEntity` (ObjectBox) — NEW in PROD-04-C
+
+```
+obId               int     @Id
+id                 String  @Unique  UUID
+personaId          String?          one of PersonaId names, or null
+contextWindowDays  int              snapshot at conversation start
+createdAt          int
+updatedAt          int
+```
+
+### `AiMessageEntity` (ObjectBox) — NEW in PROD-04-C
+
+```
+obId            int     @Id
+id              String  @Unique  UUID
+conversationId  String  @Index
+role            String           "system" | "user" | "assistant"
+content         String
+createdAt       int
 ```
 
 ### `QuoteEntity` (ObjectBox) — NEW in PROD-01
@@ -589,7 +866,7 @@ isActive   bool
 | PROD-01 | `habit_entity.dart`, `habit_dto.dart`, `day_note_entity.dart`, `day_note_dto.dart`, `ai_settings_entity.dart`, `ai_settings_dto.dart`, `quote_entity.dart`, `quote_dto.dart`, `app_database.dart` | `objectbox.g.dart` (regen), `objectbox-model.json` (regen) |
 | PROD-02 | — | `add_habit_screen.dart`, `home_screen.dart`, `habit_card.dart` |
 | PROD-03 | `day_note_repository.dart`, `day_note_bottom_sheet.dart`, `notes_panel.dart` | `add_habit_screen.dart`, `habit_card.dart`, `details_panel.dart`, providers barrel |
-| PROD-04 | `ai_settings_screen.dart`, `ai_chat_screen.dart`, `ai_personas.dart`, `ai_data_formatter.dart` | `settings_screen.dart`, `app_router.dart` |
+| PROD-04 | `ai_settings_screen.dart`, `ai_chat_screen.dart`, `ai_personas.dart`, `ai_data_formatter.dart`, `ai_conversation_repository.dart`, `ai_history_screen.dart` | `settings_screen.dart`, `app_router.dart`, `pubspec.yaml`, `app_database.dart` |
 | PROD-05 | `splash_screen.dart`, `quote_seeder.dart`, `quote_service.dart` | `app_router.dart`, `main.dart` |
 | PROD-06 | `export_service.dart`, `import_service.dart` (stub) | `settings_screen.dart` |
 
@@ -614,7 +891,11 @@ isActive   bool
 |---|---|---|
 | 2026-10-20 | One-time tasks use `isOneTime` bool, not a new `HabitType` enum value | Preserves existing type semantics; one-time tasks can still be boolean or numeric |
 | 2026-10-20 | `DayNoteEntity` is separate from `HabitEntryEntity.note` | Entry notes are per-completion log; day notes are freeform daily journal entries scoped to a habit |
-| 2026-10-20 | AI layer uses OpenAI-compatible chat completions API | Works with Gemini, OpenAI, Groq, and any proxy — user chooses the endpoint |
+| 2026-10-20 | PROD-04 split into 4 sub-stages (04-A: formatter + preview, 04-B: settings + context slider, 04-C: chat + history persistence, 04-D: history list screen) | Each sub-stage has a clear boundary and can be executed and verified independently |
+| 2026-10-20 | Context window is user-controlled (1–90 days) with friendly display (days/weeks) | Prevents users from accidentally sending too much data and hitting API token limits |
+| 2026-10-20 | Persona images stored in `assets/persona_dps/`, loaded via `Image.asset` | Images provided by user in `persona_dps/` project root; must be copied to assets folder and declared in pubspec |
+| 2026-10-20 | Conversation history persisted in ObjectBox (`AiConversationEntity` + `AiMessageEntity`) | Survives app restarts; enables history browsing and conversation resumption |
+| 2026-10-20 | System message (persona prompt + habit data) stored as a message with `role: "system"` | Enables conversation replay — the full system context is re-sent to the API when resuming |
 | 2026-10-20 | Persona selection is optional; null = no persona | User should not be forced into a character voice |
 | 2026-10-20 | Splash screen visual is a placeholder icon until user provides the final asset | Ship the mechanism; swap the asset later with one widget change |
 | 2026-10-20 | Quote seed pool lives in `QuoteSeeder`; seeded once on first launch | Allows future quote management via UI without code changes |
@@ -704,11 +985,11 @@ isActive   bool
 
 ## Current task
 
-**PROD-04** — LLM / AI Layer
+**PROD-04-A** — Data formatter + Preview tool
 
 - Status: Not started
-- Goal: Add AI Settings entry point in SettingsScreen, create AiSettingsScreen with endpoint, API key, and persona grid, implement system prompt catalog, build AiChatScreen with habit data formatter, and connect OpenAI-compatible chat completions API.
+- Goal: Extend `AiSettingsEntity` with `contextWindowDays` / `contextWindowUnit`, implement `AiDataFormatter.format(...)`, create the standalone preview script `test/tools/ai_data_preview.dart`, run it against live data and paste actual output into the task log, and write unit tests for the formatter.
 
 ## Next action
 
-Execute **PROD-04**: Build `ai_data_formatter.dart`, persona catalog `ai_personas.dart`, `AiSettingsScreen`, `AiChatScreen`, and wire into `SettingsScreen`.
+Execute **PROD-04-A**: Extend `AiSettingsEntity`, implement `AiDataFormatter`, run preview script against live ObjectBox data, paste actual output, write and pass unit tests.
