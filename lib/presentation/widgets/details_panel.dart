@@ -36,6 +36,28 @@ class DetailsPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            habit.name,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryText,
+              fontFamily: AppTheme.fontPrimary,
+            ),
+          ),
+          if (habit.description != null && habit.description!.trim().isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              habit.description!.trim(),
+              style: const TextStyle(
+                fontSize: 13,
+                fontStyle: FontStyle.italic,
+                color: AppColors.mutedGrey,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+          ],
+          const Divider(color: AppColors.surface, height: 18),
           _buildDetailRow(
             icon: Icons.calendar_today_outlined,
             title: 'Start Date',

@@ -234,14 +234,14 @@ before the habit name).
    in `lib/application/providers/`.
 
 **Acceptance criteria for PROD-03:**
-- [ ] Description field present in Add/Edit screen below icon picker.
-- [ ] Description persists and displays in expanded Details panel.
-- [ ] Notepad icon appears in card header only when that card is selected (single selection).
-- [ ] Bottom sheet opens, pre-fills existing note, saves correctly.
-- [ ] Notes panel appears in carousel; shows up to 7 recent notes.
-- [ ] `DayNoteRepository` has all three methods implemented and tested.
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] Description field present in Add/Edit screen below icon picker.
+- [x] Description persists and displays in expanded Details panel.
+- [x] Notepad icon appears in card header only when that card is selected (single selection).
+- [x] Bottom sheet opens, pre-fills existing note, saves correctly.
+- [x] Notes panel appears in carousel; shows up to 7 recent notes.
+- [x] `DayNoteRepository` has all three methods implemented and tested.
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass.
 
 ---
 
@@ -639,57 +639,76 @@ isActive   bool
 
 ## Latest completed task
 
-**Task ID:** PROD-02 — One-time task support
+**Task ID:** PROD-03 — Descriptions + Day Notes
 
 - Implemented:
-  - `lib/presentation/screens/add/add_habit_screen.dart`:
-    - Added minimal 40 px segmented toggle between "Habit" (default) and "One-time Task" using `AppColors.surface` and selected `habitColor` chip.
-    - Animated collapse/expand (`AnimatedSize`) of the Schedule section when toggling between habit and one-time task.
-    - Dynamic labels, hints, and validators for habit vs task.
-    - Persisting `isOneTime: _isOneTime` via `HabitRepository`.
+  - `lib/data/repositories/day_note_repository.dart`:
+    - Implemented `upsertNote(DayNoteDto dto)`, `getNotesForHabit(String habitId, {int limit = 7})`, `deleteNote(String noteId)`, `getNoteForDate(String habitId, DateTime date)`, and `watchNotesForHabit(String habitId)`.
   - `lib/data/repositories/habit_repository.dart`:
-    - Extended `createHabit` with optional `isOneTime` parameter.
-    - Extended `updateHabit` to update `description`, `isOneTime`, and `completedAt`.
-  - `lib/application/providers/dashboard_providers.dart`:
-    - Updated `todayDashboardProvider` to treat one-time tasks as scheduled for today and mark status as `DayStatus.met` when `completedAt != null` or `entry.value > 0`.
-  - `lib/presentation/widgets/habit_card.dart`:
-    - Added "One-time" badge next to task name with muted `AppColors.mutedGrey`.
-    - Subtle strikethrough decoration on task name and 50% opacity on card when checked/completed.
-    - Omitted Heatmap from panel sequence for one-time tasks (`_panelTitles` returns `['Details']`), skipping heatmap directly.
+    - Added cascade deletion of related day notes in `deleteHabit`.
+    - Added `getAllHabits()` helper method.
+  - Providers:
+    - Registered `dayNoteRepositoryProvider` in `lib/application/providers/repository_providers.dart`.
+    - Created `habitDayNotesProvider(habitId)` in `lib/application/providers/day_note_providers.dart`.
+    - Generated Riverpod code with `build_runner`.
+  - `lib/presentation/screens/add/add_habit_screen.dart`:
+    - Added optional description `TextFormField` (`maxLength: 300`, max 3 visible lines) directly below the icon selector.
+    - Focus-dependent character counter cleanly styled with `AppColors.mutedGrey`.
+    - Persists `description` on create and update.
   - `lib/presentation/widgets/details_panel.dart`:
-    - Displays `Task Type: One-time Task` and formatted `Completed: ...` date timestamp when finished.
+    - Displays habit name at the top.
+    - If `description` is non-null and not empty, renders it in an italic text block below the habit name.
+  - `lib/presentation/widgets/day_note_bottom_sheet.dart`:
+    - Modal bottom sheet displaying title with formatted date (e.g. `"Note for Mon, 20 Oct"`).
+    - Multiline note input field pre-populated with today's note if one exists.
+    - Save and Cancel action buttons with snackbar feedback.
+  - `lib/presentation/widgets/notes_panel.dart`:
+    - Panel in habit card carousel displaying up to 7 most recent notes with date badge and note text.
+    - Displays clean placeholder `"No notes yet. Hold the card to add one."` when no notes are recorded.
+  - `lib/presentation/widgets/habit_card.dart`:
+    - Displays notepad icon button on the left of the header when the card is selected (`widget.isSelected`).
+    - Added `'Notes'` panel into carousel sequence (`['Heatmap', 'Statistics', 'Notes', 'Details']`).
   - `lib/presentation/screens/home/home_screen.dart`:
-    - Wired checkmark and numeric completion tapping to set/clear `completedAt` on one-time tasks.
-    - Updated delete dialog and snackbars to recognize tasks vs habits.
-  - `test/widget_test.dart`:
-    - Added widget test verifying AddHabitScreen toggle and Schedule section animation.
-    - Added widget test verifying one-time task card badge, completion strikethrough, 50% opacity, and Heatmap panel omission.
+    - Wired selection bar notepad button to open `DayNoteBottomSheet` for the selected habit.
+  - Tests:
+    - Added comprehensive unit tests in `test/data/repositories_test.dart` for `DayNoteRepository` (upsert, query with limit, delete, and cascade delete on `deleteHabit`).
+    - Added widget tests in `test/widget_test.dart` for description input & persistence, `DetailsPanel` description display, notepad icon visibility on selection & bottom sheet submission, and `NotesPanel` empty/populated state.
 - Files changed:
-  - `lib/presentation/screens/add/add_habit_screen.dart` (modified)
+  - `lib/application/providers/day_note_providers.dart` (new)
+  - `lib/application/providers/day_note_providers.g.dart` (new)
+  - `lib/application/providers/providers.dart` (modified)
+  - `lib/application/providers/repository_providers.dart` (modified)
+  - `lib/application/providers/repository_providers.g.dart` (modified)
+  - `lib/data/repositories/day_note_repository.dart` (new)
   - `lib/data/repositories/habit_repository.dart` (modified)
-  - `lib/application/providers/dashboard_providers.dart` (modified)
-  - `lib/presentation/widgets/habit_card.dart` (modified)
-  - `lib/presentation/widgets/details_panel.dart` (modified)
+  - `lib/data/repositories/repositories.dart` (modified)
+  - `lib/presentation/screens/add/add_habit_screen.dart` (modified)
   - `lib/presentation/screens/home/home_screen.dart` (modified)
+  - `lib/presentation/widgets/day_note_bottom_sheet.dart` (new)
+  - `lib/presentation/widgets/details_panel.dart` (modified)
+  - `lib/presentation/widgets/habit_card.dart` (modified)
+  - `lib/presentation/widgets/notes_panel.dart` (new)
+  - `test/data/repositories_test.dart` (modified)
   - `test/widget_test.dart` (modified)
 - Tests/checks run:
-  - `flutter analyze lib/` → `No issues found! (ran in 5.5s)`
-  - `flutter test` → `All tests passed! (88/88 passed)`
+  - `flutter analyze lib/` → `No issues found!`
+  - `flutter test` → `All tests passed! (96/96 passed)`
 - Observed result:
-  - Zero analysis issues in `lib/`.
-  - All 88 tests pass across all suites.
+  - Zero analysis errors or warnings in `lib/`.
+  - All 96 tests pass across all test files.
 
 ## Previous completed tasks
 
 - **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
+- **PROD-02** — One-time task support (Toggle in Add screen, strikethrough, 50% opacity, badge, skip heatmap, 88/88 tests).
 
 ## Current task
 
-**PROD-03** — Descriptions + Day Notes
+**PROD-04** — LLM / AI Layer
 
 - Status: Not started
-- Goal: Add optional description field in Add/Edit habit screen (below icon picker); surface descriptions in expanded details panel; surface notepad button on single card selection in header to open DayNoteBottomSheet; add Notes panel to card carousel showing recent 7 notes; implement DayNoteRepository and providers.
+- Goal: Add AI Settings entry point in SettingsScreen, create AiSettingsScreen with endpoint, API key, and persona grid, implement system prompt catalog, build AiChatScreen with habit data formatter, and connect OpenAI-compatible chat completions API.
 
 ## Next action
 
-Execute **PROD-03**: Create `DayNoteRepository`, wire providers, add description field to Add screen, create `DayNoteBottomSheet`, and add Notes panel to expanded habit card.
+Execute **PROD-04**: Build `ai_data_formatter.dart`, persona catalog `ai_personas.dart`, `AiSettingsScreen`, `AiChatScreen`, and wire into `SettingsScreen`.

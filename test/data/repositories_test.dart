@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:habit_tracker/data/database/app_database.dart';
 import 'package:habit_tracker/data/repositories/repositories.dart';
+import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 
 void main() {
@@ -419,6 +420,116 @@ void main() {
 
       final active = await scheduleRepo.watchActiveScheduleForHabit(created.id).first;
       expect(active?.scheduleType, ScheduleType.daily);
+    });
+  });
+
+  group('DayNoteRepository CRUD and query operations', () {
+    test('upsertNote creates new note and updates existing note on same date', () async {
+      final store = AppDatabase.instance;
+      final noteRepo = DayNoteRepository(store);
+      final date = DateTime.utc(2026, 10, 20);
+
+      final noteDto = DayNoteDto(
+        id: 'note-1',
+        habitId: 'habit-101',
+        date: date,
+        note: 'Feeling energized and finished habit early!',
+        createdAt: DateTime.utc(2026, 10, 20, 8, 0),
+        updatedAt: DateTime.utc(2026, 10, 20, 8, 0),
+      );
+
+      await noteRepo.upsertNote(noteDto);
+
+      final fetched = await noteRepo.getNoteForDate('habit-101', date);
+      expect(fetched, isNotNull);
+      expect(fetched!.note, 'Feeling energized and finished habit early!');
+      expect(fetched.habitId, 'habit-101');
+
+      // Update the same date
+      final updatedDto = noteDto.copyWith(note: 'Updated: Actually did 2 sessions today.');
+      await noteRepo.upsertNote(updatedDto);
+
+      final updatedFetched = await noteRepo.getNoteForDate('habit-101', date);
+      expect(updatedFetched, isNotNull);
+      expect(updatedFetched!.note, 'Updated: Actually did 2 sessions today.');
+    });
+
+    test('getNotesForHabit returns most recent notes limited to limit', () async {
+      final store = AppDatabase.instance;
+      final noteRepo = DayNoteRepository(store);
+
+      for (int i = 1; i <= 10; i++) {
+        await noteRepo.upsertNote(
+          DayNoteDto(
+            id: 'note-day-$i',
+            habitId: 'habit-history',
+            date: DateTime.utc(2026, 10, i),
+            note: 'Note for day $i',
+            createdAt: DateTime.utc(2026, 10, i, 12, 0),
+            updatedAt: DateTime.utc(2026, 10, i, 12, 0),
+          ),
+        );
+      }
+
+      final notes = await noteRepo.getNotesForHabit('habit-history', limit: 7);
+      expect(notes.length, 7);
+      // Newest first (day 10 at top, day 4 at bottom)
+      expect(notes.first.note, 'Note for day 10');
+      expect(notes.last.note, 'Note for day 4');
+    });
+
+    test('deleteNote removes the note from database', () async {
+      final store = AppDatabase.instance;
+      final noteRepo = DayNoteRepository(store);
+      final date = DateTime.utc(2026, 10, 15);
+
+      await noteRepo.upsertNote(
+        DayNoteDto(
+          id: 'note-to-delete',
+          habitId: 'habit-delete',
+          date: date,
+          note: 'Temporary note',
+          createdAt: DateTime.utc(2026, 10, 15),
+          updatedAt: DateTime.utc(2026, 10, 15),
+        ),
+      );
+
+      expect(await noteRepo.getNoteForDate('habit-delete', date), isNotNull);
+
+      await noteRepo.deleteNote('note-to-delete');
+      expect(await noteRepo.getNoteForDate('habit-delete', date), isNull);
+    });
+
+    test('HabitRepository.deleteHabit cascade deletes day notes', () async {
+      final store = AppDatabase.instance;
+      final scheduleRepo = HabitScheduleRepository(store);
+      final habitRepo = HabitRepository(store, scheduleRepo);
+      final noteRepo = DayNoteRepository(store);
+
+      final habit = await habitRepo.createHabit(
+        name: 'Cascade Note Habit',
+        type: HabitType.boolean,
+        colorHex: '#216CCF',
+        iconName: 'check',
+        scheduleType: ScheduleType.daily,
+      );
+
+      await noteRepo.upsertNote(
+        DayNoteDto(
+          id: 'note-cascade',
+          habitId: habit.id,
+          date: DateTime.utc(2026, 10, 20),
+          note: 'Note that should be cascaded',
+          createdAt: DateTime.utc(2026, 10, 20),
+          updatedAt: DateTime.utc(2026, 10, 20),
+        ),
+      );
+
+      expect(await noteRepo.getNotesForHabit(habit.id), hasLength(1));
+
+      await habitRepo.deleteHabit(habit.id);
+
+      expect(await noteRepo.getNotesForHabit(habit.id), isEmpty);
     });
   });
 }

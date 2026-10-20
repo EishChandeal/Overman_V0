@@ -5,6 +5,7 @@ import 'package:habit_tracker/data/database/habit_entity.dart';
 import 'package:habit_tracker/data/database/habit_entry_entity.dart';
 import 'package:habit_tracker/data/database/habit_schedule_entity.dart';
 import 'package:habit_tracker/data/database/habit_limit_entity.dart';
+import 'package:habit_tracker/data/database/day_note_entity.dart';
 import 'package:habit_tracker/objectbox.g.dart';
 import 'habit_schedule_repository.dart';
 
@@ -143,6 +144,15 @@ class HabitRepository {
       limitBox.removeMany(limitIds);
     }
 
+    // Cascade delete related day notes
+    final noteBox = _store.box<DayNoteEntity>();
+    final noteQuery = noteBox.query(DayNoteEntity_.habitId.equals(id)).build();
+    final noteIds = noteQuery.findIds();
+    noteQuery.close();
+    if (noteIds.isNotEmpty) {
+      noteBox.removeMany(noteIds);
+    }
+
     // Delete the habit entity itself
     final query = _box.query(HabitEntity_.id.equals(id)).build();
     final habitIds = query.findIds();
@@ -150,6 +160,13 @@ class HabitRepository {
     if (habitIds.isNotEmpty) {
       _box.removeMany(habitIds);
     }
+  }
+
+  Future<List<HabitDto>> getAllHabits() async {
+    final query = _box.query(HabitEntity_.isArchived.equals(false)).build();
+    final results = query.find().map((e) => e.toDto()).toList();
+    query.close();
+    return results;
   }
 
   // 4.  Implements watchAllHabits(), runs the DB query, and converts entities to DTOs.

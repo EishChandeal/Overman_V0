@@ -25,6 +25,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
   final _nameController = TextEditingController();
   final _unitController = TextEditingController();
   final _targetValueController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _descriptionFocusNode = FocusNode();
 
   bool _isOneTime = false;
   HabitType _habitType = HabitType.boolean;
@@ -45,9 +47,13 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
   @override
   void initState() {
     super.initState();
+    _descriptionFocusNode.addListener(() {
+      setState(() {});
+    });
     if (widget.habitToEdit != null) {
       final h = widget.habitToEdit!;
       _nameController.text = h.name;
+      _descriptionController.text = h.description ?? '';
       _isOneTime = h.isOneTime;
       _habitType = h.type;
       _unitController.text = h.unit ?? '';
@@ -100,6 +106,8 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
     _nameController.dispose();
     _unitController.dispose();
     _targetValueController.dispose();
+    _descriptionController.dispose();
+    _descriptionFocusNode.dispose();
     super.dispose();
   }
 
@@ -120,6 +128,10 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           ? _unitController.text.trim()
           : null;
 
+      final String? descVal = _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim();
+
       if (widget.habitToEdit != null) {
         final updatedHabit = widget.habitToEdit!.copyWith(
           name: _nameController.text.trim(),
@@ -128,6 +140,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
           targetValue: targetVal,
           colorHex: _selectedColorHex,
           iconName: _selectedIconName,
+          description: descVal,
           isOneTime: _isOneTime,
         );
         await repo.updateHabit(updatedHabit);
@@ -181,6 +194,7 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
                   _scheduleType == ScheduleType.timesPerMonth)
               ? _targetCount
               : null,
+          description: descVal,
           isOneTime: _isOneTime,
         );
 
@@ -402,6 +416,46 @@ class _AddHabitScreenState extends ConsumerState<AddHabitScreen> {
               // 6. Icon Selection
               _buildSectionLabel('ICON'),
               _buildIconSelector(),
+
+              const SizedBox(height: 24),
+
+              // Description (Optional)
+              _buildSectionLabel('DESCRIPTION (OPTIONAL)'),
+              TextFormField(
+                controller: _descriptionController,
+                focusNode: _descriptionFocusNode,
+                maxLines: 3,
+                minLines: 1,
+                maxLength: 300,
+                buildCounter: (
+                  context, {
+                  required currentLength,
+                  required isFocused,
+                  maxLength,
+                }) {
+                  return isFocused
+                      ? Text(
+                          '$currentLength / $maxLength',
+                          style: const TextStyle(
+                            color: AppColors.mutedGrey,
+                            fontSize: 12,
+                          ),
+                        )
+                      : null;
+                },
+                style: const TextStyle(
+                  color: AppColors.primaryText,
+                  fontSize: 14,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Add a reason or description (optional)',
+                  hintStyle: TextStyle(
+                    color: AppColors.mutedGrey,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
 
               const SizedBox(height: 36),
 

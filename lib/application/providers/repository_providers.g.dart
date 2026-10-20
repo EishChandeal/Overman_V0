@@ -80,5 +80,22 @@ final habitLimitRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef HabitLimitRepositoryRef = FutureProviderRef<HabitLimitRepository>;
+String _$dayNoteRepositoryHash() => r'0a0e83a81c1de2d6d01a797707c14e2022583cc4';
+
+/// See also [dayNoteRepository].
+@ProviderFor(dayNoteRepository)
+final dayNoteRepositoryProvider = FutureProvider<DayNoteRepository>.internal(
+  dayNoteRepository,
+  name: r'dayNoteRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$dayNoteRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DayNoteRepositoryRef = FutureProviderRef<DayNoteRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

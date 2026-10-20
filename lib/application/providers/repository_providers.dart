@@ -36,3 +36,11 @@ Future<HabitLimitRepository> habitLimitRepository(
   final store = await ref.watch(objectBoxStoreProvider.future);
   return HabitLimitRepository(store);
 }
+
+@Riverpod(keepAlive: true)
+Future<DayNoteRepository> dayNoteRepository(
+  DayNoteRepositoryRef ref,
+) async {
+  final store = await ref.watch(objectBoxStoreProvider.future);
+  return DayNoteRepository(store);
+}

@@ -8,6 +8,8 @@ import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 import 'package:habit_tracker/presentation/widgets/heatmap_panel.dart';
 import 'package:habit_tracker/presentation/widgets/numeric_graph_panel.dart';
 import 'package:habit_tracker/presentation/widgets/statistics_panel.dart';
+import 'package:habit_tracker/presentation/widgets/notes_panel.dart';
+import 'package:habit_tracker/presentation/widgets/day_note_bottom_sheet.dart';
 
 /// Card component representing a habit on the Home screen.
 /// Supports in-place expansion with circular panel sequence:
@@ -50,12 +52,12 @@ class _HabitCardState extends ConsumerState<HabitCard> {
   List<String> get _panelTitles {
     // One-time tasks do not show the Heatmap panel
     if (widget.item.habit.isOneTime) {
-      return ['Details'];
+      return ['Details', 'Notes'];
     }
     if (widget.item.habit.type == HabitType.numeric) {
-      return ['Heatmap', 'Statistics', 'Trend Graph', 'Details'];
+      return ['Heatmap', 'Statistics', 'Trend Graph', 'Notes', 'Details'];
     }
-    return ['Heatmap', 'Statistics', 'Details'];
+    return ['Heatmap', 'Statistics', 'Notes', 'Details'];
   }
 
   void _toggleExpansion() {
@@ -67,6 +69,21 @@ class _HabitCardState extends ConsumerState<HabitCard> {
       }
     });
     widget.onTap?.call();
+  }
+
+  void _openDayNoteSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => DayNoteBottomSheet(
+        habitId: widget.item.habit.id,
+        habitColor: HabitVisuals.parseColor(widget.item.habit.colorHex),
+      ),
+    );
   }
 
   void _previousPanel() {
@@ -164,6 +181,20 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                               children: [
                                 Row(
                                   children: [
+                                    if (widget.isSelected) ...[
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.note_alt_outlined,
+                                          color: AppColors.orange,
+                                          size: 20,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(),
+                                        tooltip: 'Day note',
+                                        onPressed: () => _openDayNoteSheet(context),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
                                     Flexible(
                                       child: Text(
                                         habit.name,
@@ -350,6 +381,11 @@ class _HabitCardState extends ConsumerState<HabitCard> {
         return StatisticsPanel(habit: habit);
       case 'Trend Graph':
         return NumericGraphPanel(habit: habit);
+      case 'Notes':
+        return NotesPanel(
+          habitId: habit.id,
+          habitColor: habitColor,
+        );
       case 'Details':
       default:
         return DetailsPanel(

@@ -11,6 +11,9 @@ import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 
 import 'package:habit_tracker/presentation/screens/history/history_screen.dart';
+import 'package:habit_tracker/presentation/widgets/details_panel.dart';
+
+import 'package:habit_tracker/presentation/widgets/notes_panel.dart';
 
 
 import 'package:habit_tracker/data/database/app_database.dart';
@@ -205,6 +208,8 @@ void main() {
     );
     await tester.tap(find.text('Create Habit'));
     await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pump();
 
     // Scroll up to check validation error
     await tester.scrollUntilVisible(
@@ -279,7 +284,7 @@ void main() {
     expect(find.text('HEATMAP'), findsNothing);
 
     // Tap habit card to expand
-    await tester.tap(find.text('Read Books'));
+    await tester.tap(find.text('Read Books').first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
@@ -305,7 +310,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
 
-    // Panel should switch to DETAILS (for boolean habits: Heatmap -> Statistics -> Details)
+    // Panel should switch to NOTES
+    expect(find.text('NOTES'), findsOneWidget);
+    expect(find.text('No notes yet. Hold the card to add one.'), findsOneWidget);
+
+    // Tap next panel button (>)
+    await tester.tap(find.byTooltip('Next panel'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+
+    // Panel should switch to DETAILS (for boolean habits: Heatmap -> Statistics -> Notes -> Details)
     expect(find.text('DETAILS'), findsOneWidget);
     expect(find.text('Start Date'), findsOneWidget);
 
@@ -318,7 +333,7 @@ void main() {
     expect(find.text('HEATMAP'), findsOneWidget);
 
     // Tap habit name again to collapse
-    await tester.tap(find.text('Read Books'));
+    await tester.tap(find.text('Read Books').first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
@@ -326,7 +341,7 @@ void main() {
     expect(find.text('HEATMAP'), findsNothing);
 
     // Reopen collapsed card: must reset to HEATMAP
-    await tester.tap(find.text('Read Books'));
+    await tester.tap(find.text('Read Books').first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
@@ -405,7 +420,14 @@ void main() {
     expect(find.text('TREND GRAPH'), findsOneWidget);
     expect(find.text('Last 7 Days'), findsOneWidget);
 
-    // 3: Next -> DETAILS
+    // 3: Next -> NOTES
+    await tester.tap(find.byTooltip('Next panel'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+    expect(find.text('NOTES'), findsOneWidget);
+
+    // 4: Next -> DETAILS
     await tester.tap(find.byTooltip('Next panel'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -569,7 +591,7 @@ void main() {
 
     // Selection mode active in top header row: 4 square-like containers (Close, Note, Edit, Delete)
     expect(find.byIcon(Icons.close), findsOneWidget);
-    expect(find.byIcon(Icons.note_alt_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.note_alt_outlined), findsNWidgets(2));
     expect(find.text('Close'), findsOneWidget);
     expect(find.text('Note'), findsOneWidget);
     expect(find.text('Edit'), findsOneWidget);
@@ -578,8 +600,9 @@ void main() {
     // Tap Note button to verify note sheet design opens
     await tester.tap(find.text('Note'));
     await tester.pumpAndSettle();
-    expect(find.text('Note for Today'), findsOneWidget);
-    expect(find.text('Save Note'), findsOneWidget);
+    final todayNoteHeader = 'Note for ${DateFormat('E, d MMM').format(DateTime.now())}';
+    expect(find.text(todayNoteHeader), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Save'), findsOneWidget);
 
     // Close note sheet
     await tester.tap(find.text('Cancel'));
@@ -726,7 +749,9 @@ void main() {
     await tester.tap(find.text('Deep Breathing'));
     await tester.pumpAndSettle();
 
-    // Navigate panels: Heatmap -> Statistics -> Details
+    // Navigate panels: Heatmap -> Statistics -> Notes -> Details
+    await tester.tap(find.byTooltip('Next panel'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Next panel'));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Next panel'));
@@ -823,5 +848,245 @@ void main() {
     expect(find.text('DETAILS'), findsOneWidget);
     expect(find.text('Task Type'), findsOneWidget);
     expect(find.text('One-time Task'), findsOneWidget);
+  });
+
+  testWidgets(
+      'AddHabitScreen displays description field below icon picker and saves description',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 1600 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AddHabitScreen()),
+                ),
+                child: const Text('Open Add Screen'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Open Add Screen'));
+    await tester.pumpAndSettle();
+
+    // Verify description field is present below icon picker
+    expect(find.text('DESCRIPTION (OPTIONAL)'), findsOneWidget);
+    expect(find.text('Add a reason or description (optional)'), findsOneWidget);
+
+    // Enter habit name
+    await tester.enterText(find.byType(TextFormField).first, 'Meditation Habit');
+    await tester.pumpAndSettle();
+
+    // Enter description
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Add a reason or description (optional)'),
+      'Calm the mind each morning',
+    );
+    await tester.pumpAndSettle();
+
+    // Tap Save / Create Habit button
+    await tester.tap(find.text('Create Habit'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    // Returned to Open Add Screen
+    expect(find.text('Open Add Screen'), findsOneWidget);
+
+    // Verify habit persisted with description
+    final habitRepo = HabitRepository(testStore, HabitScheduleRepository(testStore));
+    final habits = await habitRepo.getAllHabits();
+    final created = habits.firstWhere((h) => h.name == 'Meditation Habit');
+    expect(created.description, 'Calm the mind each morning');
+  });
+
+  testWidgets(
+      'DetailsPanel renders habit name and italic description when present, omits when null',
+      (WidgetTester tester) async {
+    final habitWithDesc = HabitDto(
+      id: 'h-desc-1',
+      name: 'Morning Workout',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'fitness',
+      description: 'Strengthen body and sharpen discipline.',
+      createdAt: DateTime.utc(2026, 1, 1),
+      isArchived: false,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: DetailsPanel(habit: habitWithDesc),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Morning Workout'), findsOneWidget);
+    expect(find.text('Strengthen body and sharpen discipline.'), findsOneWidget);
+
+    // Verify italic style
+    final descText = tester.widget<Text>(find.text('Strengthen body and sharpen discipline.'));
+    expect(descText.style?.fontStyle, FontStyle.italic);
+
+    // Now test with null description
+    final habitWithoutDesc = habitWithDesc.copyWith(description: null);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Scaffold(
+          body: DetailsPanel(habit: habitWithoutDesc),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Morning Workout'), findsOneWidget);
+    expect(find.text('Strengthen body and sharpen discipline.'), findsNothing);
+  });
+
+  testWidgets(
+      'HabitCard displays notepad icon only when selected and tapping it opens DayNoteBottomSheet',
+      (WidgetTester tester) async {
+    final habit = HabitDto(
+      id: 'h-note-test',
+      name: 'Journaling',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'book',
+      createdAt: DateTime.now().toUtc(),
+      isArchived: false,
+    );
+    final item = HabitDayStatus(
+      habit: habit,
+      entry: null,
+      isScheduledToday: true,
+      status: DayStatus.notTracked,
+    );
+
+    // 1. When not selected: notepad icon does NOT appear
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: HabitCard(item: item, isSelected: false),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Day note'), findsNothing);
+
+    // 2. When selected: notepad icon DOES appear
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: HabitCard(item: item, isSelected: true),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Day note'), findsOneWidget);
+
+    // 3. Tap notepad icon -> opens DayNoteBottomSheet
+    await tester.tap(find.byTooltip('Day note'));
+    await tester.pumpAndSettle();
+
+    final todayFormatted = DateFormat('E, d MMM').format(DateTime.now());
+    expect(find.text('Note for $todayFormatted'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Save'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Cancel'), findsOneWidget);
+
+    // Enter note text and tap Save
+    await tester.enterText(find.byType(TextField), 'Great journaling session today.');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    // Verify note persisted via DayNoteRepository
+    final noteRepo = DayNoteRepository(testStore);
+    final notes = await noteRepo.getNotesForHabit('h-note-test');
+    expect(notes, hasLength(1));
+    expect(notes.first.note, 'Great journaling session today.');
+  });
+
+  testWidgets(
+      'NotesPanel displays placeholder when empty and notes list when notes exist',
+      (WidgetTester tester) async {
+    final noteRepo = DayNoteRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          dayNoteRepositoryProvider.overrideWith((ref) async => noteRepo),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: NotesPanel(habitId: 'habit-empty-notes'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No notes yet. Hold the card to add one.'), findsOneWidget);
+
+    // Add notes to repository
+    await noteRepo.upsertNote(
+      DayNoteDto(
+        id: 'n-1',
+        habitId: 'habit-with-notes',
+        date: DateTime.utc(2026, 10, 20),
+        note: 'Completed 10 km run today!',
+        createdAt: DateTime.utc(2026, 10, 20),
+        updatedAt: DateTime.utc(2026, 10, 20),
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          dayNoteRepositoryProvider.overrideWith((ref) async => noteRepo),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: NotesPanel(habitId: 'habit-with-notes'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Completed 10 km run today!'), findsOneWidget);
+    expect(find.text('No notes yet. Hold the card to add one.'), findsNothing);
   });
 }

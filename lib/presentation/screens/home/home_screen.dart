@@ -10,6 +10,7 @@ import 'package:habit_tracker/presentation/screens/add/add_habit_screen.dart';
 import 'package:habit_tracker/presentation/screens/history/history_screen.dart';
 import 'package:habit_tracker/presentation/screens/settings/settings_screen.dart';
 import 'package:habit_tracker/presentation/navigation/app_router.dart';
+import 'package:habit_tracker/presentation/widgets/day_note_bottom_sheet.dart';
 
 /// Main Home screen displaying the date/progress header and today's habits.
 /// Corresponds to Section 48-84 of PROJECT_BRIEF.md and DESIGN.md.
@@ -407,9 +408,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openNoteDialog(HabitDto habit) {
-    final textController = TextEditingController();
-    final todayFormatted = DateFormat('d MMM yyyy').format(DateTime.now());
-
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -417,119 +415,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (sheetContext) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-            left: 20,
-            right: 20,
-            top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(
-                        Icons.note_alt_outlined,
-                        color: AppColors.orange,
-                        size: 24,
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Note for Today',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryText,
-                          fontFamily: AppTheme.fontPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.mutedGrey),
-                    onPressed: () => Navigator.of(sheetContext).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${habit.name}  •  $todayFormatted',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.mutedGrey,
-                  fontFamily: AppTheme.fontPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: textController,
-                autofocus: true,
-                maxLines: 4,
-                style: const TextStyle(
-                  color: AppColors.primaryText,
-                  fontSize: 15,
-                  fontFamily: AppTheme.fontPrimary,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Write a note about today\'s progress...',
-                  hintStyle: const TextStyle(color: AppColors.mutedGrey),
-                  filled: true,
-                  fillColor: AppColors.background,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.all(14),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(sheetContext).pop(),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: AppColors.mutedGrey),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(sheetContext).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Note draft saved for today (Design preview)'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                      setState(() => _selectedHabitStatus = null);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Save Note',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (sheetContext) => DayNoteBottomSheet(
+        habitId: habit.id,
+        habitColor: HabitVisuals.parseColor(habit.colorHex),
+      ),
     );
   }
 
