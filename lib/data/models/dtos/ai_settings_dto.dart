@@ -4,12 +4,16 @@ class AiSettingsDto {
   final String apiEndpoint;
   final String apiKey;
   final String? selectedPersona;
+  final int contextWindowDays;
+  final String contextWindowUnit;
   final DateTime updatedAt;
 
   const AiSettingsDto({
     required this.apiEndpoint,
     required this.apiKey,
     this.selectedPersona,
+    this.contextWindowDays = 30,
+    this.contextWindowUnit = 'days',
     required this.updatedAt,
   });
 
@@ -19,6 +23,8 @@ class AiSettingsDto {
     String? apiEndpoint,
     String? apiKey,
     Object? selectedPersona = _sentinel,
+    int? contextWindowDays,
+    String? contextWindowUnit,
     DateTime? updatedAt,
   }) {
     return AiSettingsDto(
@@ -27,6 +33,8 @@ class AiSettingsDto {
       selectedPersona: selectedPersona == _sentinel
           ? this.selectedPersona
           : selectedPersona as String?,
+      contextWindowDays: contextWindowDays ?? this.contextWindowDays,
+      contextWindowUnit: contextWindowUnit ?? this.contextWindowUnit,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -36,6 +44,8 @@ class AiSettingsDto {
       'apiEndpoint': apiEndpoint,
       'apiKey': apiKey,
       'selectedPersona': selectedPersona,
+      'contextWindowDays': contextWindowDays,
+      'contextWindowUnit': contextWindowUnit,
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
@@ -45,6 +55,8 @@ class AiSettingsDto {
       apiEndpoint: json['apiEndpoint'] as String,
       apiKey: json['apiKey'] as String,
       selectedPersona: json['selectedPersona'] as String?,
+      contextWindowDays: (json['contextWindowDays'] as num?)?.toInt() ?? 30,
+      contextWindowUnit: (json['contextWindowUnit'] as String?) ?? 'days',
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
@@ -57,6 +69,8 @@ class AiSettingsDto {
           apiEndpoint == other.apiEndpoint &&
           apiKey == other.apiKey &&
           selectedPersona == other.selectedPersona &&
+          contextWindowDays == other.contextWindowDays &&
+          contextWindowUnit == other.contextWindowUnit &&
           updatedAt == other.updatedAt;
 
   @override
@@ -64,10 +78,12 @@ class AiSettingsDto {
       apiEndpoint.hashCode ^
       apiKey.hashCode ^
       selectedPersona.hashCode ^
+      contextWindowDays.hashCode ^
+      contextWindowUnit.hashCode ^
       updatedAt.hashCode;
 
   @override
   String toString() {
-    return 'AiSettingsDto(apiEndpoint: $apiEndpoint, apiKey: $apiKey, selectedPersona: $selectedPersona, updatedAt: $updatedAt)';
+    return 'AiSettingsDto(apiEndpoint: $apiEndpoint, apiKey: $apiKey, selectedPersona: $selectedPersona, contextWindowDays: $contextWindowDays, contextWindowUnit: $contextWindowUnit, updatedAt: $updatedAt)';
   }
 }

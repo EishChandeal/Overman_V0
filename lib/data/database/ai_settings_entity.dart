@@ -9,6 +9,8 @@ class AiSettingsEntity {
   String apiEndpoint;
   String apiKey;
   String? selectedPersona;
+  int contextWindowDays;
+  String contextWindowUnit;
   int updatedAt;
 
   AiSettingsEntity({
@@ -16,6 +18,8 @@ class AiSettingsEntity {
     required this.apiEndpoint,
     required this.apiKey,
     this.selectedPersona,
+    this.contextWindowDays = 30,
+    this.contextWindowUnit = 'days',
     required this.updatedAt,
   });
 
@@ -24,6 +28,8 @@ class AiSettingsEntity {
       apiEndpoint: dto.apiEndpoint,
       apiKey: dto.apiKey,
       selectedPersona: dto.selectedPersona,
+      contextWindowDays: dto.contextWindowDays,
+      contextWindowUnit: dto.contextWindowUnit,
       updatedAt: dto.updatedAt.millisecondsSinceEpoch,
     );
   }
@@ -33,6 +39,8 @@ class AiSettingsEntity {
       apiEndpoint: apiEndpoint,
       apiKey: apiKey,
       selectedPersona: selectedPersona,
+      contextWindowDays: contextWindowDays,
+      contextWindowUnit: contextWindowUnit,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAt, isUtc: true),
     );
   }

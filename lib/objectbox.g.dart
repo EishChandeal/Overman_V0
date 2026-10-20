@@ -325,7 +325,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 5005733616380570088),
     name: 'AiSettingsEntity',
-    lastPropertyId: const obx_int.IdUid(5, 4775225189248332428),
+    lastPropertyId: const obx_int.IdUid(7, 614954975443147139),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -356,6 +356,18 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(5, 4775225189248332428),
         name: 'updatedAt',
         type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 7122224351175181488),
+        name: 'contextWindowDays',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 614954975443147139),
+        name: 'contextWindowUnit',
+        type: 9,
         flags: 0,
       ),
     ],
@@ -913,12 +925,17 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final selectedPersonaOffset = object.selectedPersona == null
             ? null
             : fbb.writeString(object.selectedPersona!);
-        fbb.startTable(6);
+        final contextWindowUnitOffset = fbb.writeString(
+          object.contextWindowUnit,
+        );
+        fbb.startTable(8);
         fbb.addInt64(0, object.obId);
         fbb.addOffset(1, apiEndpointOffset);
         fbb.addOffset(2, apiKeyOffset);
         fbb.addOffset(3, selectedPersonaOffset);
         fbb.addInt64(4, object.updatedAt);
+        fbb.addInt64(5, object.contextWindowDays);
+        fbb.addOffset(6, contextWindowUnitOffset);
         fbb.finish(fbb.endTable());
         return object.obId;
       },
@@ -940,6 +957,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final selectedPersonaParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 10);
+        final contextWindowDaysParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final contextWindowUnitParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 16, '');
         final updatedAtParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -951,6 +977,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           apiEndpoint: apiEndpointParam,
           apiKey: apiKeyParam,
           selectedPersona: selectedPersonaParam,
+          contextWindowDays: contextWindowDaysParam,
+          contextWindowUnit: contextWindowUnitParam,
           updatedAt: updatedAtParam,
         );
 
@@ -1346,6 +1374,16 @@ class AiSettingsEntity_ {
   /// See [AiSettingsEntity.updatedAt].
   static final updatedAt = obx.QueryIntegerProperty<AiSettingsEntity>(
     _entities[4].properties[4],
+  );
+
+  /// See [AiSettingsEntity.contextWindowDays].
+  static final contextWindowDays = obx.QueryIntegerProperty<AiSettingsEntity>(
+    _entities[4].properties[5],
+  );
+
+  /// See [AiSettingsEntity.contextWindowUnit].
+  static final contextWindowUnit = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[6],
   );
 }
 

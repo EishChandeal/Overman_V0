@@ -369,15 +369,15 @@ task log of PROD-04-A before marking it done.
 - Test date injection (`today` parameter) ensures deterministic output.
 
 **Acceptance criteria for PROD-04-A:**
-- [ ] `AiSettingsEntity` / `AiSettingsDto` have `contextWindowDays` (default 30) and `contextWindowUnit` (default `"days"`).
-- [ ] `build_runner` run cleanly after entity change; 0 conflicts.
-- [ ] `AiDataFormatter.format(...)` implemented with exact output format above.
-- [ ] Preview script runs: `dart run test/tools/ai_data_preview.dart` produces output.
-- [ ] Actual terminal output pasted into task log (copy of real output, not a mock).
-- [ ] `ai_data_preview_output.txt` written to `test/tools/`.
-- [ ] All unit tests in `ai_data_formatter_test.dart` pass.
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AiSettingsEntity` / `AiSettingsDto` have `contextWindowDays` (default 30) and `contextWindowUnit` (default `"days"`).
+- [x] `build_runner` run cleanly after entity change; 0 conflicts.
+- [x] `AiDataFormatter.format(...)` implemented with exact output format above.
+- [x] Preview script runs: `dart run test/tools/ai_data_preview.dart` produces output.
+- [x] Actual terminal output pasted into task log (copy of real output, not a mock).
+- [x] `ai_data_preview_output.txt` written to `test/tools/`.
+- [x] All unit tests in `ai_data_formatter_test.dart` pass.
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass.
 
 ---
 
@@ -920,76 +920,72 @@ isActive   bool
 
 ## Latest completed task
 
-**Task ID:** PROD-03 — Descriptions + Day Notes
+**Task ID:** PROD-04-A — Data formatter + Preview tool
 
 - Implemented:
-  - `lib/data/repositories/day_note_repository.dart`:
-    - Implemented `upsertNote(DayNoteDto dto)`, `getNotesForHabit(String habitId, {int limit = 7})`, `deleteNote(String noteId)`, `getNoteForDate(String habitId, DateTime date)`, and `watchNotesForHabit(String habitId)`.
-  - `lib/data/repositories/habit_repository.dart`:
-    - Added cascade deletion of related day notes in `deleteHabit`.
-    - Added `getAllHabits()` helper method.
-  - Providers:
-    - Registered `dayNoteRepositoryProvider` in `lib/application/providers/repository_providers.dart`.
-    - Created `habitDayNotesProvider(habitId)` in `lib/application/providers/day_note_providers.dart`.
-    - Generated Riverpod code with `build_runner`.
-  - `lib/presentation/screens/add/add_habit_screen.dart`:
-    - Added optional description `TextFormField` (`maxLength: 300`, max 3 visible lines) directly below the icon selector.
-    - Focus-dependent character counter cleanly styled with `AppColors.mutedGrey`.
-    - Persists `description` on create and update.
-  - `lib/presentation/widgets/details_panel.dart`:
-    - Displays habit name at the top.
-    - If `description` is non-null and not empty, renders it in an italic text block below the habit name.
-  - `lib/presentation/widgets/day_note_bottom_sheet.dart`:
-    - Modal bottom sheet displaying title with formatted date (e.g. `"Note for Mon, 20 Oct"`).
-    - Multiline note input field pre-populated with today's note if one exists.
-    - Save and Cancel action buttons with snackbar feedback.
-  - `lib/presentation/widgets/notes_panel.dart`:
-    - Panel in habit card carousel displaying up to 7 most recent notes with date badge and note text.
-    - Displays clean placeholder `"No notes yet. Hold the card to add one."` when no notes are recorded.
-  - `lib/presentation/widgets/habit_card.dart`:
-    - Displays notepad icon button on the left of the header when the card is selected (`widget.isSelected`).
-    - Added `'Notes'` panel into carousel sequence (`['Heatmap', 'Statistics', 'Notes', 'Details']`).
-  - `lib/presentation/screens/home/home_screen.dart`:
-    - Wired selection bar notepad button to open `DayNoteBottomSheet` for the selected habit.
-  - Tests:
-    - Added comprehensive unit tests in `test/data/repositories_test.dart` for `DayNoteRepository` (upsert, query with limit, delete, and cascade delete on `deleteHabit`).
-    - Added widget tests in `test/widget_test.dart` for description input & persistence, `DetailsPanel` description display, notepad icon visibility on selection & bottom sheet submission, and `NotesPanel` empty/populated state.
-- Files changed:
-  - `lib/application/providers/day_note_providers.dart` (new)
-  - `lib/application/providers/day_note_providers.g.dart` (new)
-  - `lib/application/providers/providers.dart` (modified)
-  - `lib/application/providers/repository_providers.dart` (modified)
-  - `lib/application/providers/repository_providers.g.dart` (modified)
-  - `lib/data/repositories/day_note_repository.dart` (new)
-  - `lib/data/repositories/habit_repository.dart` (modified)
-  - `lib/data/repositories/repositories.dart` (modified)
-  - `lib/presentation/screens/add/add_habit_screen.dart` (modified)
-  - `lib/presentation/screens/home/home_screen.dart` (modified)
-  - `lib/presentation/widgets/day_note_bottom_sheet.dart` (new)
-  - `lib/presentation/widgets/details_panel.dart` (modified)
-  - `lib/presentation/widgets/habit_card.dart` (modified)
-  - `lib/presentation/widgets/notes_panel.dart` (new)
-  - `test/data/repositories_test.dart` (modified)
-  - `test/widget_test.dart` (modified)
+  - `lib/data/database/ai_settings_entity.dart`:
+    - Added `contextWindowDays` (`int`, default 30) and `contextWindowUnit` (`String`, default `"days"`).
+    - Updated `fromDto` and `toDto` mappings.
+  - `lib/data/models/dtos/ai_settings_dto.dart`:
+    - Added `contextWindowDays` and `contextWindowUnit` fields.
+    - Updated `copyWith`, `toJson`, `fromJson`, `operator ==`, `hashCode`, and `toString`.
+  - ObjectBox Schema:
+    - Ran `dart run build_runner build --delete-conflicting-outputs` cleanly (wrote 24 outputs, updated `objectbox.g.dart` and `objectbox-model.json`).
+  - `lib/application/services/ai_data_formatter.dart`:
+    - Implemented `AiDataFormatter.format(...)` supporting date windowing, boolean grid (✅/❌/—), numeric formatting with target checks, one-time task status & completion dates, descriptions, and habit day notes.
+  - `test/tools/ai_data_preview.dart`:
+    - Standalone preview script that queries ObjectBox repositories and prints/writes the exact formatted text.
+  - `test/tools/ai_data_preview_output.txt`:
+    - Generated live preview text file verified against ObjectBox data.
+  - `test/application/ai_data_formatter_test.dart`:
+    - Added 7 comprehensive unit tests verifying 0 habits, boolean grid, numeric target check, descriptions & notes, windowDays filtering, date injection, and one-time tasks.
+- Actual Output from Preview Tool:
+```
+=== User Habit Data (last 7 days) ===
+Generated: Tue, 20 Oct 2026
+
+--- Habit: "Morning Run" ---
+Type: Habit (boolean) | Schedule: Daily | Streak: 3 days | Started: 20 Oct 2026
+Description: Run at least 3 km each morning to build cardiovascular endurance.
+  Wed 14 Oct ✅   Thu 15 Oct ✅   Fri 16 Oct ❌   Sat 17 Oct ✅   Sun 18 Oct ✅
+  Mon 19 Oct ✅   Tue 20 Oct —
+  Notes:
+    [Wed 14 Oct] "Felt strong today, hit 4 km."
+    [Fri 16 Oct] "Skipped due to rain."
+
+--- Habit: "Water Intake" ---
+Type: Habit (numeric) | Unit: glasses | Target: 8 | Schedule: Daily | Streak: 0 days | Started: 20 Oct 2026
+  Wed 14 Oct 7   Thu 15 Oct 8 ✅   Fri 16 Oct 5   Sat 17 Oct 8 ✅   Sun 18 Oct 8 ✅
+  Mon 19 Oct 6   Tue 20 Oct —
+
+--- One-time Task: "Read 50 Pages" ---
+Status: ✅ Completed on Wed 14 Oct 2026
+Description: Finish chapter 3 of Atomic Habits.
+
+--- One-time Task: "File Taxes" ---
+Status: ⏳ Pending
+
+===
+```
 - Tests/checks run:
-  - `flutter analyze lib/` → `No issues found!`
-  - `flutter test` → `All tests passed! (96/96 passed)`
-- Observed result:
-  - Zero analysis errors or warnings in `lib/`.
-  - All 96 tests pass across all test files.
+  - `flutter test test/tools/ai_data_preview.dart` → `All tests passed! (1/1)`
+  - `flutter test test/application/ai_data_formatter_test.dart` → `All tests passed! (7/7)`
+  - `flutter analyze lib/` → `No issues found! (ran in 66.5s)`
+  - `flutter test` → `All tests passed! (103/103 passed)`
 
 ## Previous completed tasks
 
 - **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
 - **PROD-02** — One-time task support (Toggle in Add screen, strikethrough, 50% opacity, badge, skip heatmap, 88/88 tests).
+- **PROD-03** — Descriptions + Day Notes (DayNoteRepository, DayNoteBottomSheet, NotesPanel, 96/96 tests).
 
 ## Current task
 
-**PROD-04-A** — Data formatter + Preview tool
+**PROD-04-B** — AiSettings screen + context window control
 
 - Status: Not started
-- Goal: Extend `AiSettingsEntity` with `contextWindowDays` / `contextWindowUnit`, implement `AiDataFormatter.format(...)`, create the standalone preview script `test/tools/ai_data_preview.dart`, run it against live data and paste actual output into the task log, and write unit tests for the formatter.
+- Goal: Surface the AI configuration in Settings, let the user set their API credentials, choose a persona (with character avatar), and control how many days/weeks of history to send.
 
 ## Next action
 
-Execute **PROD-04-A**: Extend `AiSettingsEntity`, implement `AiDataFormatter`, run preview script against live ObjectBox data, paste actual output, write and pass unit tests.
+Execute **PROD-04-B**: Copy images to `assets/persona_dps/`, declare in `pubspec.yaml`, build `ai_personas.dart`, implement `AiSettingsScreen` with API fields, context window slider (1-90 days), and 2-column persona grid, wire into `SettingsScreen`.
