@@ -137,8 +137,40 @@ void main() {
       today: today,
     );
 
-    // 5. Print to stdout
-    stdout.write('\n$formattedOutput\n');
+    // 5. Display on terminal with clear formatting
+    print('\n' + '=' * 65);
+    print('       OVERMAN HABIT TRACKER — 7-DAY RETRIEVED DATA PREVIEW');
+    print('=' * 65);
+    print('\n[DATABASE RETRIEVAL SUMMARY]');
+    print('• Habits retrieved:      ${habits.length}');
+    print('• Entries window:        ${fromDate.year}-${fromDate.month.toString().padLeft(2, '0')}-${fromDate.day.toString().padLeft(2, '0')} to ${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')} ($windowDays days)');
+    print('• Day notes retrieved:   ${dayNotesByHabitId.values.fold<int>(0, (sum, l) => sum + l.length)}');
+    print('\n' + '-' * 65);
+    print('PART 1: RETRIEVED USER DATA (Arranged for LLM context)');
+    print('-' * 65 + '\n');
+    print(formattedOutput);
+
+    print('-' * 65);
+    print('PART 2: EXAMPLE ASSEMBLED PROMPT WITH PERSONA (e.g. Friedrich Nietzsche)');
+    print('-' * 65);
+    print('''
+[YOUR PERSONA]
+Name: Friedrich Nietzsche
+Role: The philosopher of the "overman" (Übermensch).
+System Prompt:
+"The man himself, and whom this app is named after. He will guide the user
+with his philosophical ideas of the 'overman' (Übermensch), the ideal MAN,
+and with his wit and heavy words that carry weight, sharp insights, and ruthless
+presentation of truth without appeasing the user. In a tough, unapologetic way,
+he will help them become the best version of themselves."
+
+[USER'S PAST DATA]
+$formattedOutput
+
+[USER'S MESSAGE]
+"How did I do this week? I struggled a bit with morning runs."
+''');
+    print('=' * 65 + '\n');
 
     // 6. Write to test/tools/ai_data_preview_output.txt
     final outputFile = File('test/tools/ai_data_preview_output.txt');
