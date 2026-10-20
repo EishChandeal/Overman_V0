@@ -6,7 +6,7 @@ part of 'streak_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$habitStreakHash() => r'e2991f30d2c20ec9e868c60a1584c1f07fa85ce1';
+String _$habitStreakHash() => r'7b00231401655471c643da7ff4415f1a647c2e5f';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -6,13 +6,13 @@ import 'package:habit_tracker/main.dart';
 import 'package:habit_tracker/presentation/theme/app_theme.dart';
 import 'package:habit_tracker/presentation/widgets/habit_card.dart';
 import 'package:habit_tracker/presentation/screens/add/add_habit_screen.dart';
-import 'package:habit_tracker/domain/models/habit_day_status.dart';
+
 import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 
 import 'package:habit_tracker/presentation/screens/history/history_screen.dart';
-import 'package:habit_tracker/presentation/screens/insights/insights_screen.dart';
-import 'package:habit_tracker/presentation/screens/settings/settings_screen.dart';
+
+
 import 'package:habit_tracker/data/database/app_database.dart';
 import 'package:habit_tracker/data/repositories/repositories.dart';
 import 'package:habit_tracker/application/providers/providers.dart';

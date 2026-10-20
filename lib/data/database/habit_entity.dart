@@ -23,6 +23,9 @@ class HabitEntity {
   double? targetValue;
   String colorHex;
   String iconName;
+  String? description;
+  bool isOneTime;
+  int? completedAt;
   int createdAt;
   bool isArchived;
 
@@ -39,6 +42,9 @@ class HabitEntity {
     this.targetValue,
     required this.colorHex,
     required this.iconName,
+    this.description,
+    this.isOneTime = false,
+    this.completedAt,
     required this.createdAt,
     required this.isArchived,
   });
@@ -52,6 +58,9 @@ class HabitEntity {
       targetValue: dto.targetValue,
       colorHex: dto.colorHex,
       iconName: dto.iconName,
+      description: dto.description,
+      isOneTime: dto.isOneTime,
+      completedAt: dto.completedAt?.millisecondsSinceEpoch,
       createdAt: dto.createdAt.millisecondsSinceEpoch,
       isArchived: dto.isArchived,
     );
@@ -66,6 +75,11 @@ class HabitEntity {
       targetValue: targetValue,
       colorHex: colorHex,
       iconName: iconName,
+      description: description,
+      isOneTime: isOneTime,
+      completedAt: completedAt != null
+          ? DateTime.fromMillisecondsSinceEpoch(completedAt!, isUtc: true)
+          : null,
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt, isUtc: true),
       isArchived: isArchived,
     );

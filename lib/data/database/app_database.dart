@@ -1,5 +1,12 @@
 import 'dart:io';
 import '../../objectbox.g.dart';
+import 'habit_entity.dart';
+import 'habit_entry_entity.dart';
+import 'habit_limit_entity.dart';
+import 'habit_schedule_entity.dart';
+import 'day_note_entity.dart';
+import 'ai_settings_entity.dart';
+import 'quote_entity.dart';
 
 class AppDatabase {
   static Store? _store;
@@ -31,4 +38,13 @@ class AppDatabase {
     _store?.close();
     _store = null;
   }
+
+  // Entity box accessors
+  static Box<HabitEntity> get habitBox => instance.box<HabitEntity>();
+  static Box<HabitEntryEntity> get habitEntryBox => instance.box<HabitEntryEntity>();
+  static Box<HabitLimitEntity> get habitLimitBox => instance.box<HabitLimitEntity>();
+  static Box<HabitScheduleEntity> get habitScheduleBox => instance.box<HabitScheduleEntity>();
+  static Box<DayNoteEntity> get dayNoteBox => instance.box<DayNoteEntity>();
+  static Box<AiSettingsEntity> get aiSettingsBox => instance.box<AiSettingsEntity>();
+  static Box<QuoteEntity> get quoteBox => instance.box<QuoteEntity>();
 }
