@@ -44,3 +44,11 @@ Future<DayNoteRepository> dayNoteRepository(
   final store = await ref.watch(objectBoxStoreProvider.future);
   return DayNoteRepository(store);
 }
+
+@Riverpod(keepAlive: true)
+Future<AiSettingsRepository> aiSettingsRepository(
+  AiSettingsRepositoryRef ref,
+) async {
+  final store = await ref.watch(objectBoxStoreProvider.future);
+  return AiSettingsRepository(store);
+}

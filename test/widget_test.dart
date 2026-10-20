@@ -11,6 +11,10 @@ import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 
 import 'package:habit_tracker/presentation/screens/history/history_screen.dart';
+import 'package:habit_tracker/presentation/screens/settings/settings_screen.dart';
+import 'package:habit_tracker/presentation/screens/ai/ai_settings_screen.dart';
+import 'package:habit_tracker/presentation/screens/ai/ai_chat_screen.dart';
+import 'package:habit_tracker/presentation/screens/ai/ai_personas.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 
 import 'package:habit_tracker/presentation/widgets/notes_panel.dart';
@@ -1293,5 +1297,166 @@ void main() {
     // Task is immediately deleted from list
     expect(find.text('Quick Task Delete'), findsNothing);
     expect(find.text('Deleted task "Quick Task Delete"'), findsOneWidget);
+  });
+
+  testWidgets(
+      'SettingsScreen displays AI Assistant section and navigates to AiSettingsScreen',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const SettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('AI ASSISTANT'), findsOneWidget);
+    expect(find.text('AI Assistant'), findsOneWidget);
+    expect(find.text('Chat with your habit data'), findsOneWidget);
+
+    await tester.tap(find.text('AI Assistant'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AiSettingsScreen), findsOneWidget);
+  });
+
+  testWidgets(
+      'AiSettingsScreen configures API credentials, context window slider, and persona selection',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final aiRepo = AiSettingsRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AiSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify sections rendered
+    expect(find.text('API CONFIGURATION'), findsOneWidget);
+    expect(find.text('CONTEXT WINDOW'), findsOneWidget);
+    expect(find.text('PERSONA'), findsOneWidget);
+    expect(find.text('Friedrich Nietzsche'), findsOneWidget);
+    expect(find.text('Vegeta'), findsOneWidget);
+    expect(find.text('Albus Dumbledore'), findsOneWidget);
+
+    // Enter API key and tap Save Settings
+    await tester.enterText(find.widgetWithText(TextField, 'Your API key'), 'test-gemini-key');
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Save Settings'));
+    await tester.pumpAndSettle();
+
+    // Verify snackbar & repository persistence
+    expect(find.text('Settings saved'), findsOneWidget);
+    final saved = await aiRepo.getSettings();
+    expect(saved.apiKey, 'test-gemini-key');
+
+    // Wait for snackbar to dismiss so it does not obscure lower widgets
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+
+    // Drag up to center persona section
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Friedrich Nietzsche'));
+    await tester.pumpAndSettle();
+
+    final savedWithPersona = await aiRepo.getSettings();
+    expect(savedWithPersona.selectedPersona, 'nietzsche');
+
+    // Tap "Friedrich Nietzsche" again to deselect
+    await tester.tap(find.text('Friedrich Nietzsche'));
+    await tester.pumpAndSettle();
+
+    final savedDeselected = await aiRepo.getSettings();
+    expect(savedDeselected.selectedPersona, isNull);
+  });
+
+  testWidgets(
+      'AiSettingsScreen Start Chat button is disabled without credentials and opens AiChatScreen when valid',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    final aiRepo = AiSettingsRepository(testStore);
+    // Clear API key
+    await aiRepo.saveSettings(
+      AiSettingsDto(
+        apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta',
+        apiKey: '',
+        selectedPersona: 'vegeta',
+        contextWindowDays: 30,
+        contextWindowUnit: 'days',
+        updatedAt: DateTime.utc(2026, 10, 20),
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AiSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Drag up to reveal Start Chat button
+    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+
+    // Start Chat button should be disabled when key is empty
+    final startChatFinder = find.widgetWithText(ElevatedButton, 'Start Chat');
+    expect(startChatFinder, findsOneWidget);
+    final elevatedBtn = tester.widget<ElevatedButton>(startChatFinder);
+    expect(elevatedBtn.onPressed, isNull);
+
+    // Drag back down to reach text field
+    await tester.drag(find.byType(ListView), const Offset(0, 900));
+    await tester.pumpAndSettle();
+
+    // Enter API key -> becomes enabled
+    await tester.enterText(find.widgetWithText(TextField, 'Your API key'), 'my-active-api-key');
+    await tester.pumpAndSettle();
+
+    // Drag up to Start Chat button
+    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.pumpAndSettle();
+
+    final elevatedBtnEnabled = tester.widget<ElevatedButton>(startChatFinder);
+    expect(elevatedBtnEnabled.onPressed, isNotNull);
+
+    // Tap Start Chat -> opens AiChatScreen
+    await tester.tap(startChatFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AiChatScreen), findsOneWidget);
+    expect(find.text('Ready to chat with Vegeta'), findsOneWidget);
   });
 }

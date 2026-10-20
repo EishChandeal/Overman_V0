@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../navigation/app_router.dart';
 import '../../screens/add/add_habit_screen.dart';
+import '../../screens/ai/ai_settings_screen.dart';
 import '../../screens/history/history_screen.dart';
 import '../../screens/insights/insights_screen.dart';
 import '../../theme/app_theme.dart';
@@ -72,6 +73,24 @@ class SettingsScreen extends StatelessWidget {
               subtitle: 'Configure boolean or numeric tracking habits',
               onTap: () {
                 appNavigateTo(context, AppRoutes.add, const AddHabitScreen());
+              },
+            ),
+
+            const SizedBox(height: 24),
+
+            // AI Assistant Section
+            _buildSectionHeader('AI ASSISTANT'),
+            _buildSettingTile(
+              icon: Icons.auto_awesome_outlined,
+              iconColor: AppColors.orange,
+              title: 'AI Assistant',
+              subtitle: 'Chat with your habit data',
+              onTap: () {
+                appNavigateTo(
+                  context,
+                  AppRoutes.aiSettings,
+                  const AiSettingsScreen(),
+                );
               },
             ),
 

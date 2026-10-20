@@ -97,5 +97,24 @@ final dayNoteRepositoryProvider = FutureProvider<DayNoteRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef DayNoteRepositoryRef = FutureProviderRef<DayNoteRepository>;
+String _$aiSettingsRepositoryHash() =>
+    r'2b75fabd90fa916e971adda1bc28d324502d8099';
+
+/// See also [aiSettingsRepository].
+@ProviderFor(aiSettingsRepository)
+final aiSettingsRepositoryProvider =
+    FutureProvider<AiSettingsRepository>.internal(
+      aiSettingsRepository,
+      name: r'aiSettingsRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$aiSettingsRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AiSettingsRepositoryRef = FutureProviderRef<AiSettingsRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

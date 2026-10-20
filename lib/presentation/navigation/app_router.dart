@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../screens/add/add_habit_screen.dart';
+import '../screens/ai/ai_chat_screen.dart';
+import '../screens/ai/ai_settings_screen.dart';
 import '../screens/history/history_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/insights/insights_screen.dart';
@@ -13,6 +15,8 @@ class AppRoutes {
   static const history = '/history';
   static const insights = '/insights';
   static const settings = '/settings';
+  static const aiSettings = '/ai-settings';
+  static const aiChat = '/ai-chat';
 }
 
 /// GoRouter configuration providing declarative navigation for all prototype screens.
@@ -38,6 +42,14 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.settings,
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.aiSettings,
+      builder: (context, state) => const AiSettingsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.aiChat,
+      builder: (context, state) => const AiChatScreen(),
     ),
   ],
 );

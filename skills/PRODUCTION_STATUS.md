@@ -1008,14 +1008,15 @@ Status: ⏳ Pending
 - **PROD-03** — Descriptions + Day Notes (DayNoteRepository, DayNoteBottomSheet, NotesPanel, 96/96 tests).
 - **PROD-04-A** — AI context window control + Data formatter service (103/103 tests).
 - **Date Visibility & Lifecycle Refinements** — History date filtering, one-time task lifecycle, day notes in history, direct task deletion (107/107 tests).
+- **PROD-04-B** — AiSettings screen + context window control + persona selection (113/113 tests).
 
 ## Current task
 
-**PROD-04-B** — AiSettings screen + context window control
+**PROD-04-C** — AiChat screen + conversation history + LLM streaming integration
 
 - Status: Not started
-- Goal: Surface the AI configuration in Settings, let the user set their API credentials, choose a persona (with character avatar), and control how many days/weeks of history to send.
+- Goal: Build the actual chat screen with persona-branded UI, persist conversation history to ObjectBox, and stream responses from the LLM.
 
 ## Next action
 
-Execute **PROD-04-B**: Copy images to `assets/persona_dps/`, declare in `pubspec.yaml`, build `ai_personas.dart`, implement `AiSettingsScreen` with API fields, context window slider (1-90 days), and 2-column persona grid, wire into `SettingsScreen`.
+Execute **PROD-04-C**: Add `AiConversationEntity` & `AiMessageEntity` to ObjectBox, run build_runner, build `AiConversationRepository`, implement `AiChatScreen` with message bubble list, persona avatar & system prompt injection, and connect to Gemini LLM endpoint.

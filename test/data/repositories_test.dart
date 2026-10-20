@@ -532,4 +532,69 @@ void main() {
       expect(await noteRepo.getNotesForHabit(habit.id), isEmpty);
     });
   });
+
+  group('AiSettingsRepository CRUD & Stream operations', () {
+    test('getSettings returns default values when no entity exists', () async {
+      final store = AppDatabase.instance;
+      final repo = AiSettingsRepository(store);
+
+      final settings = await repo.getSettings();
+      expect(settings.apiEndpoint, 'https://generativelanguage.googleapis.com/v1beta');
+      expect(settings.apiKey, isEmpty);
+      expect(settings.selectedPersona, isNull);
+      expect(settings.contextWindowDays, 30);
+      expect(settings.contextWindowUnit, 'days');
+    });
+
+    test('saveSettings persists settings and updates singleton entity', () async {
+      final store = AppDatabase.instance;
+      final repo = AiSettingsRepository(store);
+
+      final dto = AiSettingsDto(
+        apiEndpoint: 'https://custom-api.example.com/v1',
+        apiKey: 'secret-key-12345',
+        selectedPersona: 'vegeta',
+        contextWindowDays: 14,
+        contextWindowUnit: 'days',
+        updatedAt: DateTime.utc(2026, 10, 20),
+      );
+
+      await repo.saveSettings(dto);
+
+      final loaded = await repo.getSettings();
+      expect(loaded.apiEndpoint, 'https://custom-api.example.com/v1');
+      expect(loaded.apiKey, 'secret-key-12345');
+      expect(loaded.selectedPersona, 'vegeta');
+      expect(loaded.contextWindowDays, 14);
+
+      // Overwrite settings to verify singleton update
+      await repo.saveSettings(dto.copyWith(selectedPersona: 'nietzsche', contextWindowDays: 60));
+      final updated = await repo.getSettings();
+      expect(updated.selectedPersona, 'nietzsche');
+      expect(updated.contextWindowDays, 60);
+    });
+
+    test('watchSettings emits updated settings reactively', () async {
+      final store = AppDatabase.instance;
+      final repo = AiSettingsRepository(store);
+
+      final emissions = <AiSettingsDto>[];
+      final sub = repo.watchSettings().listen(emissions.add);
+
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final initial = await repo.getSettings();
+      await repo.saveSettings(
+        initial.copyWith(
+          apiKey: 'reactive-api-key',
+          selectedPersona: 'dumbledore',
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: 50));
+      await sub.cancel();
+
+      expect(emissions.any((s) => s.apiKey == 'reactive-api-key' && s.selectedPersona == 'dumbledore'), isTrue);
+    });
+  });
 }
