@@ -4,6 +4,7 @@ import '../../../application/providers/providers.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/habit_detail_chart.dart';
+import '../../widgets/streak_analytics_widget.dart';
 import '../../widgets/year_heatmap_widget.dart';
 
 /// Dedicated screen displaying comprehensive analytics, yearly heatmap,
@@ -225,6 +226,26 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
               habit: habit,
               entries: entries,
               schedule: schedule,
+            ),
+            const SizedBox(height: 16),
+            // Streaks Section
+            const Text(
+              'Streaks',
+              key: Key('habit_detail_streaks_header'),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            StreakAnalyticsWidget(
+              key: const Key('habit_detail_streaks_widget'),
+              habit: habit,
+              entries: entries,
+              schedule: schedule,
+              selectedYear: _selectedYear,
             ),
             const SizedBox(height: 16),
             const Text(

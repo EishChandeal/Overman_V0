@@ -247,13 +247,13 @@ in the current year, all-time greatest streak, and current streak.
 
 **Acceptance criteria for STRAT-01-D:**
 
-- [ ] `StreakCalculator` implemented with all three static methods.
-- [ ] Streak section renders in `HabitDetailScreen` with correct values.
-- [ ] Current streak uses `AppColors.orange`.
-- [ ] Top 5 list renders with rank, length, and date range.
-- [ ] Unit tests for all three `StreakCalculator` methods pass.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `StreakCalculator` implemented with all three static methods.
+- [x] Streak section renders in `HabitDetailScreen` with correct values.
+- [x] Current streak uses `AppColors.orange`.
+- [x] Top 5 list renders with rank, length, and date range.
+- [x] Unit tests for all three `StreakCalculator` methods pass.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (182/182).
 
 ---
 
@@ -760,39 +760,33 @@ only on a stable codebase (no dependency on STRAT-01 or STRAT-02).
 
 ## Latest completed task
 
-**Task ID:** STRAT-01-C — Charts section
+**Task ID:** STRAT-01-D — Streak analytics section
 
 - **Implemented:**
-  - Added `fl_chart: ^1.3.0` to `pubspec.yaml`.
-  - `lib/presentation/widgets/habit_detail_chart.dart`:
-    - `HabitDetailChart`: Top-level switcher that renders a 180px fixed height container.
-    - Gracefully shows `"Not enough data yet — keep going!"` placeholder when fewer than 2 entries exist.
-    - `WeeklyCompletionBarChart`:
-      - Bar chart for boolean habits displaying the last 12 weeks of completions.
-      - Dynamic Y-axis scale based on scheduled days per week (default 7 for daily).
-      - Prominent horizontal dashed line showing the "perfect week" target goal with label `'Goal (n)'`.
-      - Interactive touch tooltips showing date and completion count per week.
-    - `NumericProgressLineChart`:
-      - Smooth line chart for numeric habits over the last 30 calendar days.
-      - 10-15% headroom above the max of target and entry values.
-      - Dashed horizontal line indicating the habit target (`Target: {n} {unit}`).
-      - Dot markers at each day's logged data point.
+  - `lib/application/services/streak_calculator.dart`:
+    - `currentStreak`: Computes current consecutive streak backwards from today, preserving streak when today is still pending if yesterday was completed, and skipping unscheduled rest days.
+    - `allTimeGreatestStreak`: Evaluates all historical streaks and returns the longest consecutive run.
+    - `topStreaksInYear`: Extracts top $N$ longest streaks falling into a target year, sorted by length descending and recency, returning `({int length, DateTime start, DateTime end})` records.
+  - `lib/presentation/widgets/streak_analytics_widget.dart`:
+    - Current streak displayed with large bold font (28sp) in `AppColors.orange`.
+    - All-Time Best streak displayed beneath current streak with clean separation.
+    - Top 5 Streaks list rendered with rank badges (`#1`, `#2`, etc.), streak lengths, and date ranges (`MMM d → MMM d`).
+    - Clean empty-state message: `"No streaks yet — start your first one today!"`.
   - `lib/presentation/screens/habit_detail/habit_detail_screen.dart`:
-    - Wired `HabitDetailChart` under the `"Performance"` section header.
-    - Watches `activeScheduleProvider(habit.id)` to supply schedule-aware target metrics to the chart.
+    - Integrated `StreakAnalyticsWidget` beneath the Performance chart section with section title `"Streaks"`.
   - Automated Tests:
-    - Added `test/presentation/habit_detail_chart_test.dart` (4 tests) verifying placeholder on < 2 entries, bar chart and perfect week goal line for boolean habits, line chart and target line for numeric habits, and integration into `HabitDetailScreen`.
+    - Added `test/application/streak_calculator_test.dart` (10 tests) covering: empty entries, current streak counting, today pending logic, 0 streak on missed days, scheduled vs unscheduled day skipping, all-time best max calculation, year-bounded streak extraction, empty state widget rendering, current streak orange styling and rank badges, and integration into `HabitDetailScreen`.
 - **Verification:**
   - `dart analyze lib/` → `No issues found!` (0 errors, 0 warnings)
-  - `flutter test` → `All tests passed! (172/172 passed)`
+  - `flutter test` → `All tests passed! (182/182 passed)`
 
 ## Current task
 
-**STRAT-01-D** — Streak analytics section
+**STRAT-01-E** — "View More" button integration
 
 - Status: Ready to start
-- Goal: Compute and display streak statistics below the charts: top 5 longest streaks in the current year, all-time greatest streak, and current streak.
+- Goal: Replace the delete button in the expanded habit card footer with a "View More" button that navigates to `/habit-detail/:id`, while ensuring delete functionality remains fully accessible in selection mode.
 
 ## Next action
 
-Execute **STRAT-01-D**: Implement `StreakCalculator` service (`lib/application/services/streak_calculator.dart`) and wire the streaks UI into `HabitDetailScreen`.
+Execute **STRAT-01-E**: Update expanded habit card footer with "View More" button and verify delete accessibility.
