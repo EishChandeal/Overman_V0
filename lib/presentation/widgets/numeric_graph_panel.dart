@@ -40,6 +40,7 @@ class NumericGraphPanel extends ConsumerWidget {
   }
 
   Widget _buildGraph(BuildContext context, List<HabitEntryDto> entries) {
+    final palette = context.palette;
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
     final now = DateTime.now();
     final todayUtc = DateTime.utc(now.year, now.month, now.day);
@@ -79,12 +80,12 @@ class NumericGraphPanel extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Last 7 Days',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.mutedGrey,
+                    color: palette.accessibleSecondaryText,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                 ),
@@ -112,8 +113,9 @@ class NumericGraphPanel extends ConsumerWidget {
           height: 130,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: palette.innerTileBackground,
             borderRadius: BorderRadius.circular(12),
+            border: palette.isDark ? null : Border.all(color: palette.innerTileBorder),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -141,7 +143,7 @@ class NumericGraphPanel extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
-                            color: isTargetMet ? habitColor : AppColors.mutedGrey,
+                            color: isTargetMet ? habitColor : palette.accessibleSecondaryText,
                           ),
                           maxLines: 1,
                         )
@@ -160,11 +162,13 @@ class NumericGraphPanel extends ConsumerWidget {
                                   ? (isTargetMet
                                       ? habitColor
                                       : habitColor.withValues(alpha: 0.45))
-                                  : AppColors.surface,
+                                  : (palette.isDark
+                                      ? AppColors.surface
+                                      : palette.cardBorder.withValues(alpha: 0.35)),
                               borderRadius: BorderRadius.circular(5),
                               border: isToday
                                   ? Border.all(
-                                      color: AppColors.orange,
+                                      color: palette.isDark ? AppColors.orange : palette.interactiveAccent,
                                       width: 1.2,
                                     )
                                   : null,
@@ -181,7 +185,9 @@ class NumericGraphPanel extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                          color: isToday ? AppColors.orange : AppColors.mutedGrey,
+                          color: isToday
+                              ? (palette.isDark ? AppColors.orange : palette.interactiveAccent)
+                              : palette.accessibleSecondaryText,
                           fontFamily: AppTheme.fontPrimary,
                         ),
                       ),

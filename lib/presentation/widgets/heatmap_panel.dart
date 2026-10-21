@@ -44,6 +44,7 @@ class HeatmapPanel extends ConsumerWidget {
   }
 
   Widget _buildContent(BuildContext context, StreakResult streak) {
+    final palette = context.palette;
     final now = DateTime.now();
     final todayMidnightUtc = DateTime.utc(now.year, now.month, now.day);
 
@@ -66,8 +67,9 @@ class HeatmapPanel extends ConsumerWidget {
           children: [
             Expanded(
               child: _buildBadge(
+                context: context,
                 icon: Icons.local_fire_department,
-                iconColor: habitColor ?? AppColors.orange,
+                iconColor: habitColor ?? (palette.isDark ? AppColors.orange : palette.interactiveAccent),
                 label: 'Current Streak',
                 value: '${streak.currentStreak} ${streak.currentStreak == 1 ? 'day' : 'days'}',
               ),
@@ -75,8 +77,9 @@ class HeatmapPanel extends ConsumerWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _buildBadge(
+                context: context,
                 icon: Icons.emoji_events_outlined,
-                iconColor: habitColor ?? AppColors.blue,
+                iconColor: habitColor ?? palette.interactiveAccent,
                 label: 'Best Streak',
                 value: '${streak.longestStreak} ${streak.longestStreak == 1 ? 'day' : 'days'}',
               ),
@@ -87,27 +90,30 @@ class HeatmapPanel extends ConsumerWidget {
         const SizedBox(height: 16),
 
         // Heatmap Calendar Grid (7 columns: Mon to Sun)
-        _buildCalendarGrid(days, streak.heatmap, todayMidnightUtc),
+        _buildCalendarGrid(context, days, streak.heatmap, todayMidnightUtc),
 
         const SizedBox(height: 12),
 
         // Legend
-        _buildLegend(),
+        _buildLegend(context),
       ],
     );
   }
 
   Widget _buildBadge({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String label,
     required String value,
   }) {
+    final palette = context.palette;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: palette.innerTileBackground,
         borderRadius: BorderRadius.circular(10),
+        border: palette.isDark ? null : Border.all(color: palette.innerTileBorder),
       ),
       child: Row(
         children: [
@@ -120,9 +126,9 @@ class HeatmapPanel extends ConsumerWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
-                    color: AppColors.mutedGrey,
+                    color: palette.accessibleSecondaryText,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                   maxLines: 1,
@@ -130,10 +136,10 @@ class HeatmapPanel extends ConsumerWidget {
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.primaryText,
+                    color: palette.primaryText,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                   maxLines: 1,
@@ -148,11 +154,13 @@ class HeatmapPanel extends ConsumerWidget {
   }
 
   Widget _buildCalendarGrid(
+    BuildContext context,
     List<DateTime> days,
     Map<DateTime, DayStatus> heatmap,
     DateTime todayMidnight,
   ) {
     const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final palette = context.palette;
 
     return Column(
       children: [
@@ -164,10 +172,10 @@ class HeatmapPanel extends ConsumerWidget {
               child: Center(
                 child: Text(
                   w,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.mutedGrey,
+                    color: palette.accessibleSecondaryText,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                 ),
@@ -195,7 +203,7 @@ class HeatmapPanel extends ConsumerWidget {
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                    child: _buildDayCell(day, status, isToday),
+                    child: _buildDayCell(context, day, status, isToday),
                   ),
                 );
               }).toList(),
@@ -206,10 +214,11 @@ class HeatmapPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildDayCell(DateTime day, DayStatus status, bool isToday) {
+  Widget _buildDayCell(BuildContext context, DateTime day, DayStatus status, bool isToday) {
+    final palette = context.palette;
     Color cellColor;
     Border? border;
-    final activeColor = habitColor ?? AppColors.blue;
+    final activeColor = habitColor ?? palette.interactiveAccent;
     final onActiveColor = HabitVisuals.getOnColor(activeColor);
 
     switch (status) {
@@ -221,23 +230,31 @@ class HeatmapPanel extends ConsumerWidget {
         cellColor = activeColor.withValues(alpha: 0.5);
         break;
       case DayStatus.missed:
-        cellColor = const Color(0xFF232732);
+        cellColor = palette.isDark
+            ? const Color(0xFF232732)
+            : palette.cardBorder.withValues(alpha: 0.65);
         border = Border.all(
-          color: AppColors.mutedGrey.withValues(alpha: 0.25),
+          color: palette.isDark
+              ? AppColors.mutedGrey.withValues(alpha: 0.25)
+              : palette.cardBorder,
           width: 1,
         );
         break;
       case DayStatus.notScheduled:
-        cellColor = AppColors.background;
+        cellColor = palette.isDark
+            ? AppColors.background
+            : palette.cardBorder.withValues(alpha: 0.35);
         break;
       case DayStatus.notTracked:
-        cellColor = AppColors.background.withValues(alpha: 0.5);
+        cellColor = palette.isDark
+            ? AppColors.background.withValues(alpha: 0.5)
+            : palette.cardBorder.withValues(alpha: 0.20);
         break;
     }
 
     if (isToday) {
       border = Border.all(
-        color: AppColors.orange,
+        color: palette.isDark ? AppColors.orange : palette.interactiveAccent,
         width: 1.5,
       );
     }
@@ -259,7 +276,7 @@ class HeatmapPanel extends ConsumerWidget {
               fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
               color: status == DayStatus.met || status == DayStatus.exceeded
                   ? onActiveColor
-                  : AppColors.mutedGrey,
+                  : palette.accessibleSecondaryText,
             ),
           ),
         ),
@@ -267,21 +284,30 @@ class HeatmapPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildLegend() {
-    final activeColor = habitColor ?? AppColors.blue;
+  Widget _buildLegend(BuildContext context) {
+    final palette = context.palette;
+    final activeColor = habitColor ?? palette.interactiveAccent;
+    final missedColor = palette.isDark
+        ? const Color(0xFF232732)
+        : palette.cardBorder.withValues(alpha: 0.65);
+    final restColor = palette.isDark
+        ? AppColors.background
+        : palette.cardBorder.withValues(alpha: 0.35);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildLegendItem(activeColor, 'Met'),
+        _buildLegendItem(context, activeColor, 'Met'),
         const SizedBox(width: 14),
-        _buildLegendItem(const Color(0xFF232732), 'Missed', hasBorder: true),
+        _buildLegendItem(context, missedColor, 'Missed', hasBorder: true),
         const SizedBox(width: 14),
-        _buildLegendItem(AppColors.background, 'Rest / Off'),
+        _buildLegendItem(context, restColor, 'Rest / Off'),
       ],
     );
   }
 
-  Widget _buildLegendItem(Color color, String label, {bool hasBorder = false}) {
+  Widget _buildLegendItem(BuildContext context, Color color, String label, {bool hasBorder = false}) {
+    final palette = context.palette;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -293,7 +319,9 @@ class HeatmapPanel extends ConsumerWidget {
             borderRadius: BorderRadius.circular(3),
             border: hasBorder
                 ? Border.all(
-                    color: AppColors.mutedGrey.withValues(alpha: 0.3),
+                    color: palette.isDark
+                        ? AppColors.mutedGrey.withValues(alpha: 0.3)
+                        : palette.cardBorder,
                     width: 1,
                   )
                 : null,
@@ -302,9 +330,9 @@ class HeatmapPanel extends ConsumerWidget {
         const SizedBox(width: 5),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
-            color: AppColors.mutedGrey,
+            color: palette.accessibleSecondaryText,
             fontFamily: AppTheme.fontPrimary,
           ),
         ),

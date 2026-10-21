@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'app_palette_extension.dart';
 import 'wallpaper_theme_extension.dart';
 
+export 'app_palette_extension.dart';
 export 'wallpaper_theme_extension.dart';
 
 /// Design tokens extracted from DESIGN.md and PROJECT_BRIEF.md.
@@ -25,16 +27,25 @@ class AppColors {
   static const Color accentBlue = blue;
   static const Color accentOrange = orange;
 
-  // Warm theme palette tokens
-  static const Color warmBackground = Color(0xFFFFEBCD); // Blanchedalmond
-  static const Color warmSurface = Color(0xFFFFE4C4); // Bisque
-  static const Color warmSurface2 = Color(0xFFFFDAB9); // PeachPuff
-  static const Color warmPrimaryText = Color(0xFF3E2009); // Dark Brown
-  static const Color warmSecondaryText = Color(0xFF7A4A2A); // Medium Brown
-  static const Color warmAccent = Color(0xFFA0522D); // Sienna
-  static const Color warmAccent2 = Color(0xFFCD853F); // Peru
-  static const Color warmDivider = Color(0xFFD4A574); // Sandy Brown
-  static const Color warmError = Color(0xFFFF6347); // Tomato
+  // Warm theme palette tokens (refined BlanchedAlmond palette)
+  static const Color warmBackground = Color(0xFFFFEBCD); // Primary screen background #FFEBCD
+  static const Color warmSecondaryCream = Color(0xFFFFF0D8); // Secondary cream surface #FFF0D8
+  static const Color warmSubtleCardTint = Color(0xFFF5DEB3); // Secondary surface / subtle card tint #F5DEB3
+  static const Color warmCardBorder = Color(0xFFE8CDAA); // Card borders & subtle dividers #E8CDAA
+  static const Color warmPrimaryText = Color(0xFF3D2B1F); // Primary text on light surfaces #3D2B1F
+  static const Color warmSecondaryText = Color(0xFF6F8299); // Secondary text on light surfaces #6F8299
+  static const Color warmDarkSurface = Color(0xFF1C1E24); // Dark surfaces & tracking buttons #1C1E24
+  static const Color warmTextOnDark = Color(0xFFF5EBDD); // Primary text on dark surfaces #F5EBDD
+  static const Color warmInteractiveAccent = Color(0xFF2878D0); // Common interactive accent #2878D0
+  static const Color warmSuccess = Color(0xFF4F8B57); // Success and completed states #4F8B57
+  static const Color warmError = Color(0xFFC64D4D); // Error and destructive actions #C64D4D
+
+  // Aliases for compatibility
+  static const Color warmSurface = warmSecondaryCream;
+  static const Color warmSurface2 = warmSubtleCardTint;
+  static const Color warmAccent = warmInteractiveAccent;
+  static const Color warmAccent2 = warmSubtleCardTint;
+  static const Color warmDivider = warmCardBorder;
 }
 
 /// Dedicated token container for the Blanchedalmond Warm Theme.
@@ -42,13 +53,17 @@ class WarmColors {
   WarmColors._();
 
   static const Color background = AppColors.warmBackground;
-  static const Color surface = AppColors.warmSurface;
-  static const Color surface2 = AppColors.warmSurface2;
+  static const Color surface = AppColors.warmSecondaryCream;
+  static const Color surface2 = AppColors.warmSubtleCardTint;
+  static const Color cardBorder = AppColors.warmCardBorder;
   static const Color primaryText = AppColors.warmPrimaryText;
   static const Color secondaryText = AppColors.warmSecondaryText;
-  static const Color accent = AppColors.warmAccent;
-  static const Color accent2 = AppColors.warmAccent2;
-  static const Color divider = AppColors.warmDivider;
+  static const Color darkSurface = AppColors.warmDarkSurface;
+  static const Color textOnDark = AppColors.warmTextOnDark;
+  static const Color accent = AppColors.warmInteractiveAccent;
+  static const Color accent2 = AppColors.warmSubtleCardTint;
+  static const Color divider = AppColors.warmCardBorder;
+  static const Color success = AppColors.warmSuccess;
   static const Color error = AppColors.warmError;
 }
 
@@ -108,6 +123,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: colorScheme,
       textTheme: textTheme,
+      extensions: const [
+        AppPaletteExtension.dark,
+      ],
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
@@ -195,7 +213,7 @@ class AppTheme {
       onSurface: WarmColors.primaryText,
       error: WarmColors.error,
       onError: Colors.white,
-      outline: WarmColors.secondaryText,
+      outline: WarmColors.cardBorder,
     );
 
     final baseTextTheme =
@@ -236,6 +254,9 @@ class AppTheme {
       scaffoldBackgroundColor: WarmColors.background,
       colorScheme: colorScheme,
       textTheme: textTheme,
+      extensions: const [
+        AppPaletteExtension.blanchedAlmond,
+      ],
       appBarTheme: const AppBarTheme(
         backgroundColor: WarmColors.surface,
         foregroundColor: WarmColors.primaryText,
@@ -246,6 +267,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: WarmColors.cardBorder, width: 1),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -321,6 +343,7 @@ class AppTheme {
   static ThemeData customTheme({String? wallpaperPath}) {
     return darkTheme.copyWith(
       extensions: [
+        AppPaletteExtension.dark,
         WallpaperThemeExtension(
           wallpaperPath: wallpaperPath,
           cardOpacity: 0.75,
