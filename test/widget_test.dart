@@ -17,6 +17,7 @@ import 'package:habit_tracker/presentation/screens/ai/ai_chat_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_history_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_personas.dart';
 import 'package:habit_tracker/presentation/screens/home/home_screen.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:habit_tracker/presentation/screens/splash/splash_screen.dart';
 import 'package:habit_tracker/presentation/navigation/app_router.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
@@ -528,6 +529,7 @@ void main() {
     // Tap Export to CSV
     await tester.tap(find.text('Export to CSV'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(SnackBar), findsWidgets);
 
     // Tap Insights & Analytics shortcut from Settings
@@ -1955,5 +1957,116 @@ void main() {
     // Verify immediate navigation to HomeScreen
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byType(SplashScreen), findsNothing);
+  });
+
+  testWidgets('SettingsScreen export to JSON and XLSX triggers export and shows SnackBar',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 1400 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: const SettingsScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Export to JSON
+    await tester.scrollUntilVisible(find.text('Export to JSON'), 100);
+    await tester.tap(find.text('Export to JSON'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.textContaining('Exported to JSON:'), findsOneWidget);
+
+    // Dismiss SnackBar
+    await tester.pump(const Duration(seconds: 4));
+
+    // 2. Export to Excel (XLSX)
+    await tester.scrollUntilVisible(find.text('Export to Excel (XLSX)'), 100);
+    await tester.tap(find.text('Export to Excel (XLSX)'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.textContaining('Exported to XLSX:'), findsOneWidget);
+  });
+
+  testWidgets(
+      'SettingsScreen Import Data row opens file picker, prompts confirmation, and shows SnackBar on confirm',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 1400 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    bool pickerCalled = false;
+    FilePickerResult? mockResult;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: SettingsScreen(
+          onPickImportFile: () async {
+            pickerCalled = true;
+            return mockResult;
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Verify Import Data tile is rendered
+    await tester.scrollUntilVisible(find.text('Import Data'), 100);
+    expect(find.text('Import Data'), findsOneWidget);
+    expect(
+      find.text('Restore habits and entries from CSV or JSON backup'),
+      findsOneWidget,
+    );
+
+    // 2. User cancels file picker (null result) -> no dialog appears
+    mockResult = null;
+    await tester.tap(find.text('Import Data'));
+    await tester.pumpAndSettle();
+    expect(pickerCalled, isTrue);
+    expect(find.text('Import will merge data. Continue?'), findsNothing);
+
+    // 3. User selects a file -> confirmation dialog appears
+    mockResult = FilePickerResult([
+      PlatformFile(
+        name: 'backup.json',
+        size: 1024,
+        path: '/tmp/backup.json',
+      ),
+    ]);
+    await tester.scrollUntilVisible(find.text('Import Data'), 100);
+    await tester.tap(find.text('Import Data'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Import will merge data. Continue?'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
+
+    // 4. Tap Cancel -> dialog dismisses without SnackBar
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Import will merge data. Continue?'), findsNothing);
+    expect(find.text('Import coming soon.'), findsNothing);
+
+    // 5. Tap Import Data again, select file, and tap Continue -> shows "Import coming soon."
+    await tester.scrollUntilVisible(find.text('Import Data'), 100);
+    await tester.tap(find.text('Import Data'));
+    await tester.pumpAndSettle();
+    expect(find.text('Import will merge data. Continue?'), findsOneWidget);
+
+    await tester.tap(find.text('Continue'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Import coming soon.'), findsOneWidget);
   });
 }

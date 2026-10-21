@@ -1,4 +1,9 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
+import '../../../application/services/data_export_service.dart';
+import '../../../data/database/app_database.dart';
 import '../../navigation/app_router.dart';
 import '../../screens/add/add_habit_screen.dart';
 import '../../screens/ai/ai_settings_screen.dart';
@@ -6,9 +11,16 @@ import '../../screens/history/history_screen.dart';
 import '../../screens/insights/insights_screen.dart';
 import '../../theme/app_theme.dart';
 
-/// Screen presenting prototype settings, export stubs, and navigation shortcuts.
+/// Screen presenting settings, real data exports (CSV, JSON, XLSX), and data import.
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final DataExportService? exportService;
+  final Future<FilePickerResult?> Function()? onPickImportFile;
+
+  const SettingsScreen({
+    super.key,
+    this.exportService,
+    this.onPickImportFile,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +108,7 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // 2. Data Export Section (Prototype)
+            // 2. Data Export & Import Section
             _buildSectionHeader('DATA EXPORT'),
             _buildSettingTile(
               icon: Icons.table_chart_outlined,
@@ -120,6 +132,14 @@ class SettingsScreen extends StatelessWidget {
               title: 'Export to Excel (XLSX)',
               subtitle: 'Multi-sheet workbook with formatting',
               onTap: () => _handleExport(context, 'XLSX'),
+            ),
+            const SizedBox(height: 8),
+            _buildSettingTile(
+              icon: Icons.file_upload_outlined,
+              iconColor: AppColors.blue,
+              title: 'Import Data',
+              subtitle: 'Restore habits and entries from CSV or JSON backup',
+              onTap: () => _handleImport(context),
             ),
 
             const SizedBox(height: 24),
@@ -302,15 +322,137 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _handleExport(BuildContext context, String format) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Exporting habit records to $format format... (Prototype stub)',
+  Future<void> _handleExport(BuildContext context, String format) async {
+    try {
+      final service = exportService ??
+          (AppDatabase.isOpen ? DataExportService(AppDatabase.instance) : null);
+
+      if (service == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Database store is not open.'),
+              backgroundColor: AppColors.surface,
+            ),
+          );
+        }
+        return;
+      }
+
+      File exportedFile;
+      switch (format.toUpperCase()) {
+        case 'CSV':
+          exportedFile = await service.exportCsv();
+          break;
+        case 'JSON':
+          exportedFile = await service.exportJson();
+          break;
+        case 'XLSX':
+          exportedFile = await service.exportXlsx();
+          break;
+        default:
+          throw ArgumentError('Unsupported format: $format');
+      }
+
+      if (context.mounted) {
+        final fileName = p.basename(exportedFile.path);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Exported to $format: $fileName'),
+            backgroundColor: AppColors.surface,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export to $format failed: $e'),
+            backgroundColor: AppColors.surface,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleImport(BuildContext context) async {
+    try {
+      FilePickerResult? result;
+      if (onPickImportFile != null) {
+        result = await onPickImportFile!();
+      } else {
+        result = await FilePicker.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['csv', 'json', 'zip'],
+        );
+      }
+
+      if (result == null || result.files.isEmpty) {
+        return; // User cancelled
+      }
+
+      if (!context.mounted) return;
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Import Data',
+            style: TextStyle(
+              color: AppColors.primaryText,
+              fontWeight: FontWeight.bold,
+              fontFamily: AppTheme.fontPrimary,
+            ),
+          ),
+          content: const Text(
+            'Import will merge data. Continue?',
+            style: TextStyle(
+              color: AppColors.mutedGrey,
+              fontFamily: AppTheme.fontPrimary,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppColors.mutedGrey),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text(
+                'Continue',
+                style: TextStyle(
+                  color: AppColors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: AppColors.surface,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+      );
+
+      if (confirmed == true && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Import coming soon.'),
+            backgroundColor: AppColors.surface,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Import error: $e'),
+            backgroundColor: AppColors.surface,
+          ),
+        );
+      }
+    }
   }
 }

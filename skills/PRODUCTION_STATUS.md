@@ -16,9 +16,9 @@
 
 - Overall: Prototype complete (TASK-01 → TASK-12 done). Production phase begins here.
 - Last updated: 2026-10-21
-- Branch/commit: `overman` (PROD-05 complete)
+- Branch/commit: `overman` (PROD-06 complete)
 - Target devices: Windows desktop (dev/test) + Android compact (412 × 917 px, primary)
-- App launches: ✅ Verified (138/138 tests passing)
+- App launches: ✅ Verified (144/144 tests passing)
 
 ---
 
@@ -779,10 +779,10 @@ groundwork for future CSV/JSON import.
 
 **Acceptance criteria for PROD-06:**
 
-- [ ] CSV, JSON, XLSX exports produce real files on device.
-- [ ] Import row visible in Settings; file picker works; confirmation shown.
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] CSV, JSON, XLSX exports produce real files on device (zip with habits.csv + entries.csv, full JSON graph, XLSX with Habits and Entries sheets).
+- [x] Import row visible in Settings; file picker works; confirmation shown ("Import will merge data. Continue?"); stubbed repository architecture.
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (144/144).
 
 ---
 

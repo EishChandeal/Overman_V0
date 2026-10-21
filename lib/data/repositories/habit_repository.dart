@@ -192,4 +192,16 @@ class HabitRepository {
 
     return entity?.toDto();
   }
+
+  /// Stubbed repository architecture for importing a list of habits (PROD-06).
+  /// Merges new habits into ObjectBox while preserving existing ones.
+  Future<void> importHabits(List<HabitDto> habits) async {
+    for (final dto in habits) {
+      final existing = await getHabitById(dto.id);
+      if (existing == null) {
+        final entity = HabitEntity.fromDto(dto);
+        _box.put(entity);
+      }
+    }
+  }
 }
