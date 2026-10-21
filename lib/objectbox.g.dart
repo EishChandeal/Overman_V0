@@ -17,6 +17,7 @@ import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 import 'data/database/ai_conversation_entity.dart';
 import 'data/database/ai_message_entity.dart';
 import 'data/database/ai_settings_entity.dart';
+import 'data/database/app_session_entity.dart';
 import 'data/database/custom_persona_entity.dart';
 import 'data/database/day_note_entity.dart';
 import 'data/database/habit_entity.dart';
@@ -639,6 +640,42 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(11, 5141082956055150546),
+    name: 'AppSessionEntity',
+    lastPropertyId: const obx_int.IdUid(4, 2344481275770275256),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 3130565470630046896),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 8720754044262598627),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(19, 7818986586856524704),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 8611035928321013500),
+        name: 'date',
+        type: 6,
+        flags: 40,
+        indexId: const obx_int.IdUid(20, 4321934342926433372),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 2344481275770275256),
+        name: 'createdAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -679,8 +716,8 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(10, 6722342221398348719),
-    lastIndexId: const obx_int.IdUid(18, 3100357439455150027),
+    lastEntityId: const obx_int.IdUid(11, 5141082956055150546),
+    lastIndexId: const obx_int.IdUid(20, 4321934342926433372),
     lastRelationId: const obx_int.IdUid(3, 1994842980754943346),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [],
@@ -1501,6 +1538,58 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    AppSessionEntity: obx_int.EntityDefinition<AppSessionEntity>(
+      model: _entities[10],
+      toOneRelations: (AppSessionEntity object) => [],
+      toManyRelations: (AppSessionEntity object) => {},
+      getId: (AppSessionEntity object) => object.obId,
+      setId: (AppSessionEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (AppSessionEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        fbb.startTable(5);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addInt64(2, object.date);
+        fbb.addInt64(3, object.createdAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final dateParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          0,
+        );
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final object = AppSessionEntity(
+          obId: obIdParam,
+          id: idParam,
+          date: dateParam,
+          createdAt: createdAtParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -1949,5 +2038,28 @@ class CustomPersonaEntity_ {
   /// See [CustomPersonaEntity.createdAt].
   static final createdAt = obx.QueryIntegerProperty<CustomPersonaEntity>(
     _entities[9].properties[6],
+  );
+}
+
+/// [AppSessionEntity] entity fields to define ObjectBox queries.
+class AppSessionEntity_ {
+  /// See [AppSessionEntity.obId].
+  static final obId = obx.QueryIntegerProperty<AppSessionEntity>(
+    _entities[10].properties[0],
+  );
+
+  /// See [AppSessionEntity.id].
+  static final id = obx.QueryStringProperty<AppSessionEntity>(
+    _entities[10].properties[1],
+  );
+
+  /// See [AppSessionEntity.date].
+  static final date = obx.QueryIntegerProperty<AppSessionEntity>(
+    _entities[10].properties[2],
+  );
+
+  /// See [AppSessionEntity.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<AppSessionEntity>(
+    _entities[10].properties[3],
   );
 }

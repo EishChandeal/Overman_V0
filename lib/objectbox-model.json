@@ -542,10 +542,43 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "11:5141082956055150546",
+      "lastPropertyId": "4:2344481275770275256",
+      "name": "AppSessionEntity",
+      "properties": [
+        {
+          "id": "1:3130565470630046896",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8720754044262598627",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "19:7818986586856524704"
+        },
+        {
+          "id": "3:8611035928321013500",
+          "name": "date",
+          "type": 6,
+          "flags": 40,
+          "indexId": "20:4321934342926433372"
+        },
+        {
+          "id": "4:2344481275770275256",
+          "name": "createdAt",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "10:6722342221398348719",
-  "lastIndexId": "18:3100357439455150027",
+  "lastEntityId": "11:5141082956055150546",
+  "lastIndexId": "20:4321934342926433372",
   "lastRelationId": "3:1994842980754943346",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

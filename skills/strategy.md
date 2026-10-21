@@ -339,13 +339,13 @@ a "consecutive app-open streak."
 
 **Acceptance criteria for STRAT-02-A:**
 
-- [ ] `AppSessionEntity` and `AppSessionDto` created and registered in `AppDatabase`.
-- [ ] `build_runner` runs cleanly after entity addition.
-- [ ] `AppSessionRepository` implements all 4 methods.
-- [ ] `recordTodayIfAbsent()` called in `main.dart`.
-- [ ] Unit tests: `totalDaysOpened` returns correct count; `currentOpenStreak` counts consecutive days.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AppSessionEntity` and `AppSessionDto` created and registered in `AppDatabase`.
+- [x] `build_runner` runs cleanly after entity addition.
+- [x] `AppSessionRepository` implements all 4 methods.
+- [x] `recordTodayIfAbsent()` called in `main.dart`.
+- [x] Unit tests: `totalDaysOpened` returns correct count; `currentOpenStreak` counts consecutive days.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (191/191).
 
 ---
 

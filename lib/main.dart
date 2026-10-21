@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:habit_tracker/data/database/app_database.dart';
+import 'package:habit_tracker/data/repositories/repositories.dart';
 import 'package:habit_tracker/data/seeders/quote_seeder.dart';
 import 'package:habit_tracker/application/providers/providers.dart';
 
@@ -17,6 +18,9 @@ void main() async {
 
   // Seed initial quotes on first launch if empty
   await QuoteSeeder.seedIfEmpty(store);
+
+  // Record today's app open session
+  await AppSessionRepository(store).recordTodayIfAbsent();
 
   runApp(
     ProviderScope(

@@ -10,6 +10,7 @@ import 'ai_conversation_entity.dart';
 import 'ai_message_entity.dart';
 import 'quote_entity.dart';
 import 'custom_persona_entity.dart';
+import 'app_session_entity.dart';
 
 class AppDatabase {
   static Store? _store;
@@ -55,4 +56,5 @@ class AppDatabase {
   static Box<AiMessageEntity> get aiMessageBox => instance.box<AiMessageEntity>();
   static Box<QuoteEntity> get quoteBox => instance.box<QuoteEntity>();
   static Box<CustomPersonaEntity> get customPersonaBox => instance.box<CustomPersonaEntity>();
+  static Box<AppSessionEntity> get appSessionBox => instance.box<AppSessionEntity>();
 }
