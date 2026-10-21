@@ -116,10 +116,16 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     // Accent color on the left edge: habit color if completed, subtle tint otherwise
     final accentColor = _isCompleted ? habitColor : habitColor.withValues(alpha: 0.35);
 
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+    final cardOpacity = wallpaperExt?.cardOpacity ?? 1.0;
+    final themeSurface = Theme.of(context).colorScheme.surface;
+    final cardSurface = themeSurface.withValues(alpha: cardOpacity);
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
     return Opacity(
       opacity: isCheckedOneTime ? 0.5 : 1.0,
       child: Material(
-        color: Color.alphaBlend(habitColor.withValues(alpha: 0.05), AppColors.surface),
+        color: Color.alphaBlend(habitColor.withValues(alpha: 0.05), cardSurface),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: widget.isSelected
@@ -204,12 +210,12 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                           color: isCheckedOneTime
-                                              ? AppColors.primaryText.withValues(alpha: 0.7)
-                                              : AppColors.primaryText,
+                                              ? onSurface.withValues(alpha: 0.7)
+                                              : onSurface,
                                           decoration: isCheckedOneTime
                                               ? TextDecoration.lineThrough
                                               : null,
-                                          decorationColor: AppColors.primaryText.withValues(alpha: 0.7),
+                                          decorationColor: onSurface.withValues(alpha: 0.7),
                                           fontFamily: AppTheme.fontPrimary,
                                         ),
                                         maxLines: 1,

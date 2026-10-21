@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'wallpaper_theme_extension.dart';
+
+export 'wallpaper_theme_extension.dart';
 
 /// Design tokens extracted from DESIGN.md and PROJECT_BRIEF.md.
 class AppColors {
@@ -21,6 +24,32 @@ class AppColors {
   static const Color incomplete = mutedGrey;
   static const Color accentBlue = blue;
   static const Color accentOrange = orange;
+
+  // Warm theme palette tokens
+  static const Color warmBackground = Color(0xFFFFEBCD); // Blanchedalmond
+  static const Color warmSurface = Color(0xFFFFE4C4); // Bisque
+  static const Color warmSurface2 = Color(0xFFFFDAB9); // PeachPuff
+  static const Color warmPrimaryText = Color(0xFF3E2009); // Dark Brown
+  static const Color warmSecondaryText = Color(0xFF7A4A2A); // Medium Brown
+  static const Color warmAccent = Color(0xFFA0522D); // Sienna
+  static const Color warmAccent2 = Color(0xFFCD853F); // Peru
+  static const Color warmDivider = Color(0xFFD4A574); // Sandy Brown
+  static const Color warmError = Color(0xFFFF6347); // Tomato
+}
+
+/// Dedicated token container for the Blanchedalmond Warm Theme.
+class WarmColors {
+  WarmColors._();
+
+  static const Color background = AppColors.warmBackground;
+  static const Color surface = AppColors.warmSurface;
+  static const Color surface2 = AppColors.warmSurface2;
+  static const Color primaryText = AppColors.warmPrimaryText;
+  static const Color secondaryText = AppColors.warmSecondaryText;
+  static const Color accent = AppColors.warmAccent;
+  static const Color accent2 = AppColors.warmAccent2;
+  static const Color divider = AppColors.warmDivider;
+  static const Color error = AppColors.warmError;
 }
 
 /// Central application theme adhering to the dark palette specified in DESIGN.md.
@@ -155,13 +184,159 @@ class AppTheme {
     );
   }
 
+  /// Warm palette theme with Blanchedalmond canvas and dark brown typography.
+  static ThemeData get warmTheme {
+    const colorScheme = ColorScheme.light(
+      primary: WarmColors.accent,
+      onPrimary: Colors.white,
+      secondary: WarmColors.accent2,
+      onSecondary: Colors.white,
+      surface: WarmColors.surface,
+      onSurface: WarmColors.primaryText,
+      error: WarmColors.error,
+      onError: Colors.white,
+      outline: WarmColors.secondaryText,
+    );
+
+    final baseTextTheme =
+        Typography.material2021(platform: TargetPlatform.android).black;
+    final textTheme = baseTextTheme.apply(
+      fontFamily: fontPrimary,
+      bodyColor: WarmColors.primaryText,
+      displayColor: WarmColors.primaryText,
+    ).copyWith(
+      bodyLarge: baseTextTheme.bodyLarge?.copyWith(
+        fontFamily: fontPrimary,
+        color: WarmColors.primaryText,
+      ),
+      bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+        fontFamily: fontPrimary,
+        color: WarmColors.primaryText,
+      ),
+      bodySmall: baseTextTheme.bodySmall?.copyWith(
+        fontFamily: fontPrimary,
+        color: WarmColors.secondaryText,
+      ),
+      titleMedium: baseTextTheme.titleMedium?.copyWith(
+        fontFamily: fontPrimary,
+        color: WarmColors.primaryText,
+        fontWeight: FontWeight.w600,
+      ),
+      titleLarge: baseTextTheme.titleLarge?.copyWith(
+        fontFamily: fontPrimary,
+        color: WarmColors.primaryText,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      fontFamily: fontPrimary,
+      scaffoldBackgroundColor: WarmColors.background,
+      colorScheme: colorScheme,
+      textTheme: textTheme,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: WarmColors.surface,
+        foregroundColor: WarmColors.primaryText,
+        elevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        color: WarmColors.surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: WarmColors.accent,
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontFamily: fontPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: WarmColors.accent,
+          foregroundColor: Colors.white,
+          textStyle: const TextStyle(
+            fontFamily: fontPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: WarmColors.primaryText,
+          side: const BorderSide(color: WarmColors.divider),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: WarmColors.surface,
+        hintStyle: const TextStyle(
+          color: WarmColors.secondaryText,
+          fontFamily: fontPrimary,
+        ),
+        labelStyle: const TextStyle(
+          color: WarmColors.secondaryText,
+          fontFamily: fontPrimary,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: WarmColors.accent, width: 1.5),
+        ),
+      ),
+      iconTheme: const IconThemeData(
+        color: WarmColors.primaryText,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: WarmColors.divider,
+        thickness: 1,
+      ),
+    );
+  }
+
+  /// Custom theme with wallpaper transparency extension.
+  static ThemeData customTheme({String? wallpaperPath}) {
+    return darkTheme.copyWith(
+      extensions: [
+        WallpaperThemeExtension(
+          wallpaperPath: wallpaperPath,
+          cardOpacity: 0.75,
+          surfaceOpacity: 0.70,
+        ),
+      ],
+    );
+  }
+
   /// Returns the corresponding [ThemeData] for a theme mode string ("dark", "warm", "custom").
-  static ThemeData themeForMode(String mode) {
+  static ThemeData themeForMode(String mode, {String? wallpaperPath}) {
     switch (mode.toLowerCase()) {
       case 'warm':
-        return darkTheme;
+        return warmTheme;
       case 'custom':
-        return darkTheme;
+        return customTheme(wallpaperPath: wallpaperPath);
       case 'dark':
       default:
         return darkTheme;

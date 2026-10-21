@@ -584,11 +584,11 @@ any new theme itself.
 
 **Acceptance criteria for STRAT-03-B:**
 
-- [ ] `AppTheme.warmTheme` implemented with the palette above.
-- [ ] `AppTheme.themeForMode("warm")` returns `warmTheme`.
-- [ ] Switching to warm theme (manually in code for testing) renders readable UI: no dark-text-on-dark-background or light-text-on-light-background issues on Scaffold, AppBar, Cards, Habit cards.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AppTheme.warmTheme` implemented with the palette above.
+- [x] `AppTheme.themeForMode("warm")` returns `warmTheme`.
+- [x] Switching to warm theme (manually in code for testing) renders readable UI: no dark-text-on-dark-background or light-text-on-light-background issues on Scaffold, AppBar, Cards, Habit cards.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (220/220).
 
 ---
 
@@ -638,13 +638,13 @@ partially visible through them.
 
 **Acceptance criteria for STRAT-03-C:**
 
-- [ ] `WallpaperThemeExtension` implemented with `cardOpacity` and `surfaceOpacity`.
-- [ ] `AppTheme.customTheme` returns theme with extension attached.
-- [ ] With `themeMode == "custom"` and a valid `wallpaperPath`, the wallpaper is visible behind UI elements.
-- [ ] Habit cards, AppBar, bottom nav all render at ≤ 80% opacity in custom mode.
-- [ ] No crash when `wallpaperPath` is null (falls back to `darkTheme` appearance).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `WallpaperThemeExtension` implemented with `cardOpacity` and `surfaceOpacity`.
+- [x] `AppTheme.customTheme` returns theme with extension attached.
+- [x] With `themeMode == "custom"` and a valid `wallpaperPath`, the wallpaper is visible behind UI elements.
+- [x] Habit cards, AppBar, bottom nav all render at ≤ 80% opacity in custom mode.
+- [x] No crash when `wallpaperPath` is null (falls back to `darkTheme` appearance).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (220/220).
 
 ---
 
@@ -684,14 +684,14 @@ Dark, Warm, and Custom themes.
 
 **Acceptance criteria for STRAT-03-D:**
 
-- [ ] APPEARANCE section appears in Settings screen above AI ASSISTANT.
-- [ ] Tapping Theme opens the bottom sheet with all 3 tiles.
-- [ ] Selecting Dark or Warm changes the app theme immediately (reactive via `appSettingsProvider`).
-- [ ] Selecting Custom opens the file picker; on success the wallpaper is applied immediately.
-- [ ] Cancelling the picker leaves the theme unchanged and shows SnackBar.
-- [ ] Active theme shows checkmark in the sheet.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] APPEARANCE section appears in Settings screen above AI ASSISTANT.
+- [x] Tapping Theme opens the bottom sheet with all 3 tiles.
+- [x] Selecting Dark or Warm changes the app theme immediately (reactive via `appSettingsProvider`).
+- [x] Selecting Custom opens the file picker; on success the wallpaper is applied immediately.
+- [x] Cancelling the picker leaves the theme unchanged and shows SnackBar.
+- [x] Active theme shows checkmark in the sheet.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (220/220).
 
 ---
 

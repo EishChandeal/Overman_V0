@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import '../../../application/providers/providers.dart';
 import '../../../application/services/data_export_service.dart';
 import '../../../data/database/app_database.dart';
 import '../../navigation/app_router.dart';
@@ -10,36 +12,49 @@ import '../../screens/ai/ai_settings_screen.dart';
 import '../../screens/history/history_screen.dart';
 import '../../screens/insights/insights_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/theme_selector_sheet.dart';
 
 /// Screen presenting settings, real data exports (CSV, JSON, XLSX), and data import.
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   final DataExportService? exportService;
   final Future<FilePickerResult?> Function()? onPickImportFile;
+  final Future<FilePickerResult?> Function()? onPickWallpaperFile;
 
   const SettingsScreen({
     super.key,
     this.exportService,
     this.onPickImportFile,
+    this.onPickWallpaperFile,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(appSettingsProvider);
+    final settings = settingsAsync.value;
+    final themeMode = settings?.themeMode ?? 'dark';
+    final currentThemeName = switch (themeMode) {
+      'warm' => 'Warm (Blanchedalmond)',
+      'custom' => 'Custom Wallpaper',
+      _ => 'Dark',
+    };
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryText),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: 'Back',
         ),
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.primaryText,
+            color: theme.colorScheme.onSurface,
             fontFamily: AppTheme.fontPrimary,
           ),
         ),
@@ -86,6 +101,19 @@ class SettingsScreen extends StatelessWidget {
               onTap: () {
                 appNavigateTo(context, AppRoutes.add, const AddHabitScreen());
               },
+            ),
+
+            const SizedBox(height: 24),
+
+            // Appearance Section (STRAT-03-D)
+            _buildSectionHeader('APPEARANCE'),
+            _buildSettingTile(
+              key: const Key('settings_theme_tile'),
+              icon: Icons.palette_outlined,
+              iconColor: AppColors.blue,
+              title: 'Theme',
+              subtitle: currentThemeName,
+              onTap: () => _openThemeSelector(context, ref),
             ),
 
             const SizedBox(height: 24),
@@ -147,12 +175,6 @@ class SettingsScreen extends StatelessWidget {
             // 3. Application Preferences
             _buildSectionHeader('PREFERENCES'),
             _buildInfoTile(
-              icon: Icons.dark_mode_outlined,
-              title: 'Theme',
-              value: 'Quiet Dark (Active)',
-            ),
-            const SizedBox(height: 8),
-            _buildInfoTile(
               icon: Icons.calendar_today_outlined,
               title: 'First Day of Week',
               value: 'Monday',
@@ -207,6 +229,19 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  void _openThemeSelector(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return ThemeSelectorSheet(
+          onPickWallpaperFile: onPickWallpaperFile,
+        );
+      },
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
@@ -224,6 +259,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingTile({
+    Key? key,
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -231,6 +267,7 @@ class SettingsScreen extends StatelessWidget {
     required VoidCallback onTap,
   }) {
     return Material(
+      key: key,
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(

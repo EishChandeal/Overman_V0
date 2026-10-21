@@ -34,8 +34,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             .where((h) => h.habit.id == _selectedHabitStatus!.habit.id)
             .firstOrNull;
 
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: wallpaperExt?.wallpaperPath != null
+          ? Colors.transparent
+          : Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -134,6 +138,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final totalScheduled = scheduledHabits.length;
 
     const double headerHeight = 88;
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+    final cardOpacity = wallpaperExt?.cardOpacity ?? 1.0;
+    final surfaceColor =
+        Theme.of(context).colorScheme.surface.withValues(alpha: cardOpacity);
+    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Row(
       children: [
@@ -141,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 2,
           child: Material(
-            color: AppColors.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
@@ -157,10 +166,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       formattedDate,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primaryText,
+                        color: onSurfaceColor,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
@@ -188,20 +197,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 appNavigateTo(context, AppRoutes.add, const AddHabitScreen());
               },
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Center(
                   child: Icon(
                     Icons.add,
                     size: 28,
-                    color: AppColors.primaryText,
+                    color: onSurfaceColor,
                   ),
                 ),
               ),
@@ -215,20 +224,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 appNavigateTo(context, AppRoutes.settings, const SettingsScreen());
               },
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Center(
                   child: Icon(
                     Icons.settings_outlined,
                     size: 28,
-                    color: AppColors.primaryText,
+                    color: onSurfaceColor,
                   ),
                 ),
               ),

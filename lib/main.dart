@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -53,7 +54,10 @@ class HabitTrackerApp extends ConsumerWidget {
 
     final appSettings = ref.watch(appSettingsProvider).value;
     final themeMode = appSettings?.themeMode ?? 'dark';
-    final effectiveTheme = AppTheme.themeForMode(themeMode);
+    final effectiveTheme = AppTheme.themeForMode(
+      themeMode,
+      wallpaperPath: appSettings?.wallpaperPath,
+    );
 
     final effectiveRouter = router ??
         (initialRoute != null ? createAppRouter(initialLocation: initialRoute!) : appRouter);
@@ -63,6 +67,26 @@ class HabitTrackerApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: effectiveTheme,
       routerConfig: effectiveRouter,
+      builder: (context, child) {
+        if (themeMode == 'custom' && appSettings?.wallpaperPath != null) {
+          final file = File(appSettings!.wallpaperPath!);
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: Image.file(
+                  file,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const ColoredBox(
+                    color: AppColors.background,
+                  ),
+                ),
+              ),
+              if (child != null) child,
+            ],
+          );
+        }
+        return child ?? const SizedBox.shrink();
+      },
     );
   }
 }

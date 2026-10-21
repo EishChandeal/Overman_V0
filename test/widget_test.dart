@@ -1977,9 +1977,10 @@ void main() {
     });
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const SettingsScreen(),
+      const ProviderScope(
+        child: MaterialApp(
+          home: SettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -2016,13 +2017,14 @@ void main() {
     FilePickerResult? mockResult;
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: SettingsScreen(
-          onPickImportFile: () async {
-            pickerCalled = true;
-            return mockResult;
-          },
+      ProviderScope(
+        child: MaterialApp(
+          home: SettingsScreen(
+            onPickImportFile: () async {
+              pickerCalled = true;
+              return mockResult;
+            },
+          ),
         ),
       ),
     );
