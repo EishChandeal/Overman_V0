@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/providers/providers.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/year_heatmap_widget.dart';
 
 /// Dedicated screen displaying comprehensive analytics, yearly heatmap,
 /// charts, and streaks for a single habit.
-class HabitDetailScreen extends ConsumerWidget {
+class HabitDetailScreen extends ConsumerStatefulWidget {
   final String habitId;
   final HabitDto? initialHabit;
 
@@ -17,13 +18,40 @@ class HabitDetailScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final habitListAsync = ref.watch(habitListProvider);
-    final habitFromList =
-        habitListAsync.valueOrNull?.where((h) => h.id == habitId).firstOrNull;
-    final habitByIdAsync = ref.watch(habitByIdProvider(habitId));
+  ConsumerState<HabitDetailScreen> createState() => _HabitDetailScreenState();
+}
 
-    final habit = habitFromList ?? habitByIdAsync.valueOrNull ?? initialHabit;
+class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
+  late int _selectedYear;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedYear = DateTime.now().year;
+  }
+
+  Color _parseColor(String hex) {
+    try {
+      final cleanHex = hex.replaceAll('#', '');
+      if (cleanHex.length == 6) {
+        return Color(int.parse('0xFF$cleanHex'));
+      } else if (cleanHex.length == 8) {
+        return Color(int.parse('0x$cleanHex'));
+      }
+    } catch (_) {}
+    return AppColors.blue;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final habitListAsync = ref.watch(habitListProvider);
+    final habitFromList = habitListAsync.valueOrNull
+        ?.where((h) => h.id == widget.habitId)
+        .firstOrNull;
+    final habitByIdAsync = ref.watch(habitByIdProvider(widget.habitId));
+
+    final habit =
+        habitFromList ?? habitByIdAsync.valueOrNull ?? widget.initialHabit;
 
     if (habit == null) {
       if (habitListAsync.isLoading && habitByIdAsync.isLoading) {
@@ -71,6 +99,9 @@ class HabitDetailScreen extends ConsumerWidget {
       );
     }
 
+    final entriesAsync = ref.watch(habitEntriesProvider(habit.id));
+    final entries = entriesAsync.valueOrNull ?? [];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -90,13 +121,91 @@ class HabitDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: const SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            if (!habit.isOneTime) ...[
+              // Yearly Heatmap Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _selectedYear == DateTime.now().year
+                        ? 'This Year'
+                        : 'Year $_selectedYear',
+                    key: const Key('heatmap_year_title'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryText,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        key: const Key('heatmap_prev_year_btn'),
+                        icon: const Icon(Icons.chevron_left,
+                            color: AppColors.primaryText),
+                        onPressed: () {
+                          setState(() {
+                            _selectedYear--;
+                          });
+                        },
+                      ),
+                      Text(
+                        '$_selectedYear',
+                        key: const Key('heatmap_year_label'),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryText,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        key: const Key('heatmap_next_year_btn'),
+                        icon: Icon(
+                          Icons.chevron_right,
+                          color: _selectedYear < DateTime.now().year
+                              ? AppColors.primaryText
+                              : AppColors.mutedGrey.withValues(alpha: 0.3),
+                        ),
+                        onPressed: _selectedYear < DateTime.now().year
+                            ? () {
+                                setState(() {
+                                  _selectedYear++;
+                                });
+                              }
+                            : null,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: YearHeatmapWidget(
+                  key: ValueKey('year_heatmap_$_selectedYear'),
+                  year: _selectedYear,
+                  entries: entries,
+                  habitColor: _parseColor(habit.colorHex),
+                  habitType: habit.type,
+                  target: habit.targetValue,
+                  unit: habit.unit,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            const Text(
               'Content coming soon',
               key: Key('habit_detail_content'),
               style: TextStyle(

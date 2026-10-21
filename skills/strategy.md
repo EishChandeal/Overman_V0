@@ -142,15 +142,15 @@ all days in a year, colored by completion intensity, scrollable left-right.
 
 **Acceptance criteria for STRAT-01-B:**
 
-- [ ] `YearHeatmapWidget` renders all 365/366 days as a grid in `HabitDetailScreen`.
-- [ ] Horizontal scroll works; month labels aligned correctly.
-- [ ] Color intensity reflects entry values correctly for both boolean and numeric habits.
-- [ ] Year switcher navigates between years; right arrow disabled for current year.
-- [ ] Cell tap shows date + value tooltip.
-- [ ] Scrolls to current week on initial render.
-- [ ] Widget test: renders with mock entries; correct cell count (364–366 cells).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `YearHeatmapWidget` renders all 365/366 days as a grid in `HabitDetailScreen`.
+- [x] Horizontal scroll works; month labels aligned correctly.
+- [x] Color intensity reflects entry values correctly for both boolean and numeric habits.
+- [x] Year switcher navigates between years; right arrow disabled for current year.
+- [x] Cell tap shows date + value tooltip.
+- [x] Scrolls to current week on initial render.
+- [x] Widget test: renders with mock entries; correct cell count (364–366 cells).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (168/168).
 
 ---
 
@@ -760,30 +760,40 @@ only on a stable codebase (no dependency on STRAT-01 or STRAT-02).
 
 ## Latest completed task
 
-**Task ID:** STRAT-01-A — HabitDetailScreen scaffold + routing
+**Task ID:** STRAT-01-B — GitHub-style yearly heatmap widget
 
 - **Implemented:**
+  - `lib/presentation/widgets/year_heatmap_widget.dart`:
+    - Reusable horizontal `YearHeatmapWidget` rendering a full GitHub-style year grid (Monday to Sunday rows, 52-53 week columns).
+    - Left-hand day-of-week abbreviations (`M`, `T`, `W`, `T`, `F`, `S`, `S`).
+    - Top month label headers (`Jan`, `Feb`, etc.) aligned to week column boundaries.
+    - 5 color intensity levels:
+      - Level 0 (no entry): `AppColors.surface` muted.
+      - Level 1 (missed / <25% target): `habitColor` at 20% opacity.
+      - Level 2 (25-49% target): `habitColor` at 40% opacity.
+      - Level 3 (50-74% target): `habitColor` at 65% opacity.
+      - Level 4 (completed / 100%+ target): `habitColor` at 100% opacity.
+    - Interactive tap tooltips (`TooltipTriggerMode.tap`) formatted with date and completion/numeric value details.
+    - Auto-scroll to current week on initial render via `ScrollController`.
+    - Integrated legend (`Less` to `More` squares).
   - `lib/presentation/screens/habit_detail/habit_detail_screen.dart`:
-    - Riverpod-powered `HabitDetailScreen` watching `habitListProvider` and `habitByIdProvider(habitId)` with optional `initialHabit` fallback.
-    - Dark-theme AppBar with back navigation arrow and bold 16sp habit name.
-    - 404 "Habit not found" fallback state and loading indicator.
-    - Scrollable body with placeholder for subsequent heatmap, charts, and streak sections.
-  - `lib/presentation/navigation/app_router.dart`:
-    - Registered `AppRoutes.habitDetail` (`/habit-detail/:id`) and helper `AppRoutes.habitDetailPath(id)`.
-    - Wired GoRoute builder extracting path parameter `id` and supporting `extra` injection.
-  - Automated tests:
-    - Added `test/presentation/habit_detail_screen_test.dart` covering scaffold rendering, direct `initialHabit` injection, 404 handling, back arrow pop, and GoRouter route navigation.
+    - Added yearly heatmap container to habit details body.
+    - Added year switcher row with chevron buttons and year indicator (`This Year` vs `Year YYYY`).
+    - Disables right chevron for current year and enables for past years.
+    - Omits heatmap for one-time tasks per specification.
+  - Automated Tests:
+    - Added `test/presentation/year_heatmap_widget_test.dart` (7 tests) verifying 365 cells for 2025, 366 cells for 2024 (leap year), boolean color calculations, numeric color thresholds, month headers, scroll container, year switcher navigation, and one-time task heatmap omission.
 - **Verification:**
   - `dart analyze lib/` → `No issues found!` (0 errors, 0 warnings)
-  - `flutter test` → `All tests passed! (161/161 passed)`
+  - `flutter test` → `All tests passed! (168/168 passed)`
 
 ## Current task
 
-**STRAT-01-B** — GitHub-style yearly heatmap widget
+**STRAT-01-C** — Charts section
 
 - Status: Ready to start
-- Goal: Build reusable `YearHeatmapWidget` with horizontal scroll, 5 intensity levels, tap tooltips, and year switcher, then integrate into `HabitDetailScreen`.
+- Goal: Add completion bar chart (for boolean habits) and line graph with target line (for numeric habits) below the heatmap using `fl_chart`.
 
 ## Next action
 
-Execute **STRAT-01-B**: Build `YearHeatmapWidget` (`lib/presentation/widgets/year_heatmap_widget.dart`) and wire into `HabitDetailScreen`.
+Execute **STRAT-01-C**: Build `HabitDetailChart` widget (`lib/presentation/widgets/habit_detail_chart.dart`) and integrate into `HabitDetailScreen`.
