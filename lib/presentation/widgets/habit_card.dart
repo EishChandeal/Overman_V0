@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/application/providers/providers.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 import 'package:habit_tracker/domain/models/habit_day_status.dart';
-import 'package:habit_tracker/presentation/navigation/app_router.dart';
-import 'package:habit_tracker/presentation/screens/habit_detail/habit_detail_screen.dart';
 import 'package:habit_tracker/presentation/theme/app_theme.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 import 'package:habit_tracker/presentation/widgets/heatmap_panel.dart';
@@ -288,7 +286,6 @@ class _HabitCardState extends ConsumerState<HabitCard> {
   }
 
   Widget _buildExpandedSection(BuildContext context, Color habitColor) {
-    final habit = widget.item.habit;
     final titles = _panelTitles;
     final safeIndex = _activePanelIndex.clamp(0, titles.length - 1);
     final currentTitle = titles[safeIndex];
@@ -375,53 +372,6 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                   key: ValueKey<int>(safeIndex),
                   child: _buildPanelContent(habitColor, currentTitle),
                 ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Expanded Card Footer Row with "View More" button
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton(
-              key: const Key('habit_card_view_more_btn'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.orange,
-                side: BorderSide(
-                  color: AppColors.orange.withValues(alpha: 0.6),
-                  width: 0.8,
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                appNavigateTo(
-                  context,
-                  AppRoutes.habitDetailPath(habit.id),
-                  HabitDetailScreen(
-                    habitId: habit.id,
-                    initialHabit: habit,
-                  ),
-                );
-              },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'View More',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: AppTheme.fontPrimary,
-                    ),
-                  ),
-                  SizedBox(width: 6),
-                  Icon(Icons.arrow_forward_rounded, size: 14),
-                ],
               ),
             ),
           ),

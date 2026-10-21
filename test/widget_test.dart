@@ -804,7 +804,7 @@ void main() {
     // Verify Details panel buttons
     expect(find.widgetWithText(OutlinedButton, 'Edit'), findsOneWidget);
     expect(find.byKey(const Key('details_panel_view_more_btn')), findsOneWidget);
-    expect(find.byKey(const Key('habit_card_view_more_btn')), findsOneWidget);
+    expect(find.byKey(const Key('habit_card_view_more_btn')), findsNothing);
 
     // Tapping View More navigates to HabitDetailScreen
     await tester.tap(find.byKey(const Key('details_panel_view_more_btn')));
