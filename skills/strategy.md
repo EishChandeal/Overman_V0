@@ -84,11 +84,11 @@ have a stable destination to render into.
 
 **Acceptance criteria for STRAT-01-A:**
 
-- [ ] `HabitDetailScreen` file exists and compiles.
-- [ ] `/habit-detail/:id` route registered; app navigates to it without crashing.
-- [ ] AppBar shows habit name; back arrow returns to previous screen.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `HabitDetailScreen` file exists and compiles.
+- [x] `/habit-detail/:id` route registered; app navigates to it without crashing.
+- [x] AppBar shows habit name; back arrow returns to previous screen.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (161/161).
 
 ---
 
@@ -760,27 +760,30 @@ only on a stable codebase (no dependency on STRAT-01 or STRAT-02).
 
 ## Latest completed task
 
-**Task ID:** Phase 0 — Hot Reload Error Resolution & Baseline Verification
+**Task ID:** STRAT-01-A — HabitDetailScreen scaffold + routing
 
-- **Root Cause Verified:**
-  - Dart VM and Flutter's Hot Reload mechanism cannot patch field alterations/removals on classes that have `const` constructors or active `const` instances in memory.
-  - When `AiPersona` was updated to support custom personas (`PersonaIdentifier` dynamic wrapper, `isCustom`, `imagePath`), the runtime delta between the previously compiled `AiPersona` in memory and the modified definition caused hot reload to reject the change with:
-    `Const class cannot remove fields: Library:'package:habit_tracker/presentation/screens/ai/ai_personas.dart' Class: AiPersona. Try performing a hot restart instead.`
-  - The code itself is 100% syntactically and architecturally valid.
-- **Resolution:**
-  - Perform a **Hot Restart** (press `R` in the Flutter console) or stop and re-run the app.
-  - Hot reload is rejected only across the one-time transition boundary when class fields on previously-const classes change; subsequent hot reloads work smoothly.
-- **Verification Results:**
-  - `flutter analyze lib/` → 0 issues found! (clean)
-  - `flutter test` → All 156/156 tests passed!
+- **Implemented:**
+  - `lib/presentation/screens/habit_detail/habit_detail_screen.dart`:
+    - Riverpod-powered `HabitDetailScreen` watching `habitListProvider` and `habitByIdProvider(habitId)` with optional `initialHabit` fallback.
+    - Dark-theme AppBar with back navigation arrow and bold 16sp habit name.
+    - 404 "Habit not found" fallback state and loading indicator.
+    - Scrollable body with placeholder for subsequent heatmap, charts, and streak sections.
+  - `lib/presentation/navigation/app_router.dart`:
+    - Registered `AppRoutes.habitDetail` (`/habit-detail/:id`) and helper `AppRoutes.habitDetailPath(id)`.
+    - Wired GoRoute builder extracting path parameter `id` and supporting `extra` injection.
+  - Automated tests:
+    - Added `test/presentation/habit_detail_screen_test.dart` covering scaffold rendering, direct `initialHabit` injection, 404 handling, back arrow pop, and GoRouter route navigation.
+- **Verification:**
+  - `dart analyze lib/` → `No issues found!` (0 errors, 0 warnings)
+  - `flutter test` → `All tests passed! (161/161 passed)`
 
 ## Current task
 
-**STRAT-01-A** — HabitDetailScreen scaffold + routing
+**STRAT-01-B** — GitHub-style yearly heatmap widget
 
 - Status: Ready to start
-- Goal: Create `HabitDetailScreen` shell and wire `/habit-detail/:id` route in `app_router.dart`.
+- Goal: Build reusable `YearHeatmapWidget` with horizontal scroll, 5 intensity levels, tap tooltips, and year switcher, then integrate into `HabitDetailScreen`.
 
 ## Next action
 
-Execute **STRAT-01-A**: Create `HabitDetailScreen` scaffold and wire the `/habit-detail/:id` route.
+Execute **STRAT-01-B**: Build `YearHeatmapWidget` (`lib/presentation/widgets/year_heatmap_widget.dart`) and wire into `HabitDetailScreen`.
