@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/providers/providers.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/habit_detail_chart.dart';
 import '../../widgets/year_heatmap_widget.dart';
 
 /// Dedicated screen displaying comprehensive analytics, yearly heatmap,
@@ -101,6 +102,8 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
 
     final entriesAsync = ref.watch(habitEntriesProvider(habit.id));
     final entries = entriesAsync.valueOrNull ?? [];
+    final scheduleAsync = ref.watch(activeScheduleProvider(habit.id));
+    final schedule = scheduleAsync.valueOrNull;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -205,6 +208,25 @@ class _HabitDetailScreenState extends ConsumerState<HabitDetailScreen> {
               ),
               const SizedBox(height: 16),
             ],
+            // Performance Chart Section
+            const Text(
+              'Performance',
+              key: Key('habit_detail_performance_header'),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primaryText,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            HabitDetailChart(
+              key: const Key('habit_detail_chart'),
+              habit: habit,
+              entries: entries,
+              schedule: schedule,
+            ),
+            const SizedBox(height: 16),
             const Text(
               'Content coming soon',
               key: Key('habit_detail_content'),

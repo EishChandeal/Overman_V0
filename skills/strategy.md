@@ -186,13 +186,13 @@ Use the `fl_chart` package (already in `pubspec.yaml` if added; add it if missin
 
 **Acceptance criteria for STRAT-01-C:**
 
-- [ ] `fl_chart` dependency present in `pubspec.yaml`.
-- [ ] Boolean habit shows bar chart in `HabitDetailScreen`; numeric shows line chart.
-- [ ] "Perfect week" dashed line present on bar chart.
-- [ ] Target dashed line present on line chart.
-- [ ] No-data state shows placeholder text (not a crash).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `fl_chart` dependency present in `pubspec.yaml`.
+- [x] Boolean habit shows bar chart in `HabitDetailScreen`; numeric shows line chart.
+- [x] "Perfect week" dashed line present on bar chart.
+- [x] Target dashed line present on line chart.
+- [x] No-data state shows placeholder text (not a crash).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (172/172).
 
 ---
 
@@ -760,40 +760,39 @@ only on a stable codebase (no dependency on STRAT-01 or STRAT-02).
 
 ## Latest completed task
 
-**Task ID:** STRAT-01-B — GitHub-style yearly heatmap widget
+**Task ID:** STRAT-01-C — Charts section
 
 - **Implemented:**
-  - `lib/presentation/widgets/year_heatmap_widget.dart`:
-    - Reusable horizontal `YearHeatmapWidget` rendering a full GitHub-style year grid (Monday to Sunday rows, 52-53 week columns).
-    - Left-hand day-of-week abbreviations (`M`, `T`, `W`, `T`, `F`, `S`, `S`).
-    - Top month label headers (`Jan`, `Feb`, etc.) aligned to week column boundaries.
-    - 5 color intensity levels:
-      - Level 0 (no entry): `AppColors.surface` muted.
-      - Level 1 (missed / <25% target): `habitColor` at 20% opacity.
-      - Level 2 (25-49% target): `habitColor` at 40% opacity.
-      - Level 3 (50-74% target): `habitColor` at 65% opacity.
-      - Level 4 (completed / 100%+ target): `habitColor` at 100% opacity.
-    - Interactive tap tooltips (`TooltipTriggerMode.tap`) formatted with date and completion/numeric value details.
-    - Auto-scroll to current week on initial render via `ScrollController`.
-    - Integrated legend (`Less` to `More` squares).
+  - Added `fl_chart: ^1.3.0` to `pubspec.yaml`.
+  - `lib/presentation/widgets/habit_detail_chart.dart`:
+    - `HabitDetailChart`: Top-level switcher that renders a 180px fixed height container.
+    - Gracefully shows `"Not enough data yet — keep going!"` placeholder when fewer than 2 entries exist.
+    - `WeeklyCompletionBarChart`:
+      - Bar chart for boolean habits displaying the last 12 weeks of completions.
+      - Dynamic Y-axis scale based on scheduled days per week (default 7 for daily).
+      - Prominent horizontal dashed line showing the "perfect week" target goal with label `'Goal (n)'`.
+      - Interactive touch tooltips showing date and completion count per week.
+    - `NumericProgressLineChart`:
+      - Smooth line chart for numeric habits over the last 30 calendar days.
+      - 10-15% headroom above the max of target and entry values.
+      - Dashed horizontal line indicating the habit target (`Target: {n} {unit}`).
+      - Dot markers at each day's logged data point.
   - `lib/presentation/screens/habit_detail/habit_detail_screen.dart`:
-    - Added yearly heatmap container to habit details body.
-    - Added year switcher row with chevron buttons and year indicator (`This Year` vs `Year YYYY`).
-    - Disables right chevron for current year and enables for past years.
-    - Omits heatmap for one-time tasks per specification.
+    - Wired `HabitDetailChart` under the `"Performance"` section header.
+    - Watches `activeScheduleProvider(habit.id)` to supply schedule-aware target metrics to the chart.
   - Automated Tests:
-    - Added `test/presentation/year_heatmap_widget_test.dart` (7 tests) verifying 365 cells for 2025, 366 cells for 2024 (leap year), boolean color calculations, numeric color thresholds, month headers, scroll container, year switcher navigation, and one-time task heatmap omission.
+    - Added `test/presentation/habit_detail_chart_test.dart` (4 tests) verifying placeholder on < 2 entries, bar chart and perfect week goal line for boolean habits, line chart and target line for numeric habits, and integration into `HabitDetailScreen`.
 - **Verification:**
   - `dart analyze lib/` → `No issues found!` (0 errors, 0 warnings)
-  - `flutter test` → `All tests passed! (168/168 passed)`
+  - `flutter test` → `All tests passed! (172/172 passed)`
 
 ## Current task
 
-**STRAT-01-C** — Charts section
+**STRAT-01-D** — Streak analytics section
 
 - Status: Ready to start
-- Goal: Add completion bar chart (for boolean habits) and line graph with target line (for numeric habits) below the heatmap using `fl_chart`.
+- Goal: Compute and display streak statistics below the charts: top 5 longest streaks in the current year, all-time greatest streak, and current streak.
 
 ## Next action
 
-Execute **STRAT-01-C**: Build `HabitDetailChart` widget (`lib/presentation/widgets/habit_detail_chart.dart`) and integrate into `HabitDetailScreen`.
+Execute **STRAT-01-D**: Implement `StreakCalculator` service (`lib/application/services/streak_calculator.dart`) and wire the streaks UI into `HabitDetailScreen`.
