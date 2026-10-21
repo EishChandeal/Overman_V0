@@ -184,4 +184,102 @@ void main() {
     expect(find.text('Reading'), findsOneWidget);
     expect(find.text('50% completion'), findsOneWidget);
   });
+
+  testWidgets('InsightsScreen only displays regular habits in performance list and shows tasks summary section below',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 1400 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final regularHabit = HabitDto(
+      id: 'h_regular',
+      name: 'Morning Meditation',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'self_improvement',
+      isOneTime: false,
+      isArchived: false,
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+    );
+
+    final pendingTask = HabitDto(
+      id: 't_pending',
+      name: 'Buy Groceries Task',
+      type: HabitType.boolean,
+      colorHex: '#FF7A45',
+      iconName: 'task_alt',
+      isOneTime: true,
+      completedAt: null,
+      isArchived: false,
+      createdAt: DateTime.now().subtract(const Duration(days: 2)),
+    );
+
+    final completedTask = HabitDto(
+      id: 't_completed',
+      name: 'Call Dentist Task',
+      type: HabitType.boolean,
+      colorHex: '#FF7A45',
+      iconName: 'task_alt',
+      isOneTime: true,
+      completedAt: DateTime.now().subtract(const Duration(days: 1)),
+      isArchived: false,
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          habitListProvider.overrideWith(
+            (ref) => Stream.value([regularHabit, pendingTask, completedTask]),
+          ),
+          totalDaysOpenedProvider.overrideWith((ref) async => 5),
+          currentOpenStreakProvider.overrideWith((ref) async => 3),
+        ],
+        child: const MaterialApp(
+          home: InsightsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Regular habit is shown in Habit Performance
+    expect(find.text('Morning Meditation'), findsOneWidget);
+
+    // 2. One-time tasks are NOT shown as habit performance cards or task items
+    expect(find.text('Buy Groceries Task'), findsNothing);
+    expect(find.text('Call Dentist Task'), findsNothing);
+
+    // 3. Active habits overview shows only regular habits count (1, not 3)
+    expect(find.text('Active Habits'), findsOneWidget);
+    // Find the tile value next to 'Active Habits'
+    final activeHabitTile = find.ancestor(
+      of: find.text('Active Habits'),
+      matching: find.byType(Container),
+    );
+    expect(
+      find.descendant(of: activeHabitTile, matching: find.text('1')),
+      findsOneWidget,
+    );
+
+    // 4. Tasks section exists just below Habit Performance
+    expect(find.text('TASKS'), findsOneWidget);
+    expect(find.byKey(const Key('insights_tasks_summary_card')), findsOneWidget);
+
+    final tasksCard = find.byKey(const Key('insights_tasks_summary_card'));
+    // Created: 2 tasks total
+    expect(find.descendant(of: tasksCard, matching: find.text('Created')), findsOneWidget);
+    expect(find.descendant(of: tasksCard, matching: find.text('2')), findsOneWidget);
+
+    // Completed: 1 task completed
+    expect(find.descendant(of: tasksCard, matching: find.text('Completed')), findsOneWidget);
+    expect(find.descendant(of: tasksCard, matching: find.text('1')), findsOneWidget);
+
+    // Completion rate: 50%
+    expect(find.descendant(of: tasksCard, matching: find.text('Completion Rate')), findsOneWidget);
+    expect(find.descendant(of: tasksCard, matching: find.text('50%')), findsOneWidget);
+  });
 }

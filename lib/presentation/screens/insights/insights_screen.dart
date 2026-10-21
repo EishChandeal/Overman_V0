@@ -70,6 +70,11 @@ class InsightsScreen extends ConsumerWidget {
     WidgetRef ref,
     List<HabitDto> habits,
   ) {
+    final regularHabits = habits.where((h) => !h.isOneTime).toList();
+    final tasks = habits.where((h) => h.isOneTime).toList();
+    final tasksCreated = tasks.length;
+    final tasksCompleted = tasks.where((t) => t.completedAt != null).length;
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       children: [
@@ -79,12 +84,12 @@ class InsightsScreen extends ConsumerWidget {
         const SizedBox(height: 20),
 
         // 1. High-level Overview Cards Grid
-        _buildOverviewCards(context, ref, habits),
+        _buildOverviewCards(context, ref, regularHabits),
 
         const SizedBox(height: 20),
 
         // 2. Weekly Consistency Trend Section
-        _buildWeeklyTrendSection(context, ref, habits),
+        _buildWeeklyTrendSection(context, ref, regularHabits),
 
         const SizedBox(height: 20),
 
@@ -101,7 +106,41 @@ class InsightsScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 10),
 
-        ...habits.map((habit) => _buildHabitPerformanceCard(context, ref, habit)),
+        if (regularHabits.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              'No recurring habits created yet.',
+              style: TextStyle(
+                color: AppColors.mutedGrey,
+                fontSize: 13,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+          )
+        else
+          ...regularHabits.map((habit) => _buildHabitPerformanceCard(context, ref, habit)),
+
+        const SizedBox(height: 20),
+
+        // 4. One-Time Tasks Summary Section
+        const Text(
+          'TASKS',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+            color: AppColors.mutedGrey,
+            fontFamily: AppTheme.fontPrimary,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        _buildTasksSummarySection(
+          context,
+          tasksCreated: tasksCreated,
+          tasksCompleted: tasksCompleted,
+        ),
       ],
     );
   }
@@ -597,6 +636,182 @@ class InsightsScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTasksSummarySection(
+    BuildContext context, {
+    required int tasksCreated,
+    required int tasksCompleted,
+  }) {
+    final completionRate = tasksCreated > 0
+        ? ((tasksCompleted / tasksCreated) * 100).round()
+        : 0;
+
+    return Container(
+      key: const Key('insights_tasks_summary_card'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Tasks Created
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.blue.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.playlist_add_check,
+                          size: 20,
+                          color: AppColors.blue,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Created',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.mutedGrey,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$tasksCreated',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryText,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Tasks Completed
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.orange.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.task_alt,
+                          size: 20,
+                          color: AppColors.orange,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Completed',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.mutedGrey,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$tasksCompleted',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryText,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (tasksCreated > 0) ...[
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Completion Rate',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.mutedGrey,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+                Text(
+                  '$completionRate%',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.orange,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (tasksCompleted / tasksCreated).clamp(0.0, 1.0),
+                backgroundColor: AppColors.background,
+                color: AppColors.orange,
+                minHeight: 6,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

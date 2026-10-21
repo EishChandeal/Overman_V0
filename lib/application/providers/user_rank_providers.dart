@@ -11,7 +11,8 @@ export '../services/user_rank_service.dart';
 final allHabitCompletionStatsProvider =
     FutureProvider<List<HabitCompletionStat>>((ref) async {
   final habits = await ref.watch(habitListProvider.future);
-  final activeHabits = habits.where((h) => !h.isArchived).toList();
+  final activeHabits =
+      habits.where((h) => !h.isArchived && !h.isOneTime).toList();
   if (activeHabits.isEmpty) return [];
 
   final entryRepo = await ref.watch(habitEntryRepositoryProvider.future);
