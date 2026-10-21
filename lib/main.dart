@@ -51,13 +51,17 @@ class HabitTrackerApp extends ConsumerWidget {
     // are observed for the lifetime of the application.
     ref.watch(dayChangeControllerProvider);
 
+    final appSettings = ref.watch(appSettingsProvider).value;
+    final themeMode = appSettings?.themeMode ?? 'dark';
+    final effectiveTheme = AppTheme.themeForMode(themeMode);
+
     final effectiveRouter = router ??
         (initialRoute != null ? createAppRouter(initialLocation: initialRoute!) : appRouter);
 
     return MaterialApp.router(
       title: 'Habit Tracker',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: effectiveTheme,
       routerConfig: effectiveRouter,
     );
   }

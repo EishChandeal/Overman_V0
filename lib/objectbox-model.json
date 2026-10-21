@@ -575,9 +575,38 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "12:6037634120974265972",
+      "lastPropertyId": "4:9218047880227819464",
+      "name": "AppSettingsEntity",
+      "properties": [
+        {
+          "id": "1:2536475152491374024",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8103514186663626592",
+          "name": "themeMode",
+          "type": 9
+        },
+        {
+          "id": "3:5555839070781301138",
+          "name": "wallpaperPath",
+          "type": 9
+        },
+        {
+          "id": "4:9218047880227819464",
+          "name": "updatedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "11:5141082956055150546",
+  "lastEntityId": "12:6037634120974265972",
   "lastIndexId": "20:4321934342926433372",
   "lastRelationId": "3:1994842980754943346",
   "lastSequenceId": "0:0",

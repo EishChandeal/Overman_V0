@@ -18,6 +18,7 @@ import 'data/database/ai_conversation_entity.dart';
 import 'data/database/ai_message_entity.dart';
 import 'data/database/ai_settings_entity.dart';
 import 'data/database/app_session_entity.dart';
+import 'data/database/app_settings_entity.dart';
 import 'data/database/custom_persona_entity.dart';
 import 'data/database/day_note_entity.dart';
 import 'data/database/habit_entity.dart';
@@ -676,6 +677,40 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(12, 6037634120974265972),
+    name: 'AppSettingsEntity',
+    lastPropertyId: const obx_int.IdUid(4, 9218047880227819464),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 2536475152491374024),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 8103514186663626592),
+        name: 'themeMode',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 5555839070781301138),
+        name: 'wallpaperPath',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 9218047880227819464),
+        name: 'updatedAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -716,7 +751,7 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(11, 5141082956055150546),
+    lastEntityId: const obx_int.IdUid(12, 6037634120974265972),
     lastIndexId: const obx_int.IdUid(20, 4321934342926433372),
     lastRelationId: const obx_int.IdUid(3, 1994842980754943346),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -1590,6 +1625,58 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    AppSettingsEntity: obx_int.EntityDefinition<AppSettingsEntity>(
+      model: _entities[11],
+      toOneRelations: (AppSettingsEntity object) => [],
+      toManyRelations: (AppSettingsEntity object) => {},
+      getId: (AppSettingsEntity object) => object.obId,
+      setId: (AppSettingsEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (AppSettingsEntity object, fb.Builder fbb) {
+        final themeModeOffset = fbb.writeString(object.themeMode);
+        final wallpaperPathOffset = object.wallpaperPath == null
+            ? null
+            : fbb.writeString(object.wallpaperPath!);
+        fbb.startTable(5);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, themeModeOffset);
+        fbb.addOffset(2, wallpaperPathOffset);
+        fbb.addInt64(3, object.updatedAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final themeModeParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final wallpaperPathParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 8);
+        final updatedAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final object = AppSettingsEntity(
+          obId: obIdParam,
+          themeMode: themeModeParam,
+          wallpaperPath: wallpaperPathParam,
+          updatedAt: updatedAtParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -2061,5 +2148,28 @@ class AppSessionEntity_ {
   /// See [AppSessionEntity.createdAt].
   static final createdAt = obx.QueryIntegerProperty<AppSessionEntity>(
     _entities[10].properties[3],
+  );
+}
+
+/// [AppSettingsEntity] entity fields to define ObjectBox queries.
+class AppSettingsEntity_ {
+  /// See [AppSettingsEntity.obId].
+  static final obId = obx.QueryIntegerProperty<AppSettingsEntity>(
+    _entities[11].properties[0],
+  );
+
+  /// See [AppSettingsEntity.themeMode].
+  static final themeMode = obx.QueryStringProperty<AppSettingsEntity>(
+    _entities[11].properties[1],
+  );
+
+  /// See [AppSettingsEntity.wallpaperPath].
+  static final wallpaperPath = obx.QueryStringProperty<AppSettingsEntity>(
+    _entities[11].properties[2],
+  );
+
+  /// See [AppSettingsEntity.updatedAt].
+  static final updatedAt = obx.QueryIntegerProperty<AppSettingsEntity>(
+    _entities[11].properties[3],
   );
 }

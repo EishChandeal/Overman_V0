@@ -154,6 +154,19 @@ class AppTheme {
       ),
     );
   }
+
+  /// Returns the corresponding [ThemeData] for a theme mode string ("dark", "warm", "custom").
+  static ThemeData themeForMode(String mode) {
+    switch (mode.toLowerCase()) {
+      case 'warm':
+        return darkTheme;
+      case 'custom':
+        return darkTheme;
+      case 'dark':
+      default:
+        return darkTheme;
+    }
+  }
 }
 
 /// Helper utilities for habit visual representation (colors and icons).

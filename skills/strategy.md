@@ -532,13 +532,13 @@ any new theme itself.
 
 **Acceptance criteria for STRAT-03-A:**
 
-- [ ] `AppSettingsEntity` and `AppSettingsDto` exist and are registered.
-- [ ] `build_runner` runs cleanly.
-- [ ] `AppSettingsRepository` implements all 3 methods.
-- [ ] `appSettingsProvider` stream provider created.
-- [ ] `MaterialApp` reads `themeMode` from `appSettingsProvider` (defaults to dark — no visible change yet).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AppSettingsEntity` and `AppSettingsDto` exist and are registered.
+- [x] `build_runner` runs cleanly.
+- [x] `AppSettingsRepository` implements all 3 methods.
+- [x] `appSettingsProvider` stream provider created.
+- [x] `MaterialApp` reads `themeMode` from `appSettingsProvider` (defaults to dark — no visible change yet).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (210/210).
 
 ---
 

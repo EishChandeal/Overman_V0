@@ -9,4 +9,5 @@ export 'ai_message_dto.dart';
 export 'quote_dto.dart';
 export 'custom_persona_dto.dart';
 export 'app_session_dto.dart';
+export 'app_settings_dto.dart';
 export 'package:habit_tracker/domain/models/models.dart';
