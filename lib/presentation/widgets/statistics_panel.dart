@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/application/providers/providers.dart';
+import 'package:habit_tracker/application/services/habit_stats_calculator.dart';
 import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 import 'package:habit_tracker/domain/services/statistics_service.dart';
@@ -20,9 +21,43 @@ class StatisticsPanel extends ConsumerWidget {
     final range = DateRange(start: oneYearAgo, end: todayUtc);
 
     final statsAsync = ref.watch(habitStatisticsProvider(habit.id, range));
+    final entriesAsync = ref.watch(habitEntriesProvider(habit.id));
+    final scheduleAsync = ref.watch(activeScheduleProvider(habit.id));
 
     return statsAsync.when(
-      data: (stats) => _buildContent(context, stats),
+      data: (stats) {
+        final entries = entriesAsync.value ?? [];
+        final activeSchedule = scheduleAsync.value;
+        final scheduledWeekdays = activeSchedule?.scheduledWeekdays
+                ?.map((w) => w.name)
+                .toList() ??
+            [];
+
+        final activeDays = HabitStatsCalculator.computeActiveDays(
+          habit,
+          scheduledWeekdays,
+          now,
+        );
+        final completedDays = HabitStatsCalculator.computeCompletedDays(
+          entries,
+          habit,
+        );
+        final missedDays = (activeDays - completedDays).clamp(0, activeDays);
+        final completionRate = HabitStatsCalculator.computeCompletionRate(
+          habit,
+          entries,
+          scheduledWeekdays,
+          now,
+        );
+
+        return _buildContent(
+          context,
+          stats: stats,
+          completionRate: completionRate,
+          completedDays: completedDays,
+          missedDays: missedDays,
+        );
+      },
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(
@@ -44,9 +79,15 @@ class StatisticsPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, StatisticsResult stats) {
+  Widget _buildContent(
+    BuildContext context, {
+    required StatisticsResult stats,
+    required double completionRate,
+    required int completedDays,
+    required int missedDays,
+  }) {
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
-    final ratePercent = (stats.completionRate * 100).toStringAsFixed(0);
+    final ratePercent = completionRate.toStringAsFixed(0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -66,7 +107,7 @@ class StatisticsPanel extends ConsumerWidget {
             Expanded(
               child: _buildStatTile(
                 title: 'Completed Days',
-                value: '${stats.totalTrackedDays}',
+                value: '$completedDays',
                 icon: Icons.check_circle_outline,
                 accentColor: habitColor,
               ),
@@ -82,7 +123,7 @@ class StatisticsPanel extends ConsumerWidget {
             Expanded(
               child: _buildStatTile(
                 title: 'Missed Days',
-                value: '${stats.totalMissedDays}',
+                value: '$missedDays',
                 icon: Icons.cancel_outlined,
                 accentColor: AppColors.mutedGrey,
               ),
@@ -99,7 +140,7 @@ class StatisticsPanel extends ConsumerWidget {
                     )
                   : _buildStatTile(
                       title: 'Consistency',
-                      value: stats.totalTrackedDays > 0 ? 'Active' : 'New',
+                      value: completedDays > 0 ? 'Active' : 'New',
                       icon: Icons.trending_up,
                       accentColor: habitColor,
                     ),
