@@ -6,6 +6,8 @@ import '../../../application/services/ai_client_service.dart';
 import '../../../application/services/ai_data_formatter.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../theme/app_theme.dart';
+import '../../navigation/app_router.dart';
+import 'ai_history_screen.dart';
 import 'ai_personas.dart';
 
 /// Interactive chat screen with persona guidance, user habit context,
@@ -34,6 +36,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   AiPersona? _persona;
   String? _conversationId;
   int _contextWindowDays = 30;
+  bool _enableMemory = true;
 
   final List<AiMessageDto> _messages = [];
   bool _isLoading = true;
@@ -77,6 +80,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       final settings = await settingsRepo.getSettings();
       final convRepo = await ref.read(aiConversationRepositoryProvider.future);
 
+      _enableMemory = settings.enableMemory;
       if (_conversationId != null) {
         final existingConv = await convRepo.getConversation(_conversationId!);
         if (existingConv != null) {
@@ -98,6 +102,29 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         setState(() => _isLoading = false);
         _scrollToBottom();
       }
+    }
+  }
+
+  Future<void> _toggleMemory() async {
+    final newMemory = !_enableMemory;
+    setState(() => _enableMemory = newMemory);
+    try {
+      final settingsRepo = await ref.read(aiSettingsRepositoryProvider.future);
+      final current = await settingsRepo.getSettings();
+      await settingsRepo.saveSettings(current.copyWith(enableMemory: newMemory));
+    } catch (_) {}
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newMemory
+                ? 'Memory enabled: Prior messages will be remembered'
+                : 'Memory disabled: Token saver active (only latest query sent)',
+          ),
+          backgroundColor: AppColors.surface,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 
@@ -195,12 +222,24 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       });
       _scrollToBottom();
 
-      // 3. Call LLM API with all messages in conversation
+      // 3. Call LLM API (send full history if memory enabled, or just system + latest user message if memory disabled)
       final dbMessages = await convRepo.getMessages(_conversationId!);
+      final List<AiMessageDto> messagesToSend;
+      if (_enableMemory) {
+        messagesToSend = dbMessages;
+      } else {
+        final systemMsgs = dbMessages.where((m) => m.role == 'system').toList();
+        final latestUserMsg = dbMessages.where((m) => m.role == 'user').lastOrNull;
+        messagesToSend = [
+          ...systemMsgs,
+          if (latestUserMsg != null) latestUserMsg,
+        ];
+      }
+
       final replyText = await _aiClientService.sendMessage(
         apiEndpoint: settings.apiEndpoint,
         apiKey: settings.apiKey,
-        messages: dbMessages,
+        messages: messagesToSend,
         modelOverride: settings.modelName,
       );
 
@@ -346,15 +385,67 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history, color: AppColors.primaryText),
+            tooltip: 'Conversation history',
+            onPressed: () {
+              appNavigateTo(
+                context,
+                AppRoutes.aiHistory,
+                const AiHistoryScreen(),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_comment_outlined, color: AppColors.primaryText),
+            tooltip: 'New chat',
+            onPressed: () {
+              setState(() {
+                _conversationId = null;
+                _messages.clear();
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Started new conversation'),
+                  backgroundColor: AppColors.surface,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            },
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: AppColors.primaryText),
             color: AppColors.surface,
             onSelected: (value) {
               if (value == 'clear') {
                 _confirmClearConversation();
+              } else if (value == 'toggle_memory') {
+                _toggleMemory();
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'toggle_memory',
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _enableMemory ? Icons.psychology : Icons.psychology_outlined,
+                      color: _enableMemory ? AppColors.blue : AppColors.mutedGrey,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      _enableMemory ? 'Disable memory' : 'Enable memory',
+                      style: const TextStyle(
+                        color: AppColors.primaryText,
+                        fontSize: 14,
+                        fontFamily: AppTheme.fontPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const PopupMenuItem<String>(
                 value: 'clear',
                 child: Row(
@@ -384,8 +475,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           ? const Center(child: CircularProgressIndicator(color: AppColors.blue))
           : Column(
               children: [
-                // Context Chip
-                _buildContextChip(),
+                // Context & Memory Bar
+                _buildContextAndMemoryBar(),
 
                 // Message List
                 Expanded(
@@ -412,28 +503,76 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     );
   }
 
-  Widget _buildContextChip() {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.mutedGrey.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildContextAndMemoryBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 6,
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          const Icon(Icons.info_outline, size: 14, color: AppColors.mutedGrey),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              'Context: last $_contextWindowDays days of your habits',
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.mutedGrey,
-                fontFamily: AppTheme.fontPrimary,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.mutedGrey.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info_outline, size: 14, color: AppColors.mutedGrey),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'Context: last $_contextWindowDays days of your habits',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.mutedGrey,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: _toggleMemory,
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _enableMemory
+                    ? AppColors.blue.withValues(alpha: 0.15)
+                    : AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _enableMemory
+                      ? AppColors.blue
+                      : AppColors.mutedGrey.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _enableMemory ? Icons.psychology : Icons.psychology_outlined,
+                    size: 14,
+                    color: _enableMemory ? AppColors.blue : AppColors.mutedGrey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _enableMemory ? 'Memory ON' : 'Memory OFF',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _enableMemory ? AppColors.blue : AppColors.mutedGrey,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -12,6 +12,7 @@ class AiSettingsEntity {
   String? selectedPersona;
   int contextWindowDays;
   String contextWindowUnit;
+  bool enableMemory;
   int updatedAt;
 
   AiSettingsEntity({
@@ -22,6 +23,7 @@ class AiSettingsEntity {
     this.selectedPersona,
     this.contextWindowDays = 30,
     this.contextWindowUnit = 'days',
+    this.enableMemory = true,
     required this.updatedAt,
   });
 
@@ -33,6 +35,7 @@ class AiSettingsEntity {
       selectedPersona: dto.selectedPersona,
       contextWindowDays: dto.contextWindowDays,
       contextWindowUnit: dto.contextWindowUnit,
+      enableMemory: dto.enableMemory,
       updatedAt: dto.updatedAt.millisecondsSinceEpoch,
     );
   }
@@ -45,6 +48,7 @@ class AiSettingsEntity {
       selectedPersona: selectedPersona,
       contextWindowDays: contextWindowDays,
       contextWindowUnit: contextWindowUnit,
+      enableMemory: enableMemory,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedAt, isUtc: true),
     );
   }

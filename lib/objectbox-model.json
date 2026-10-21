@@ -270,7 +270,7 @@
     },
     {
       "id": "5:5005733616380570088",
-      "lastPropertyId": "8:7873367689592206814",
+      "lastPropertyId": "9:5028190100970418142",
       "name": "AiSettingsEntity",
       "properties": [
         {
@@ -313,6 +313,11 @@
           "id": "8:7873367689592206814",
           "name": "modelName",
           "type": 9
+        },
+        {
+          "id": "9:5028190100970418142",
+          "name": "enableMemory",
+          "type": 1
         }
       ],
       "relations": []

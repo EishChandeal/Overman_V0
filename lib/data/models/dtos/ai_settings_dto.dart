@@ -7,6 +7,7 @@ class AiSettingsDto {
   final String? selectedPersona;
   final int contextWindowDays;
   final String contextWindowUnit;
+  final bool enableMemory;
   final DateTime updatedAt;
 
   const AiSettingsDto({
@@ -16,6 +17,7 @@ class AiSettingsDto {
     this.selectedPersona,
     this.contextWindowDays = 30,
     this.contextWindowUnit = 'days',
+    this.enableMemory = true,
     required this.updatedAt,
   });
 
@@ -28,6 +30,7 @@ class AiSettingsDto {
     Object? selectedPersona = _sentinel,
     int? contextWindowDays,
     String? contextWindowUnit,
+    bool? enableMemory,
     DateTime? updatedAt,
   }) {
     return AiSettingsDto(
@@ -39,6 +42,7 @@ class AiSettingsDto {
           : selectedPersona as String?,
       contextWindowDays: contextWindowDays ?? this.contextWindowDays,
       contextWindowUnit: contextWindowUnit ?? this.contextWindowUnit,
+      enableMemory: enableMemory ?? this.enableMemory,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -51,6 +55,7 @@ class AiSettingsDto {
       'selectedPersona': selectedPersona,
       'contextWindowDays': contextWindowDays,
       'contextWindowUnit': contextWindowUnit,
+      'enableMemory': enableMemory,
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
@@ -63,6 +68,7 @@ class AiSettingsDto {
       selectedPersona: json['selectedPersona'] as String?,
       contextWindowDays: (json['contextWindowDays'] as num?)?.toInt() ?? 30,
       contextWindowUnit: (json['contextWindowUnit'] as String?) ?? 'days',
+      enableMemory: (json['enableMemory'] as bool?) ?? true,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }
@@ -78,6 +84,7 @@ class AiSettingsDto {
           selectedPersona == other.selectedPersona &&
           contextWindowDays == other.contextWindowDays &&
           contextWindowUnit == other.contextWindowUnit &&
+          enableMemory == other.enableMemory &&
           updatedAt == other.updatedAt;
 
   @override
@@ -88,10 +95,11 @@ class AiSettingsDto {
       selectedPersona.hashCode ^
       contextWindowDays.hashCode ^
       contextWindowUnit.hashCode ^
+      enableMemory.hashCode ^
       updatedAt.hashCode;
 
   @override
   String toString() {
-    return 'AiSettingsDto(apiEndpoint: $apiEndpoint, apiKey: $apiKey, modelName: $modelName, selectedPersona: $selectedPersona, contextWindowDays: $contextWindowDays, contextWindowUnit: $contextWindowUnit, updatedAt: $updatedAt)';
+    return 'AiSettingsDto(apiEndpoint: $apiEndpoint, apiKey: $apiKey, modelName: $modelName, selectedPersona: $selectedPersona, contextWindowDays: $contextWindowDays, contextWindowUnit: $contextWindowUnit, enableMemory: $enableMemory, updatedAt: $updatedAt)';
   }
 }

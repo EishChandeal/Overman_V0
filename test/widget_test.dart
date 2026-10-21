@@ -1406,6 +1406,7 @@ void main() {
     // Verify sections rendered
     expect(find.text('API CONFIGURATION'), findsOneWidget);
     expect(find.text('CONTEXT WINDOW'), findsOneWidget);
+    expect(find.text('Conversation Memory'), findsOneWidget);
     expect(find.text('PERSONA'), findsOneWidget);
     expect(find.text('Friedrich Nietzsche'), findsOneWidget);
     expect(find.text('Vegeta'), findsOneWidget);
@@ -1678,7 +1679,11 @@ void main() {
     await tester.pumpAndSettle();
 
     // Scroll to Previous Conversations tile
-    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.scrollUntilVisible(
+      find.text('Previous Conversations'),
+      50,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
 
     final prevConvFinder = find.text('Previous Conversations');

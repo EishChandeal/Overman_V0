@@ -24,6 +24,7 @@ class AiSettingsRepository {
       selectedPersona: null,
       contextWindowDays: 30,
       contextWindowUnit: 'days',
+      enableMemory: true,
       updatedAt: DateTime.now().toUtc(),
     );
   }
@@ -39,6 +40,7 @@ class AiSettingsRepository {
       existing.selectedPersona = dto.selectedPersona;
       existing.contextWindowDays = dto.contextWindowDays;
       existing.contextWindowUnit = dto.contextWindowUnit;
+      existing.enableMemory = dto.enableMemory;
       existing.updatedAt = nowMs;
       _box.put(existing);
     } else {
@@ -49,6 +51,7 @@ class AiSettingsRepository {
         selectedPersona: dto.selectedPersona,
         contextWindowDays: dto.contextWindowDays,
         contextWindowUnit: dto.contextWindowUnit,
+        enableMemory: dto.enableMemory,
         updatedAt: nowMs,
       );
       _box.put(entity);
@@ -70,6 +73,7 @@ class AiSettingsRepository {
             selectedPersona: null,
             contextWindowDays: 30,
             contextWindowUnit: 'days',
+            enableMemory: true,
             updatedAt: DateTime.now().toUtc(),
           );
         });

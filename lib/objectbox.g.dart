@@ -327,7 +327,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 5005733616380570088),
     name: 'AiSettingsEntity',
-    lastPropertyId: const obx_int.IdUid(8, 7873367689592206814),
+    lastPropertyId: const obx_int.IdUid(9, 5028190100970418142),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -376,6 +376,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(8, 7873367689592206814),
         name: 'modelName',
         type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(9, 5028190100970418142),
+        name: 'enableMemory',
+        type: 1,
         flags: 0,
       ),
     ],
@@ -1034,7 +1040,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final modelNameOffset = object.modelName == null
             ? null
             : fbb.writeString(object.modelName!);
-        fbb.startTable(9);
+        fbb.startTable(10);
         fbb.addInt64(0, object.obId);
         fbb.addOffset(1, apiEndpointOffset);
         fbb.addOffset(2, apiKeyOffset);
@@ -1043,6 +1049,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(5, object.contextWindowDays);
         fbb.addOffset(6, contextWindowUnitOffset);
         fbb.addOffset(7, modelNameOffset);
+        fbb.addBool(8, object.enableMemory);
         fbb.finish(fbb.endTable());
         return object.obId;
       },
@@ -1076,6 +1083,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final contextWindowUnitParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 16, '');
+        final enableMemoryParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          20,
+          false,
+        );
         final updatedAtParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -1090,6 +1103,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           selectedPersona: selectedPersonaParam,
           contextWindowDays: contextWindowDaysParam,
           contextWindowUnit: contextWindowUnitParam,
+          enableMemory: enableMemoryParam,
           updatedAt: updatedAtParam,
         );
 
@@ -1630,6 +1644,11 @@ class AiSettingsEntity_ {
   /// See [AiSettingsEntity.modelName].
   static final modelName = obx.QueryStringProperty<AiSettingsEntity>(
     _entities[4].properties[7],
+  );
+
+  /// See [AiSettingsEntity.enableMemory].
+  static final enableMemory = obx.QueryBooleanProperty<AiSettingsEntity>(
+    _entities[4].properties[8],
   );
 }
 

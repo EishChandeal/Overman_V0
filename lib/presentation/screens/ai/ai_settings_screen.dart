@@ -20,6 +20,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   late final TextEditingController _modelController;
   bool _obscureKey = true;
   double _contextWindowDays = 30.0;
+  bool _enableMemory = true;
   String? _selectedPersona;
   bool _isLoading = true;
 
@@ -50,6 +51,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
           _keyController.text = settings.apiKey;
           _modelController.text = settings.modelName ?? '';
           _contextWindowDays = settings.contextWindowDays.toDouble().clamp(1.0, 90.0);
+          _enableMemory = settings.enableMemory;
           _selectedPersona = settings.selectedPersona;
           _isLoading = false;
         });
@@ -71,6 +73,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
         modelName: _modelController.text.trim().isEmpty ? null : _modelController.text.trim(),
         selectedPersona: _selectedPersona,
         contextWindowDays: _contextWindowDays.round(),
+        enableMemory: _enableMemory,
         updatedAt: DateTime.now().toUtc(),
       );
       await repo.saveSettings(updated);
@@ -120,6 +123,8 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
 
     final hasCredentials = _endpointController.text.trim().isNotEmpty &&
         _keyController.text.trim().isNotEmpty;
+    final conversationsAsync = ref.watch(aiConversationsProvider);
+    final recentConv = conversationsAsync.value?.firstOrNull;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -366,6 +371,48 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                       ),
                     ],
                   ),
+                  const Divider(color: AppColors.background, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Conversation Memory',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryText,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _enableMemory
+                                  ? 'Include past messages for chat memory'
+                                  : 'Memory off (saves API tokens)',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.mutedGrey,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Switch(
+                        value: _enableMemory,
+                        activeThumbColor: AppColors.blue,
+                        activeTrackColor: AppColors.blue.withValues(alpha: 0.5),
+                        onChanged: (val) {
+                          setState(() => _enableMemory = val);
+                          _saveSettings(showToast: false);
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -492,9 +539,11 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     fontFamily: AppTheme.fontPrimary,
                   ),
                 ),
-                subtitle: const Text(
-                  'Browse past chat sessions',
-                  style: TextStyle(
+                subtitle: Text(
+                  conversationsAsync.value != null && conversationsAsync.value!.isNotEmpty
+                      ? '${conversationsAsync.value!.length} past session${conversationsAsync.value!.length == 1 ? "" : "s"}'
+                      : 'Browse past chat sessions',
+                  style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.mutedGrey,
                     fontFamily: AppTheme.fontPrimary,
@@ -516,45 +565,115 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
 
             const SizedBox(height: 20),
 
-            // 5. START CHAT ACTION
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: hasCredentials
-                    ? AppColors.blue
-                    : AppColors.surface.withValues(alpha: 0.5),
-                foregroundColor: hasCredentials
-                    ? AppColors.controlText
-                    : AppColors.mutedGrey,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: hasCredentials ? 2 : 0,
-              ),
-              onPressed: hasCredentials
-                  ? () async {
-                      await _saveSettings(showToast: false);
-                      if (!context.mounted) return;
-                      final persona = AiPersona.fromIdString(_selectedPersona);
-                      appNavigateTo(
-                        context,
-                        AppRoutes.aiChat,
-                        AiChatScreen(persona: persona),
-                      );
-                    }
-                  : null,
-              child: Text(
-                'Start Chat',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: hasCredentials
+            // 5. START / CONTINUE CHAT ACTION
+            if (recentConv != null) ...[
+              ElevatedButton.icon(
+                icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: hasCredentials
+                      ? AppColors.blue
+                      : AppColors.surface.withValues(alpha: 0.5),
+                  foregroundColor: hasCredentials
                       ? AppColors.controlText
-                      : AppColors.mutedGrey.withValues(alpha: 0.6),
-                  fontFamily: AppTheme.fontPrimary,
+                      : AppColors.mutedGrey,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: hasCredentials ? 2 : 0,
+                ),
+                onPressed: hasCredentials
+                    ? () async {
+                        await _saveSettings(showToast: false);
+                        if (!context.mounted) return;
+                        appNavigateTo(
+                          context,
+                          AppRoutes.aiChat,
+                          AiChatScreen(conversationId: recentConv.id),
+                        );
+                      }
+                    : null,
+                label: const Text(
+                  'Continue Chat',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.add, size: 18),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.blue,
+                  side: const BorderSide(color: AppColors.blue, width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: hasCredentials
+                    ? () async {
+                        await _saveSettings(showToast: false);
+                        if (!context.mounted) return;
+                        final persona = AiPersona.fromIdString(_selectedPersona);
+                        appNavigateTo(
+                          context,
+                          AppRoutes.aiChat,
+                          AiChatScreen(persona: persona),
+                        );
+                      }
+                    : null,
+                label: const Text(
+                  'Start New Chat',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ),
+            ] else ...[
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: hasCredentials
+                      ? AppColors.blue
+                      : AppColors.surface.withValues(alpha: 0.5),
+                  foregroundColor: hasCredentials
+                      ? AppColors.controlText
+                      : AppColors.mutedGrey,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  elevation: hasCredentials ? 2 : 0,
+                ),
+                onPressed: hasCredentials
+                    ? () async {
+                        await _saveSettings(showToast: false);
+                        if (!context.mounted) return;
+                        final persona = AiPersona.fromIdString(_selectedPersona);
+                        appNavigateTo(
+                          context,
+                          AppRoutes.aiChat,
+                          AiChatScreen(persona: persona),
+                        );
+                      }
+                    : null,
+                child: Text(
+                  'Start Chat',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: hasCredentials
+                        ? AppColors.controlText
+                        : AppColors.mutedGrey.withValues(alpha: 0.6),
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
           ],
         ),
