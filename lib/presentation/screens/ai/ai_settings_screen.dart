@@ -4,6 +4,7 @@ import '../../../application/providers/providers.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/app_theme.dart';
 import 'ai_chat_screen.dart';
+import 'ai_history_screen.dart';
 import 'ai_personas.dart';
 
 class AiSettingsScreen extends ConsumerStatefulWidget {
@@ -471,12 +472,10 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                   color: AppColors.mutedGrey,
                 ),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Chat history storage arriving in PROD-04-C'),
-                      backgroundColor: AppColors.surface,
-                      duration: Duration(seconds: 2),
-                    ),
+                  appNavigateTo(
+                    context,
+                    AppRoutes.aiHistory,
+                    const AiHistoryScreen(),
                   );
                 },
               ),

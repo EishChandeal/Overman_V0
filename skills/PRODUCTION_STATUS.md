@@ -656,24 +656,24 @@ Tapping navigates to `AiHistoryScreen`.
 
 **Acceptance criteria for PROD-04-D:**
 
-- [ ] "Previous Conversations" row visible in `AiSettingsScreen`.
-- [ ] `AiHistoryScreen` lists conversations ordered by recency.
-- [ ] Each row shows persona avatar, name, message snippet, and relative time.
-- [ ] Swipe-to-delete works with confirmation.
-- [ ] Tapping a row resumes the conversation (existing messages reload).
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] "Previous Conversations" row visible in `AiSettingsScreen`.
+- [x] `AiHistoryScreen` lists conversations ordered by recency.
+- [x] Each row shows persona avatar, name, message snippet, and relative time.
+- [x] Swipe-to-delete works with confirmation.
+- [x] Tapping a row resumes the conversation (existing messages reload).
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (128/128).
 
 ---
 
 **Overall PROD-04 acceptance criteria (all sub-stages):**
 
-- [ ] PROD-04-A complete.
-- [ ] PROD-04-B complete.
-- [ ] PROD-04-C complete.
-- [ ] PROD-04-D complete.
-- [ ] `flutter analyze lib/` → 0 issues across all new files.
-- [ ] `flutter test` → all tests pass (all new tests included).
+- [x] PROD-04-A complete.
+- [x] PROD-04-B complete.
+- [x] PROD-04-C complete.
+- [x] PROD-04-D complete.
+- [x] `flutter analyze lib/` → 0 issues across all new files.
+- [x] `flutter test` → all tests pass (all new tests included).
 
 ---
 
@@ -1057,6 +1057,27 @@ Status: ⏳ Pending
   - `flutter analyze lib/` → `No issues found!`
   - `flutter test` → `All tests passed! (124/124 passed)`
 
+### PROD-04-D: Conversation history list
+
+- **Repository Enhancements**:
+  - Added `getLastMessage(String conversationId)` to `AiConversationRepository` to efficiently fetch the latest non-system message for list snippets.
+- **Providers & Routing**:
+  - Created `aiConversationsProvider` stream provider in `lib/application/providers/ai_conversation_providers.dart` watching `watchAllConversations()`.
+  - Added route `AppRoutes.aiHistory` (`/ai-history`) to `app_router.dart`.
+  - Wired "Previous Conversations" list tile in `AiSettingsScreen` to navigate to `AiHistoryScreen`.
+- **UI & Presentation**:
+  - Built `AiHistoryScreen`:
+    - Shows list of all past conversations ordered by recency.
+    - Each tile renders 40px circular persona avatar (or generic robot icon), persona name in bold, snippet of the last message (up to 60 characters), and relative timestamp ("Just now", "5m ago", "2h ago", "Yesterday", "3d ago", formatted date).
+    - Swipe-to-delete with confirmation dialog calling `deleteConversation(id)` and cascading deletion of messages in ObjectBox.
+    - Tapping any conversation opens `AiChatScreen` with that `conversationId`, seamlessly reloading previous messages and restoring the context window.
+    - Empty state when no conversations exist.
+- **Verification**:
+  - Unit test in `ai_conversation_repository_test.dart` for `getLastMessage`.
+  - Automated widget tests in `widget_test.dart` verifying navigation from settings, row rendering, tapping to resume, and swipe-to-delete with confirmation.
+  - `dart analyze lib/` → `No issues found!`
+  - `flutter test` → `All tests passed! (128/128 passed)`
+
 ## Previous completed tasks
 
 - **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
@@ -1066,14 +1087,15 @@ Status: ⏳ Pending
 - **Date Visibility & Lifecycle Refinements** — History date filtering, one-time task lifecycle, day notes in history, direct task deletion (107/107 tests).
 - **PROD-04-B** — AiSettings screen + context window control + persona selection (113/113 tests).
 - **PROD-04-C** — AiChat screen + conversation history + multi-provider LLM integration (124/124 tests).
+- **PROD-04-D** — Conversation history list screen + resume chat + swipe-to-delete (128/128 tests).
 
 ## Current task
 
-**PROD-04-D** — Conversation history list
+**PROD-05** — Splash screen + Quotes
 
 - Status: Not started
-- Goal: Let the user browse past conversations and resume them.
+- Goal: Replace the default Flutter splash with a branded screen featuring the Overman silhouette and a rotating quote.
 
 ## Next action
 
-Execute **PROD-04-D**: Implement `AiHistoryScreen`, wire up "Previous Conversations" row in `AiSettingsScreen`, and allow tapping past sessions to resume in `AiChatScreen`.
+Execute **PROD-05**: Implement `QuoteService`, seed initial quotes via `QuoteSeeder`, create `SplashScreen` (`lib/presentation/screens/splash/splash_screen.dart`), and wire initial route in `app_router.dart`.

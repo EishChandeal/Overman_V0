@@ -14,7 +14,7 @@ import 'package:habit_tracker/presentation/screens/history/history_screen.dart';
 import 'package:habit_tracker/presentation/screens/settings/settings_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_settings_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_chat_screen.dart';
-import 'package:habit_tracker/presentation/screens/ai/ai_personas.dart';
+import 'package:habit_tracker/presentation/screens/ai/ai_history_screen.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 
 import 'package:habit_tracker/presentation/widgets/notes_panel.dart';
@@ -1639,5 +1639,166 @@ void main() {
     expect(find.text('AI Assistant'), findsOneWidget);
     expect(find.text('Start a Conversation'), findsOneWidget);
     expect(find.byIcon(Icons.smart_toy_outlined), findsWidgets);
+  });
+
+  testWidgets('AiSettingsScreen navigates to AiHistoryScreen when Previous Conversations is tapped',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final aiSettingsRepo = AiSettingsRepository(testStore);
+    final aiConvRepo = AiConversationRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiSettingsRepo),
+          aiConversationRepositoryProvider.overrideWith((ref) async => aiConvRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AiSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Scroll to Previous Conversations tile
+    await tester.drag(find.byType(ListView), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    final prevConvFinder = find.text('Previous Conversations');
+    expect(prevConvFinder, findsOneWidget);
+
+    await tester.tap(prevConvFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AiHistoryScreen), findsOneWidget);
+  });
+
+  testWidgets('AiHistoryScreen renders conversation list, snippet, and resumes on tap',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final aiConvRepo = AiConversationRepository(testStore);
+    final conv = await aiConvRepo.createConversation(
+      personaId: 'dumbledore',
+      contextWindowDays: 14,
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'system',
+      content: 'System instruction',
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'user',
+      content: 'How do I master patience?',
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'assistant',
+      content: 'Patience is a great virtue, young wizard.',
+    );
+
+    final aiSettingsRepo = AiSettingsRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiConversationRepositoryProvider.overrideWith((ref) async => aiConvRepo),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiSettingsRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AiHistoryScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify conversation row
+    expect(find.text('Albus Dumbledore'), findsOneWidget);
+    expect(find.text('Patience is a great virtue, young wizard.'), findsOneWidget);
+
+    // Tap conversation to resume
+    await tester.tap(find.text('Albus Dumbledore'));
+    await tester.pumpAndSettle();
+
+    // Verify AiChatScreen opened with conversation
+    expect(find.byType(AiChatScreen), findsOneWidget);
+    expect(find.text('Patience is a great virtue, young wizard.'), findsOneWidget);
+  });
+
+  testWidgets('AiHistoryScreen swipe-to-delete shows confirmation dialog and removes conversation',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final aiConvRepo = AiConversationRepository(testStore);
+    final existingConvs = await aiConvRepo.getAllConversations();
+    for (final c in existingConvs) {
+      await aiConvRepo.deleteConversation(c.id);
+    }
+
+    final conv = await aiConvRepo.createConversation(
+      personaId: 'spiderman',
+      contextWindowDays: 7,
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'user',
+      content: 'Hello Spidey',
+    );
+
+    final aiSettingsRepo = AiSettingsRepository(testStore);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiConversationRepositoryProvider.overrideWith((ref) async => aiConvRepo),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiSettingsRepo),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const AiHistoryScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Peter Parker (Spider-Man)'), findsOneWidget);
+
+    // Swipe dismissible to delete
+    await tester.drag(find.byKey(ValueKey(conv.id)), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+
+    // Confirm dialog appears
+    expect(find.text('Delete conversation?'), findsOneWidget);
+
+    // Tap Delete
+    await tester.tap(find.widgetWithText(TextButton, 'Delete'));
+    await tester.pumpAndSettle();
+
+    // Should now show empty state
+    expect(find.text('Peter Parker (Spider-Man)'), findsNothing);
+    expect(find.text('No conversations yet'), findsOneWidget);
+    expect(await aiConvRepo.getConversation(conv.id), isNull);
   });
 }

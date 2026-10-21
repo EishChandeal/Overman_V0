@@ -127,6 +127,43 @@ void main() {
 
       final all = await repo.getAllConversations();
       expect(all.first.id, conv1.id);
+      expect(all.last.id, conv2.id);
+    });
+
+    test('getLastMessage returns latest non-system message', () async {
+      final store = AppDatabase.instance;
+      final repo = AiConversationRepository(store);
+
+      final conversation = await repo.createConversation(
+        personaId: 'spiderman',
+        contextWindowDays: 7,
+      );
+
+      // When only system message exists
+      await repo.addMessage(
+        conversationId: conversation.id,
+        role: 'system',
+        content: 'System prompt instructions',
+      );
+      expect(await repo.getLastMessage(conversation.id), isNull);
+
+      // When user message is added
+      final userMsg = await repo.addMessage(
+        conversationId: conversation.id,
+        role: 'user',
+        content: 'Hey Spidey!',
+      );
+      expect((await repo.getLastMessage(conversation.id))?.id, userMsg.id);
+
+      // When assistant message is added
+      final assistantMsg = await repo.addMessage(
+        conversationId: conversation.id,
+        role: 'assistant',
+        content: 'With great power comes great responsibility!',
+      );
+      expect((await repo.getLastMessage(conversation.id))?.id, assistantMsg.id);
+      expect((await repo.getLastMessage(conversation.id))?.content,
+          'With great power comes great responsibility!');
     });
   });
 }

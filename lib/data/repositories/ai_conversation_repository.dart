@@ -50,6 +50,17 @@ class AiConversationRepository {
     return messages;
   }
 
+  Future<AiMessageDto?> getLastMessage(String conversationId) async {
+    final query = _messageBox
+        .query(AiMessageEntity_.conversationId.equals(conversationId))
+        .order(AiMessageEntity_.createdAt, flags: Order.descending)
+        .build();
+    final entities = query.find();
+    query.close();
+    final nonSystem = entities.where((e) => e.role != 'system').firstOrNull;
+    return nonSystem?.toDto();
+  }
+
   Future<AiMessageDto> addMessage({
     required String conversationId,
     required String role,
