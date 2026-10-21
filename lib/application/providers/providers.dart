@@ -10,3 +10,4 @@ export 'ai_settings_providers.dart';
 export 'ai_conversation_providers.dart';
 export 'quote_providers.dart';
 export 'export_providers.dart';
+export 'custom_persona_providers.dart';

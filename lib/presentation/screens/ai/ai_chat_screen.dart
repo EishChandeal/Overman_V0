@@ -7,6 +7,7 @@ import '../../../application/services/ai_data_formatter.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../theme/app_theme.dart';
 import '../../navigation/app_router.dart';
+import '../../widgets/persona_avatar.dart';
 import 'ai_history_screen.dart';
 import 'ai_personas.dart';
 
@@ -348,20 +349,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         ),
         title: Row(
           children: [
-            if (_persona != null) ...[
-              CircleAvatar(
-                radius: 16,
-                backgroundImage: AssetImage(_persona!.assetPath),
-              ),
-              const SizedBox(width: 10),
-            ] else ...[
-              const CircleAvatar(
-                radius: 16,
-                backgroundColor: AppColors.background,
-                child: Icon(Icons.smart_toy_outlined, size: 18, color: AppColors.blue),
-              ),
-              const SizedBox(width: 10),
-            ],
+            PersonaAvatar(
+              persona: _persona,
+              radius: 16,
+              backgroundColor: AppColors.background,
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 title,
@@ -573,17 +566,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (_persona != null)
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: AssetImage(_persona!.assetPath),
-              )
-            else
-              const CircleAvatar(
-                radius: 40,
-                backgroundColor: AppColors.surface,
-                child: Icon(Icons.smart_toy_outlined, size: 40, color: AppColors.blue),
-              ),
+            PersonaAvatar(
+              persona: _persona,
+              radius: 40,
+            ),
             const SizedBox(height: 16),
             Text(
               _persona != null ? 'Chat with ${_persona!.name}' : 'Start a Conversation',
@@ -648,17 +634,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            if (_persona != null)
-              CircleAvatar(
-                radius: 14,
-                backgroundImage: AssetImage(_persona!.assetPath),
-              )
-            else
-              const CircleAvatar(
-                radius: 14,
-                backgroundColor: AppColors.surface,
-                child: Icon(Icons.smart_toy_outlined, size: 14, color: AppColors.blue),
-              ),
+            PersonaAvatar(
+              persona: _persona,
+              radius: 14,
+            ),
             const SizedBox(width: 8),
             Flexible(
               child: Container(
@@ -698,17 +677,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (_persona != null)
-            CircleAvatar(
-              radius: 14,
-              backgroundImage: AssetImage(_persona!.assetPath),
-            )
-          else
-            const CircleAvatar(
-              radius: 14,
-              backgroundColor: AppColors.surface,
-              child: Icon(Icons.smart_toy_outlined, size: 14, color: AppColors.blue),
-            ),
+          PersonaAvatar(
+            persona: _persona,
+            radius: 14,
+          ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

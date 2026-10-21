@@ -496,10 +496,56 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "10:6722342221398348719",
+      "lastPropertyId": "7:4520891999868971980",
+      "name": "CustomPersonaEntity",
+      "properties": [
+        {
+          "id": "1:7224165770618571021",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1702635371067227821",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "18:3100357439455150027"
+        },
+        {
+          "id": "3:329078008042304069",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:144775050923066366",
+          "name": "tagline",
+          "type": 9
+        },
+        {
+          "id": "5:1614866082422907698",
+          "name": "systemPrompt",
+          "type": 9
+        },
+        {
+          "id": "6:8097227590600320548",
+          "name": "imagePath",
+          "type": 9
+        },
+        {
+          "id": "7:4520891999868971980",
+          "name": "createdAt",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "9:4947387148949964182",
-  "lastIndexId": "17:1536929355519527031",
+  "lastEntityId": "10:6722342221398348719",
+  "lastIndexId": "18:3100357439455150027",
   "lastRelationId": "3:1994842980754943346",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

@@ -17,6 +17,7 @@ import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 import 'data/database/ai_conversation_entity.dart';
 import 'data/database/ai_message_entity.dart';
 import 'data/database/ai_settings_entity.dart';
+import 'data/database/custom_persona_entity.dart';
 import 'data/database/day_note_entity.dart';
 import 'data/database/habit_entity.dart';
 import 'data/database/habit_entry_entity.dart';
@@ -585,6 +586,59 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(10, 6722342221398348719),
+    name: 'CustomPersonaEntity',
+    lastPropertyId: const obx_int.IdUid(7, 4520891999868971980),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 7224165770618571021),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1702635371067227821),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(18, 3100357439455150027),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 329078008042304069),
+        name: 'name',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 144775050923066366),
+        name: 'tagline',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 1614866082422907698),
+        name: 'systemPrompt',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 8097227590600320548),
+        name: 'imagePath',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 4520891999868971980),
+        name: 'createdAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -625,8 +679,8 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(9, 4947387148949964182),
-    lastIndexId: const obx_int.IdUid(17, 1536929355519527031),
+    lastEntityId: const obx_int.IdUid(10, 6722342221398348719),
+    lastIndexId: const obx_int.IdUid(18, 3100357439455150027),
     lastRelationId: const obx_int.IdUid(3, 1994842980754943346),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [],
@@ -1377,6 +1431,76 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    CustomPersonaEntity: obx_int.EntityDefinition<CustomPersonaEntity>(
+      model: _entities[9],
+      toOneRelations: (CustomPersonaEntity object) => [],
+      toManyRelations: (CustomPersonaEntity object) => {},
+      getId: (CustomPersonaEntity object) => object.obId,
+      setId: (CustomPersonaEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (CustomPersonaEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        final nameOffset = fbb.writeString(object.name);
+        final taglineOffset = fbb.writeString(object.tagline);
+        final systemPromptOffset = fbb.writeString(object.systemPrompt);
+        final imagePathOffset = object.imagePath == null
+            ? null
+            : fbb.writeString(object.imagePath!);
+        fbb.startTable(8);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addOffset(2, nameOffset);
+        fbb.addOffset(3, taglineOffset);
+        fbb.addOffset(4, systemPromptOffset);
+        fbb.addOffset(5, imagePathOffset);
+        fbb.addInt64(6, object.createdAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final taglineParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 10, '');
+        final systemPromptParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final imagePathParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 14);
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        final object = CustomPersonaEntity(
+          obId: obIdParam,
+          id: idParam,
+          name: nameParam,
+          tagline: taglineParam,
+          systemPrompt: systemPromptParam,
+          imagePath: imagePathParam,
+          createdAt: createdAtParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -1787,5 +1911,43 @@ class AiMessageEntity_ {
   /// See [AiMessageEntity.createdAt].
   static final createdAt = obx.QueryIntegerProperty<AiMessageEntity>(
     _entities[8].properties[5],
+  );
+}
+
+/// [CustomPersonaEntity] entity fields to define ObjectBox queries.
+class CustomPersonaEntity_ {
+  /// See [CustomPersonaEntity.obId].
+  static final obId = obx.QueryIntegerProperty<CustomPersonaEntity>(
+    _entities[9].properties[0],
+  );
+
+  /// See [CustomPersonaEntity.id].
+  static final id = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[1],
+  );
+
+  /// See [CustomPersonaEntity.name].
+  static final name = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[2],
+  );
+
+  /// See [CustomPersonaEntity.tagline].
+  static final tagline = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[3],
+  );
+
+  /// See [CustomPersonaEntity.systemPrompt].
+  static final systemPrompt = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[4],
+  );
+
+  /// See [CustomPersonaEntity.imagePath].
+  static final imagePath = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[5],
+  );
+
+  /// See [CustomPersonaEntity.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<CustomPersonaEntity>(
+    _entities[9].properties[6],
   );
 }

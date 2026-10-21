@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/providers/providers.dart';
+import '../../../data/repositories/custom_persona_repository.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/app_theme.dart';
 import 'ai_chat_screen.dart';
 import 'ai_history_screen.dart';
 import 'ai_personas.dart';
+import '../../widgets/persona_avatar.dart';
+import 'custom_persona_dialog.dart';
 
 class AiSettingsScreen extends ConsumerStatefulWidget {
   const AiSettingsScreen({super.key});
@@ -110,6 +113,42 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     }
   }
 
+  AiPersona? _resolveSelectedPersona(List<AiPersona> personas) {
+    if (_selectedPersona == null) return null;
+    return personas.where((p) => p.id.name == _selectedPersona).firstOrNull ??
+        AiPersona.fromIdString(_selectedPersona);
+  }
+
+  Future<void> _openCustomPersonaDialog({AiPersona? persona}) async {
+    CustomPersonaRepository? repo;
+    try {
+      repo = await ref.read(customPersonaRepositoryProvider.future);
+    } catch (_) {}
+
+    if (!mounted) return;
+    final result = await showDialog<dynamic>(
+      context: context,
+      builder: (ctx) => CustomPersonaDialog(
+        existingPersona: persona,
+        repository: repo,
+      ),
+    );
+
+    if (result is AiPersona) {
+      setState(() {
+        _selectedPersona = result.id.name;
+      });
+      await _saveSettings(showToast: false);
+    } else if (result == 'deleted') {
+      if (persona != null && _selectedPersona == persona.id.name) {
+        setState(() {
+          _selectedPersona = null;
+        });
+        await _saveSettings(showToast: false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -125,6 +164,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
         _keyController.text.trim().isNotEmpty;
     final conversationsAsync = ref.watch(aiConversationsProvider);
     final recentConv = conversationsAsync.value?.firstOrNull;
+    final allPersonas = ref.watch(allPersonasProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -422,10 +462,29 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
             const SizedBox(height: 20),
 
             // 3. PERSONA SELECTION
-            _buildSectionHeader('PERSONA'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildSectionHeader('PERSONA'),
+                TextButton.icon(
+                  key: const Key('add_custom_persona_btn'),
+                  onPressed: () => _openCustomPersonaDialog(),
+                  icon: const Icon(Icons.add, size: 16, color: AppColors.orange),
+                  label: const Text(
+                    'Add Custom',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.orange,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 4),
             const Text(
-              'Choose a character to guide your conversation (optional)',
+              'Choose a character to guide your conversation, or create your own custom personality',
               style: TextStyle(
                 fontSize: 12,
                 color: AppColors.mutedGrey,
@@ -436,15 +495,78 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: kPersonas.length,
+              itemCount: allPersonas.length + 1,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 0.85,
+                childAspectRatio: 0.82,
               ),
               itemBuilder: (context, index) {
-                final persona = kPersonas[index];
+                if (index == allPersonas.length) {
+                  // The "Add Custom" tile at the end of the grid
+                  return Material(
+                    color: AppColors.surface.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      key: const Key('create_character_tile'),
+                      onTap: () => _openCustomPersonaDialog(),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.orange.withValues(alpha: 0.5),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 28,
+                              backgroundColor: AppColors.orange.withValues(alpha: 0.15),
+                              child: const Icon(
+                                Icons.add,
+                                color: AppColors.orange,
+                                size: 30,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Custom Persona',
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.orange,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Define character & prompt',
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.mutedGrey,
+                                fontStyle: FontStyle.italic,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                final persona = allPersonas[index];
                 final isSelected = _selectedPersona == persona.id.name;
 
                 return Material(
@@ -453,6 +575,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                       : AppColors.surface.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(16),
                   child: InkWell(
+                    key: Key('persona_card_${persona.id.name}'),
                     onTap: () {
                       setState(() {
                         if (_selectedPersona == persona.id.name) {
@@ -475,40 +598,60 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                           width: isSelected ? 2.5 : 1.0,
                         ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: AppColors.background,
-                            backgroundImage: AssetImage(persona.assetPath),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            persona.name,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.primaryText,
-                              fontFamily: AppTheme.fontPrimary,
+                          Positioned.fill(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                PersonaAvatar(
+                                  persona: persona,
+                                  radius: 28,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  persona.name,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryText,
+                                    fontFamily: AppTheme.fontPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  persona.tagline,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.mutedGrey,
+                                    fontStyle: FontStyle.italic,
+                                    fontFamily: AppTheme.fontPrimary,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            persona.tagline,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.mutedGrey,
-                              fontStyle: FontStyle.italic,
-                              fontFamily: AppTheme.fontPrimary,
+                          if (persona.isCustom)
+                            Positioned(
+                              top: -4,
+                              right: -4,
+                              child: IconButton(
+                                key: Key('edit_persona_${persona.id.name}'),
+                                icon: const Icon(
+                                  Icons.edit_outlined,
+                                  size: 18,
+                                  color: AppColors.orange,
+                                ),
+                                tooltip: 'Edit character',
+                                onPressed: () => _openCustomPersonaDialog(persona: persona),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),
@@ -617,7 +760,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     ? () async {
                         await _saveSettings(showToast: false);
                         if (!context.mounted) return;
-                        final persona = AiPersona.fromIdString(_selectedPersona);
+                        final persona = _resolveSelectedPersona(allPersonas);
                         appNavigateTo(
                           context,
                           AppRoutes.aiChat,
@@ -653,7 +796,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     ? () async {
                         await _saveSettings(showToast: false);
                         if (!context.mounted) return;
-                        final persona = AiPersona.fromIdString(_selectedPersona);
+                        final persona = _resolveSelectedPersona(allPersonas);
                         appNavigateTo(
                           context,
                           AppRoutes.aiChat,

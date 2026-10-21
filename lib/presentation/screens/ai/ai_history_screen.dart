@@ -5,6 +5,7 @@ import '../../../application/providers/providers.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/persona_avatar.dart';
 import 'ai_chat_screen.dart';
 import 'ai_personas.dart';
 
@@ -199,20 +200,10 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
                 },
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  leading: persona != null
-                      ? CircleAvatar(
-                          radius: 20,
-                          backgroundImage: AssetImage(persona.assetPath),
-                        )
-                      : const CircleAvatar(
-                          radius: 20,
-                          backgroundColor: AppColors.surface,
-                          child: Icon(
-                            Icons.smart_toy_outlined,
-                            size: 20,
-                            color: AppColors.blue,
-                          ),
-                        ),
+                  leading: PersonaAvatar(
+                    persona: persona,
+                    radius: 20,
+                  ),
                   title: Text(
                     name,
                     maxLines: 1,
