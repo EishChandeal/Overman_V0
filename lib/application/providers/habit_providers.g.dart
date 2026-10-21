@@ -23,6 +23,24 @@ final habitListProvider = AutoDisposeStreamProvider<List<HabitDto>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef HabitListRef = AutoDisposeStreamProviderRef<List<HabitDto>>;
+String _$archivedHabitsHash() => r'fb32b7ca11d6925d8d96359a00a143a9def37481';
+
+/// See also [archivedHabits].
+@ProviderFor(archivedHabits)
+final archivedHabitsProvider =
+    AutoDisposeStreamProvider<List<HabitDto>>.internal(
+      archivedHabits,
+      name: r'archivedHabitsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$archivedHabitsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ArchivedHabitsRef = AutoDisposeStreamProviderRef<List<HabitDto>>;
 String _$habitByIdHash() => r'0b9f056778e477fc7509406832a72fe7185faf0f';
 
 /// Copied from Dart SDK

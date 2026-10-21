@@ -1,6 +1,7 @@
 import 'dart:core';
 import '../../../domain/enums/enums.dart';
 
+// 5. Defines the pure Dart HabitDto data structure that the UI displays.
 class HabitDto {
   final String id;
   final String name;
@@ -10,6 +11,9 @@ class HabitDto {
   // Should I add ScheduleType here?
   final String colorHex;
   final String iconName;
+  final String? description;
+  final bool isOneTime;
+  final DateTime? completedAt;
   final DateTime createdAt;
   final bool isArchived;
 
@@ -21,6 +25,9 @@ class HabitDto {
     this.targetValue,
     required this.colorHex,
     required this.iconName,
+    this.description,
+    this.isOneTime = false,
+    this.completedAt,
     required this.createdAt,
     required this.isArchived,
   });
@@ -35,6 +42,9 @@ class HabitDto {
     Object? targetValue = _sentinel,
     String? colorHex,
     String? iconName,
+    Object? description = _sentinel,
+    bool? isOneTime,
+    Object? completedAt = _sentinel,
     DateTime? createdAt,
     bool? isArchived,
   }) {
@@ -48,6 +58,13 @@ class HabitDto {
           : targetValue as double?,
       colorHex: colorHex ?? this.colorHex,
       iconName: iconName ?? this.iconName,
+      description: description == _sentinel
+          ? this.description
+          : description as String?,
+      isOneTime: isOneTime ?? this.isOneTime,
+      completedAt: completedAt == _sentinel
+          ? this.completedAt
+          : completedAt as DateTime?,
       createdAt: createdAt ?? this.createdAt,
       isArchived: isArchived ?? this.isArchived,
     );
@@ -62,6 +79,9 @@ class HabitDto {
       'targetValue': targetValue,
       'colorHex': colorHex,
       'iconName': iconName,
+      'description': description,
+      'isOneTime': isOneTime,
+      'completedAt': completedAt?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
       'isArchived': isArchived,
     };
@@ -76,6 +96,11 @@ class HabitDto {
       targetValue: (json['targetValue'] as num?)?.toDouble(),
       colorHex: json['colorHex'] as String,
       iconName: json['iconName'] as String,
+      description: json['description'] as String?,
+      isOneTime: json['isOneTime'] as bool? ?? false,
+      completedAt: json['completedAt'] != null
+          ? DateTime.parse(json['completedAt'] as String)
+          : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
       isArchived: json['isArchived'] as bool,
     );
@@ -93,6 +118,9 @@ class HabitDto {
           targetValue == other.targetValue &&
           colorHex == other.colorHex &&
           iconName == other.iconName &&
+          description == other.description &&
+          isOneTime == other.isOneTime &&
+          completedAt == other.completedAt &&
           createdAt == other.createdAt &&
           isArchived == other.isArchived;
 
@@ -105,11 +133,14 @@ class HabitDto {
       targetValue.hashCode ^
       colorHex.hashCode ^
       iconName.hashCode ^
+      description.hashCode ^
+      isOneTime.hashCode ^
+      completedAt.hashCode ^
       createdAt.hashCode ^
       isArchived.hashCode;
 
   @override
   String toString() {
-    return 'HabitDto(id: $id, name: $name, type: $type, unit: $unit, targetValue: $targetValue, colorHex: $colorHex, iconName: $iconName, createdAt: $createdAt, isArchived: $isArchived)';
+    return 'HabitDto(id: $id, name: $name, type: $type, unit: $unit, targetValue: $targetValue, colorHex: $colorHex, iconName: $iconName, description: $description, isOneTime: $isOneTime, completedAt: $completedAt, createdAt: $createdAt, isArchived: $isArchived)';
   }
 }

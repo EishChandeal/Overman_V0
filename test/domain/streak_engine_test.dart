@@ -193,4 +193,130 @@ void main() {
       expect(result.currentStreak, 2);
     });
   });
+
+  group('non-daily schedule types', () {
+    test('specificWeekdays marks non-scheduled days as notScheduled and maintains streak', () {
+      final schedule = HabitScheduleDto(
+        id: const Uuid().v4(),
+        habitId: 'test-habit',
+        scheduleType: ScheduleType.specificWeekdays,
+        scheduledWeekdays: [Weekday.monday, Weekday.wednesday],
+        effectiveFrom: DateTime.utc(2000, 1, 1),
+      );
+
+      // Create entries for Monday and Wednesday up to today
+      final entries = <HabitEntryDto>[];
+      var current = todayMidnight.subtract(const Duration(days: 6));
+      DateTime? aMonday;
+      while (!current.isAfter(todayMidnight)) {
+        if (current.weekday == DateTime.monday || current.weekday == DateTime.wednesday) {
+          entries.add(entry(current, 1.0));
+          if (current.weekday == DateTime.monday) aMonday = current;
+        }
+        current = current.add(const Duration(days: 1));
+      }
+
+      final result = StreakEngine.calculate(
+        entries: entries,
+        scheduleHistory: [schedule],
+      );
+
+      if (aMonday != null) {
+        expect(result.heatmap[aMonday], DayStatus.met);
+        final tuesday = aMonday.add(const Duration(days: 1));
+        if (!tuesday.isAfter(todayMidnight)) {
+          expect(result.heatmap[tuesday], DayStatus.notScheduled);
+        }
+      }
+      expect(result.currentStreak >= 1, true);
+    });
+
+    test('timesPerWeek marks rest days as notScheduled once weekly target is met', () {
+      // Pick a Monday 14 days ago so full past weeks are evaluated deterministically
+      var monday = todayMidnight.subtract(const Duration(days: 14));
+      while (monday.weekday != DateTime.monday) {
+        monday = monday.subtract(const Duration(days: 1));
+      }
+      final schedule = HabitScheduleDto(
+        id: const Uuid().v4(),
+        habitId: 'test-habit',
+        scheduleType: ScheduleType.timesPerWeek,
+        targetCount: 2,
+        effectiveFrom: DateTime.utc(2000, 1, 1),
+      );
+
+      final entries = [
+        entry(monday, 1.0),
+        entry(monday.add(const Duration(days: 1)), 1.0), // Tuesday -> 2nd completion (target met)
+      ];
+
+      final result = StreakEngine.calculate(
+        entries: entries,
+        scheduleHistory: [schedule],
+      );
+
+      expect(result.heatmap[monday], DayStatus.met);
+      expect(result.heatmap[monday.add(const Duration(days: 1))], DayStatus.met);
+      expect(result.heatmap[monday.add(const Duration(days: 2))], DayStatus.notScheduled);
+    });
+
+    test('timesPerMonth calculates correctly when monthly target is met', () {
+      final startOfMonth = DateTime.utc(todayMidnight.year, todayMidnight.month, 1);
+      final schedule = HabitScheduleDto(
+        id: const Uuid().v4(),
+        habitId: 'test-habit',
+        scheduleType: ScheduleType.timesPerMonth,
+        targetCount: 1,
+        effectiveFrom: DateTime.utc(2000, 1, 1),
+      );
+
+      final entries = [
+        entry(startOfMonth, 1.0),
+      ];
+
+      final result = StreakEngine.calculate(
+        entries: entries,
+        scheduleHistory: [schedule],
+      );
+
+      expect(result.heatmap[startOfMonth], DayStatus.met);
+    });
+  });
+
+  group('StreakResult value equality and hashCode', () {
+    test('instances with identical streaks and heatmap are equal and have matching hashCode', () {
+      final date = DateTime.utc(2026, 7, 1);
+      final r1 = StreakResult(
+        currentStreak: 5,
+        longestStreak: 10,
+        heatmap: {date: DayStatus.met},
+      );
+      final r2 = StreakResult(
+        currentStreak: 5,
+        longestStreak: 10,
+        heatmap: {date: DayStatus.met},
+      );
+
+      expect(r1 == r2, isTrue);
+      expect(r1.hashCode, equals(r2.hashCode));
+    });
+
+    test('instances with identical streaks but different heatmap are not equal', () {
+      final date1 = DateTime.utc(2026, 7, 1);
+      final date2 = DateTime.utc(2026, 7, 2);
+      final r1 = StreakResult(
+        currentStreak: 5,
+        longestStreak: 10,
+        heatmap: {date1: DayStatus.met},
+      );
+      final r2 = StreakResult(
+        currentStreak: 5,
+        longestStreak: 10,
+        heatmap: {date1: DayStatus.met, date2: DayStatus.missed},
+      );
+
+      expect(r1 == r2, isFalse);
+      expect(r1.hashCode == r2.hashCode, isFalse);
+    });
+  });
 }

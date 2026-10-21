@@ -80,5 +80,61 @@ final habitLimitRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef HabitLimitRepositoryRef = FutureProviderRef<HabitLimitRepository>;
+String _$dayNoteRepositoryHash() => r'0a0e83a81c1de2d6d01a797707c14e2022583cc4';
+
+/// See also [dayNoteRepository].
+@ProviderFor(dayNoteRepository)
+final dayNoteRepositoryProvider = FutureProvider<DayNoteRepository>.internal(
+  dayNoteRepository,
+  name: r'dayNoteRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$dayNoteRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DayNoteRepositoryRef = FutureProviderRef<DayNoteRepository>;
+String _$aiSettingsRepositoryHash() =>
+    r'2b75fabd90fa916e971adda1bc28d324502d8099';
+
+/// See also [aiSettingsRepository].
+@ProviderFor(aiSettingsRepository)
+final aiSettingsRepositoryProvider =
+    FutureProvider<AiSettingsRepository>.internal(
+      aiSettingsRepository,
+      name: r'aiSettingsRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$aiSettingsRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AiSettingsRepositoryRef = FutureProviderRef<AiSettingsRepository>;
+String _$aiConversationRepositoryHash() =>
+    r'4a3dd89426c23241d944d06da96bb8cb1886feed';
+
+/// See also [aiConversationRepository].
+@ProviderFor(aiConversationRepository)
+final aiConversationRepositoryProvider =
+    FutureProvider<AiConversationRepository>.internal(
+      aiConversationRepository,
+      name: r'aiConversationRepositoryProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$aiConversationRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AiConversationRepositoryRef =
+    FutureProviderRef<AiConversationRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

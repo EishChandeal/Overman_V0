@@ -1,9 +1,7 @@
+import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
-import 'habit_dto.dart';
-import 'habit_entry_dto.dart';
-import 'habit_limit_dto.dart';
-import 'habit_schedule_dto.dart';
 
+/// Computed value object representing the status of a habit on a specific day.
 class HabitDayStatus {
   final HabitDto habit;
   final HabitEntryDto? entry;

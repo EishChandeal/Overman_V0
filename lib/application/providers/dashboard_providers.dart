@@ -21,8 +21,26 @@ Future<List<HabitDayStatus>> todayDashboard(TodayDashboardRef ref) async {
 
   final List<HabitDayStatus> statusList = [];
 
+  final todayCalendarDate = DateTime(localNow.year, localNow.month, localNow.day);
+
   for (final habit in habits) {
     if (habit.isArchived) continue;
+
+    // Habits/tasks must not be seen on dates before they were created
+    final createdLocal = habit.createdAt.toLocal();
+    final createdCalendarDate = DateTime(createdLocal.year, createdLocal.month, createdLocal.day);
+    if (todayCalendarDate.isBefore(createdCalendarDate)) {
+      continue;
+    }
+
+    // One-time tasks disappear after the day they were completed
+    if (habit.isOneTime && habit.completedAt != null) {
+      final completedLocal = habit.completedAt!.toLocal();
+      final completedCalendarDate = DateTime(completedLocal.year, completedLocal.month, completedLocal.day);
+      if (todayCalendarDate.isAfter(completedCalendarDate)) {
+        continue;
+      }
+    }
 
     final activeSchedule = await scheduleRepo.getActiveScheduleForHabit(
       habit.id,
@@ -31,7 +49,9 @@ Future<List<HabitDayStatus>> todayDashboard(TodayDashboardRef ref) async {
     final entry = entryMap[habit.id];
 
     bool isScheduledToday = false;
-    if (activeSchedule != null) {
+    if (habit.isOneTime) {
+      isScheduledToday = true;
+    } else if (activeSchedule != null) {
       switch (activeSchedule.scheduleType) {
         case ScheduleType.daily:
         case ScheduleType.timesPerWeek:
@@ -49,6 +69,8 @@ Future<List<HabitDayStatus>> todayDashboard(TodayDashboardRef ref) async {
     DayStatus status;
     if (!isScheduledToday) {
       status = DayStatus.notScheduled;
+    } else if (habit.isOneTime && habit.completedAt != null) {
+      status = DayStatus.met;
     } else if (entry != null && entry.value > 0) {
       if (activeLimit?.minValue != null &&
           entry.value < activeLimit!.minValue!) {

@@ -6,6 +6,9 @@ import 'package:habit_tracker/data/database/habit_entity.dart';
 import 'package:habit_tracker/data/database/habit_entry_entity.dart';
 import 'package:habit_tracker/data/database/habit_limit_entity.dart';
 import 'package:habit_tracker/data/database/habit_schedule_entity.dart';
+import 'package:habit_tracker/data/database/day_note_entity.dart';
+import 'package:habit_tracker/data/database/ai_settings_entity.dart';
+import 'package:habit_tracker/data/database/quote_entity.dart';
 import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 
@@ -341,6 +344,120 @@ void main() {
 
       // Insert second one - should throw UniqueViolationException because 'id' is annotated with @Unique()
       expect(() => habitBox.put(entity2), throwsA(isA<UniqueViolationException>()));
+    });
+
+    test('HabitDto and HabitEntity handle description, isOneTime, and completedAt', () {
+      final store = AppDatabase.instance;
+      final habitBox = store.box<HabitEntity>();
+
+      final oneTimeDto = HabitDto(
+        id: 'one-time-uuid-1',
+        name: 'Finish Tax Forms',
+        type: HabitType.boolean,
+        colorHex: '#123456',
+        iconName: 'receipt',
+        description: 'Need to submit before midnight',
+        isOneTime: true,
+        completedAt: DateTime.utc(2026, 10, 20, 15, 30),
+        createdAt: DateTime.utc(2026, 10, 20, 10, 0),
+        isArchived: false,
+      );
+
+      final entity = HabitEntity.fromDto(oneTimeDto);
+      habitBox.put(entity);
+
+      final retrieved = habitBox.get(entity.obId);
+      expect(retrieved, isNotNull);
+      expect(retrieved!.description, 'Need to submit before midnight');
+      expect(retrieved.isOneTime, isTrue);
+      expect(retrieved.completedAt, oneTimeDto.completedAt!.millisecondsSinceEpoch);
+
+      final dtoFromDb = retrieved.toDto();
+      expect(dtoFromDb, equals(oneTimeDto));
+      expect(dtoFromDb.description, 'Need to submit before midnight');
+      expect(dtoFromDb.isOneTime, isTrue);
+      expect(dtoFromDb.completedAt, oneTimeDto.completedAt);
+    });
+
+    test('DayNoteEntity mapping, CRUD, and DTO round-trip', () {
+      final dayNoteBox = AppDatabase.dayNoteBox;
+
+      final originalDto = DayNoteDto(
+        id: 'note-uuid-1',
+        habitId: 'habit-uuid-1',
+        date: DateTime.utc(2026, 10, 20),
+        note: 'Felt very energized today and finished early.',
+        createdAt: DateTime.utc(2026, 10, 20, 18, 0),
+        updatedAt: DateTime.utc(2026, 10, 20, 18, 5),
+      );
+
+      final entity = DayNoteEntity.fromDto(originalDto);
+      dayNoteBox.put(entity);
+      expect(entity.obId, isPositive);
+
+      final retrieved = dayNoteBox.get(entity.obId);
+      expect(retrieved, isNotNull);
+      expect(retrieved!.id, 'note-uuid-1');
+      expect(retrieved.habitId, 'habit-uuid-1');
+      expect(retrieved.note, 'Felt very energized today and finished early.');
+      expect(retrieved.date, originalDto.date.millisecondsSinceEpoch);
+
+      final retrievedDto = retrieved.toDto();
+      expect(retrievedDto, equals(originalDto));
+      expect(retrievedDto.toJson()['note'], originalDto.note);
+      expect(DayNoteDto.fromJson(retrievedDto.toJson()), equals(originalDto));
+    });
+
+    test('AiSettingsEntity mapping, CRUD, and DTO round-trip', () {
+      final aiSettingsBox = AppDatabase.aiSettingsBox;
+
+      final originalDto = AiSettingsDto(
+        apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta',
+        apiKey: 'test-api-key-12345',
+        selectedPersona: 'vegeta',
+        updatedAt: DateTime.utc(2026, 10, 20, 12, 0),
+      );
+
+      final entity = AiSettingsEntity.fromDto(originalDto);
+      aiSettingsBox.put(entity);
+      expect(entity.obId, isPositive);
+
+      final retrieved = aiSettingsBox.get(entity.obId);
+      expect(retrieved, isNotNull);
+      expect(retrieved!.apiEndpoint, 'https://generativelanguage.googleapis.com/v1beta');
+      expect(retrieved.apiKey, 'test-api-key-12345');
+      expect(retrieved.selectedPersona, 'vegeta');
+
+      final retrievedDto = retrieved.toDto();
+      expect(retrievedDto, equals(originalDto));
+      expect(AiSettingsDto.fromJson(retrievedDto.toJson()), equals(originalDto));
+    });
+
+    test('QuoteEntity mapping, CRUD, and DTO round-trip', () {
+      final quoteBox = AppDatabase.quoteBox;
+
+      const originalDto = QuoteDto(
+        id: 'quote-uuid-1',
+        text: 'Become who you are.',
+        author: 'Friedrich Nietzsche',
+        dayOfYear: null,
+        isActive: true,
+      );
+
+      final entity = QuoteEntity.fromDto(originalDto);
+      quoteBox.put(entity);
+      expect(entity.obId, isPositive);
+
+      final retrieved = quoteBox.get(entity.obId);
+      expect(retrieved, isNotNull);
+      expect(retrieved!.text, 'Become who you are.');
+      expect(retrieved.author, 'Friedrich Nietzsche');
+      expect(retrieved.dayOfYear, isNull);
+      expect(retrieved.isActive, isTrue);
+
+      final retrievedDto = retrieved.toDto();
+      expect(retrievedDto, equals(originalDto));
+      expect(QuoteDto.fromJson(retrievedDto.toJson()), equals(originalDto));
     });
   });
 

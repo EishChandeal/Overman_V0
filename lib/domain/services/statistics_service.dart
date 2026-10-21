@@ -1,5 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:habit_tracker/data/models/dtos/dtos.dart';
 
+/// Pure domain service calculating habit statistics.
+///
+/// Pragmatic Clean Architecture Note:
+/// To ensure zero-overhead functional evaluation without duplicate boilerplate
+/// mapping classes, this pure domain calculation operates directly on immutable
+/// data records ([HabitEntryDto], [HabitLimitDto]).
 class StatisticsResult {
   final double average;
   final double sum;
@@ -18,6 +25,30 @@ class StatisticsResult {
     required this.bestValue,
     required this.weeklyAverages,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is StatisticsResult &&
+        other.average == average &&
+        other.sum == sum &&
+        other.completionRate == completionRate &&
+        other.totalTrackedDays == totalTrackedDays &&
+        other.totalMissedDays == totalMissedDays &&
+        other.bestValue == bestValue &&
+        mapEquals(other.weeklyAverages, weeklyAverages);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        average,
+        sum,
+        completionRate,
+        totalTrackedDays,
+        totalMissedDays,
+        bestValue,
+        weeklyAverages.length,
+      );
 
   @override
   String toString() {

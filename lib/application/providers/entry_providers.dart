@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/models/dtos/dtos.dart';
 import 'dashboard_providers.dart';
 import 'repository_providers.dart';
+import 'streak_providers.dart';
 
 part 'entry_providers.g.dart';
 
@@ -44,6 +45,19 @@ class EntryActions extends _$EntryActions {
     ref.invalidate(todayDashboardProvider);
     ref.invalidate(entriesForDateProvider);
     ref.invalidate(habitEntriesProvider(habitId));
+    ref.invalidate(habitStreakProvider(habitId));
     return entry;
+  }
+
+  Future<void> deleteEntry({
+    required String entryId,
+    required String habitId,
+  }) async {
+    final repo = await ref.read(habitEntryRepositoryProvider.future);
+    await repo.deleteEntry(entryId);
+    ref.invalidate(todayDashboardProvider);
+    ref.invalidate(entriesForDateProvider);
+    ref.invalidate(habitEntriesProvider(habitId));
+    ref.invalidate(habitStreakProvider(habitId));
   }
 }

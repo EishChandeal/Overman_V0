@@ -1,16 +1,10 @@
-# Habit Tracker — Backend Build Prompts & Verification Guide
-
-> **How to use this document**
-> Each phase has two parts: the prompt to give your coding agent,
-> and a checklist of what to verify before moving to the next phase.
-> Never start the next phase until every check in the current one passes.
-> When something fails, use a targeted follow-up prompt — don't restart the phase.
+# Habit Tracker — Backend Build & Verification Guide
 
 ---
 
 ## Phase 1 — Project scaffold and dependencies
 
-### Prompt
+### Plan
 
 ```
 Create a new Flutter project called habit_tracker.
@@ -102,7 +96,7 @@ in full so I can verify it.
 
 ## Phase 2 — Enums
 
-### Prompt
+### Plan
 
 ```
 In lib/domain/enums/, create three separate files.
@@ -172,7 +166,7 @@ Do not create any other files. Do not run build_runner.
 
 ## Phase 3 — Plain DTOs (pure Dart data classes)
 
-### Prompt
+### Plan
 
 ```
 In lib/data/models/dtos/, create three plain Dart DTO classes.
@@ -312,7 +306,7 @@ No other files. No build_runner.
 
 ## Phase 4 — ObjectBox entities
 
-### Prompt
+### Plan
 
 ```
 In lib/data/database/, create three ObjectBox entity files
@@ -449,7 +443,7 @@ Report the full output.
 
 ## Phase 5 — Repositories
 
-### Prompt
+### Plan
 
 ```
 In lib/data/repositories/, create four repository classes.
@@ -685,7 +679,7 @@ Do not run build_runner. Do not add any UI code.
 
 ## Phase 6 — StreakEngine and StatisticsService
 
-### Prompt
+### Plan
 
 ```
 In lib/domain/services/, create two service files.
@@ -876,7 +870,7 @@ Create lib/domain/services/services.dart as a barrel export.
 
 ## Phase 7 — Terminal dev runner
 
-### Prompt
+### Plan
 
 ```
 Create tool/dev_runner.dart as a standalone Dart script.
@@ -983,7 +977,7 @@ the real output matches.
 
 ## Phase 8 — Unit tests
 
-### Prompt
+### Plan
 
 ```
 In test/, create two test files.
@@ -1119,7 +1113,7 @@ and report the full output including pass/fail for each test.
 
 ## Phase 9 — Riverpod providers
 
-### Prompt
+### Plan
 
 ```
 In lib/application/providers/, create provider files

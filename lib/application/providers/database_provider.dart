@@ -5,6 +5,8 @@ import '../../objectbox.g.dart';
 
 part 'database_provider.g.dart';
 
+// Instantiates and provides the ObjectBox database connection (Store).
+// 3.
 @Riverpod(keepAlive: true)
 Future<Store> objectBoxStore(ObjectBoxStoreRef ref) async {
   final dir = await getApplicationDocumentsDirectory();

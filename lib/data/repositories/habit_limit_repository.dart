@@ -12,12 +12,16 @@ class HabitLimitRepository {
     _box = _store.box<HabitLimitEntity>();
   }
 
+  DateTime _normalizeDate(DateTime date) =>
+      DateTime.utc(date.year, date.month, date.day);
+
   Future<HabitLimitDto> setLimit({
     required String habitId,
     double? minValue,
     double? maxValue,
     required DateTime effectiveFrom,
   }) async {
+    final normalizedFrom = _normalizeDate(effectiveFrom);
     // Find any existing limit where habitId matches and effectiveTo is null
     final query = _box.query(HabitLimitEntity_.habitId.equals(habitId)).build();
     final activeLimits = query.find().where((e) => e.effectiveTo == null).toList();
@@ -45,7 +49,7 @@ class HabitLimitRepository {
       habitId: habitId,
       minValue: minValue,
       maxValue: maxValue,
-      effectiveFrom: effectiveFrom.millisecondsSinceEpoch,
+      effectiveFrom: normalizedFrom.millisecondsSinceEpoch,
       effectiveTo: null,
     );
     newLimit.habitEntity.target = habit;
@@ -72,5 +76,31 @@ class HabitLimitRepository {
     // Sort by effectiveFrom descending
     results.sort((a, b) => b.effectiveFrom.compareTo(a.effectiveFrom));
     return results.map((e) => e.toDto()).toList();
+  }
+
+  Future<void> removeLimit(String habitId) async {
+    final query = _box.query(HabitLimitEntity_.habitId.equals(habitId)).build();
+    final activeLimits =
+        query.find().where((e) => e.effectiveTo == null).toList();
+    query.close();
+
+    final nowMillis = DateTime.now().toUtc().millisecondsSinceEpoch;
+    for (final limit in activeLimits) {
+      limit.effectiveTo = nowMillis;
+      _box.put(limit);
+    }
+  }
+
+  Stream<HabitLimitDto?> watchActiveLimitForHabit(String habitId) {
+    return _box
+        .query(HabitLimitEntity_.habitId.equals(habitId))
+        .watch(triggerImmediately: true)
+        .map((query) {
+          final results = query.find();
+          final activeList =
+              results.where((e) => e.effectiveTo == null).toList();
+          if (activeList.isEmpty) return null;
+          return activeList.first.toDto();
+        });
   }
 }

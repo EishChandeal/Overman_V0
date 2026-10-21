@@ -11,10 +11,11 @@ Future<StreakResult> habitStreak(HabitStreakRef ref, String habitId) async {
   final entryRepo = await ref.watch(habitEntryRepositoryProvider.future);
   final scheduleRepo = await ref.watch(habitScheduleRepositoryProvider.future);
 
-  final nowUtc = DateTime.now().toUtc();
-  final from = nowUtc.subtract(const Duration(days: 365));
+  final nowLocal = DateTime.now();
+  final todayUtc = DateTime.utc(nowLocal.year, nowLocal.month, nowLocal.day);
+  final from = todayUtc.subtract(const Duration(days: 365));
 
-  final entries = await entryRepo.getEntriesForHabit(habitId, from, nowUtc);
+  final entries = await entryRepo.getEntriesForHabit(habitId, from, todayUtc);
   final scheduleHistory = await scheduleRepo.getScheduleHistoryForHabit(
     habitId,
   );

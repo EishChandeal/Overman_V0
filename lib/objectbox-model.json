@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:573904481184556594",
-      "lastPropertyId": "10:2670188055364762326",
+      "lastPropertyId": "13:9102578696693657833",
       "name": "HabitEntity",
       "properties": [
         {
@@ -60,6 +60,21 @@
           "id": "10:2670188055364762326",
           "name": "isArchived",
           "type": 1
+        },
+        {
+          "id": "11:5749340711390388064",
+          "name": "description",
+          "type": 9
+        },
+        {
+          "id": "12:7967285014577796115",
+          "name": "isOneTime",
+          "type": 1
+        },
+        {
+          "id": "13:9102578696693657833",
+          "name": "completedAt",
+          "type": 6
         }
       ],
       "relations": [
@@ -252,10 +267,285 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "5:5005733616380570088",
+      "lastPropertyId": "9:5028190100970418142",
+      "name": "AiSettingsEntity",
+      "properties": [
+        {
+          "id": "1:8952807128888066544",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1932234390088953831",
+          "name": "apiEndpoint",
+          "type": 9
+        },
+        {
+          "id": "3:5684610217580602981",
+          "name": "apiKey",
+          "type": 9
+        },
+        {
+          "id": "4:5701296084784406420",
+          "name": "selectedPersona",
+          "type": 9
+        },
+        {
+          "id": "5:4775225189248332428",
+          "name": "updatedAt",
+          "type": 6
+        },
+        {
+          "id": "6:7122224351175181488",
+          "name": "contextWindowDays",
+          "type": 6
+        },
+        {
+          "id": "7:614954975443147139",
+          "name": "contextWindowUnit",
+          "type": 9
+        },
+        {
+          "id": "8:7873367689592206814",
+          "name": "modelName",
+          "type": 9
+        },
+        {
+          "id": "9:5028190100970418142",
+          "name": "enableMemory",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:6052896404191348768",
+      "lastPropertyId": "7:6132765453695321585",
+      "name": "DayNoteEntity",
+      "properties": [
+        {
+          "id": "1:4961989325448405236",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1387203109315783502",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "11:3201012364451323085"
+        },
+        {
+          "id": "3:3506958779899071486",
+          "name": "habitId",
+          "type": 9,
+          "flags": 2048,
+          "indexId": "12:5679756259947223909"
+        },
+        {
+          "id": "4:9048472272143153494",
+          "name": "date",
+          "type": 6,
+          "flags": 8,
+          "indexId": "13:4878636005867211451"
+        },
+        {
+          "id": "5:3019693586517204909",
+          "name": "note",
+          "type": 9
+        },
+        {
+          "id": "6:5486359815009889065",
+          "name": "createdAt",
+          "type": 6
+        },
+        {
+          "id": "7:6132765453695321585",
+          "name": "updatedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "7:3682582825121767893",
+      "lastPropertyId": "6:3862449842546125298",
+      "name": "QuoteEntity",
+      "properties": [
+        {
+          "id": "1:8784464034598520755",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:6203486546156640318",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "14:2407209613717327233"
+        },
+        {
+          "id": "3:1991529644881456719",
+          "name": "text",
+          "type": 9
+        },
+        {
+          "id": "4:837103728173244634",
+          "name": "author",
+          "type": 9
+        },
+        {
+          "id": "5:2142796507481130374",
+          "name": "dayOfYear",
+          "type": 6
+        },
+        {
+          "id": "6:3862449842546125298",
+          "name": "isActive",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:3622490789929513134",
+      "lastPropertyId": "6:5179005327496731960",
+      "name": "AiConversationEntity",
+      "properties": [
+        {
+          "id": "1:1381189723457199902",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5393451133159063624",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "15:1720785957434856678"
+        },
+        {
+          "id": "3:5974347602889361249",
+          "name": "personaId",
+          "type": 9
+        },
+        {
+          "id": "4:5203142906223109417",
+          "name": "contextWindowDays",
+          "type": 6
+        },
+        {
+          "id": "5:8236149534985574253",
+          "name": "createdAt",
+          "type": 6
+        },
+        {
+          "id": "6:5179005327496731960",
+          "name": "updatedAt",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "9:4947387148949964182",
+      "lastPropertyId": "6:6860970816514282771",
+      "name": "AiMessageEntity",
+      "properties": [
+        {
+          "id": "1:3420821971488129559",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1816992538843770884",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "16:4430179666905276235"
+        },
+        {
+          "id": "3:3255827936323103875",
+          "name": "conversationId",
+          "type": 9,
+          "flags": 2048,
+          "indexId": "17:1536929355519527031"
+        },
+        {
+          "id": "4:2062961157566522907",
+          "name": "role",
+          "type": 9
+        },
+        {
+          "id": "5:8021734972210535135",
+          "name": "content",
+          "type": 9
+        },
+        {
+          "id": "6:6860970816514282771",
+          "name": "createdAt",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "10:6722342221398348719",
+      "lastPropertyId": "7:4520891999868971980",
+      "name": "CustomPersonaEntity",
+      "properties": [
+        {
+          "id": "1:7224165770618571021",
+          "name": "obId",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1702635371067227821",
+          "name": "id",
+          "type": 9,
+          "flags": 2080,
+          "indexId": "18:3100357439455150027"
+        },
+        {
+          "id": "3:329078008042304069",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "4:144775050923066366",
+          "name": "tagline",
+          "type": 9
+        },
+        {
+          "id": "5:1614866082422907698",
+          "name": "systemPrompt",
+          "type": 9
+        },
+        {
+          "id": "6:8097227590600320548",
+          "name": "imagePath",
+          "type": 9
+        },
+        {
+          "id": "7:4520891999868971980",
+          "name": "createdAt",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "4:4949055564855433280",
-  "lastIndexId": "10:835623659848710079",
+  "lastEntityId": "10:6722342221398348719",
+  "lastIndexId": "18:3100357439455150027",
   "lastRelationId": "3:1994842980754943346",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

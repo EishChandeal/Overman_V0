@@ -269,7 +269,7 @@ class _EntriesForDateProviderElement
   DateTime get date => (origin as EntriesForDateProvider).date;
 }
 
-String _$entryActionsHash() => r'8b41dee17444dcb95cc67992da62d1a1561c3871';
+String _$entryActionsHash() => r'c27b4b64f2fcf926f30b266c3464693b458f3d88';
 
 /// See also [EntryActions].
 @ProviderFor(EntryActions)

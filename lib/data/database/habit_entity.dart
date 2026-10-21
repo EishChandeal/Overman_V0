@@ -5,6 +5,9 @@ import 'habit_entry_entity.dart';
 import 'habit_limit_entity.dart';
 import 'habit_schedule_entity.dart';
 
+// 6.  Defines the ObjectBox table scheme (HabitEntity) and the conversion methods (fromDto/toDto).
+// lib/objectbox.g.dart
+// – Generated database mapping code (defines static query properties like HabitEntity_.isArchived).
 @Entity()
 class HabitEntity {
   @Id()
@@ -20,6 +23,9 @@ class HabitEntity {
   double? targetValue;
   String colorHex;
   String iconName;
+  String? description;
+  bool isOneTime;
+  int? completedAt;
   int createdAt;
   bool isArchived;
 
@@ -36,6 +42,9 @@ class HabitEntity {
     this.targetValue,
     required this.colorHex,
     required this.iconName,
+    this.description,
+    this.isOneTime = false,
+    this.completedAt,
     required this.createdAt,
     required this.isArchived,
   });
@@ -49,6 +58,9 @@ class HabitEntity {
       targetValue: dto.targetValue,
       colorHex: dto.colorHex,
       iconName: dto.iconName,
+      description: dto.description,
+      isOneTime: dto.isOneTime,
+      completedAt: dto.completedAt?.millisecondsSinceEpoch,
       createdAt: dto.createdAt.millisecondsSinceEpoch,
       isArchived: dto.isArchived,
     );
@@ -63,6 +75,11 @@ class HabitEntity {
       targetValue: targetValue,
       colorHex: colorHex,
       iconName: iconName,
+      description: description,
+      isOneTime: isOneTime,
+      completedAt: completedAt != null
+          ? DateTime.fromMillisecondsSinceEpoch(completedAt!, isUtc: true)
+          : null,
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt, isUtc: true),
       isArchived: isArchived,
     );

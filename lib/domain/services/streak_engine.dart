@@ -1,6 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 
+/// Pure domain service calculating streaks and heatmaps.
+///
+/// Pragmatic Clean Architecture Note:
+/// To ensure zero-overhead functional evaluation without duplicate boilerplate
+/// mapping classes, this pure domain calculation operates directly on immutable
+/// data records ([HabitEntryDto], [HabitScheduleDto]).
 class StreakResult {
   final int currentStreak;
   final int longestStreak;
@@ -11,6 +18,18 @@ class StreakResult {
     required this.longestStreak,
     required this.heatmap,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is StreakResult &&
+        other.currentStreak == currentStreak &&
+        other.longestStreak == longestStreak &&
+        mapEquals(other.heatmap, heatmap);
+  }
+
+  @override
+  int get hashCode => Object.hash(currentStreak, longestStreak, heatmap.length);
 
   @override
   String toString() {
@@ -218,6 +237,9 @@ class StreakEngine {
     List<HabitScheduleDto> history,
   ) {
     final dateMidnight = DateTime.utc(date.year, date.month, date.day);
+    HabitScheduleDto? bestMatch;
+    DateTime? bestStart;
+
     for (final schedule in history) {
       final startMidnight = DateTime.utc(
         schedule.effectiveFrom.year,
@@ -234,10 +256,13 @@ class StreakEngine {
 
       if (!dateMidnight.isBefore(startMidnight) &&
           (endMidnight == null || dateMidnight.isBefore(endMidnight))) {
-        return schedule;
+        if (bestStart == null || startMidnight.isAfter(bestStart)) {
+          bestMatch = schedule;
+          bestStart = startMidnight;
+        }
       }
     }
-    return null;
+    return bestMatch;
   }
 
   static int _countCompletionsInWindow(

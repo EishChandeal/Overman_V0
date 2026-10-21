@@ -158,4 +158,54 @@ void main() {
       expect(stats.totalTrackedDays + stats.totalMissedDays, entries.length);
     });
   });
+
+  group('StatisticsResult value equality and hashCode', () {
+    test('instances with identical fields and weeklyAverages map have matching hashCode and equality', () {
+      const s1 = StatisticsResult(
+        average: 10.0,
+        sum: 100.0,
+        completionRate: 0.8,
+        totalTrackedDays: 8,
+        totalMissedDays: 2,
+        bestValue: 20.0,
+        weeklyAverages: {202601: 10.0, 202602: 12.0},
+      );
+      const s2 = StatisticsResult(
+        average: 10.0,
+        sum: 100.0,
+        completionRate: 0.8,
+        totalTrackedDays: 8,
+        totalMissedDays: 2,
+        bestValue: 20.0,
+        weeklyAverages: {202601: 10.0, 202602: 12.0},
+      );
+
+      expect(s1 == s2, isTrue);
+      expect(s1.hashCode, equals(s2.hashCode));
+    });
+
+    test('instances differing in weeklyAverages are not equal and have different hashCode', () {
+      const s1 = StatisticsResult(
+        average: 10.0,
+        sum: 100.0,
+        completionRate: 0.8,
+        totalTrackedDays: 8,
+        totalMissedDays: 2,
+        bestValue: 20.0,
+        weeklyAverages: {202601: 10.0},
+      );
+      const s2 = StatisticsResult(
+        average: 10.0,
+        sum: 100.0,
+        completionRate: 0.8,
+        totalTrackedDays: 8,
+        totalMissedDays: 2,
+        bestValue: 20.0,
+        weeklyAverages: {202601: 10.0, 202602: 12.0},
+      );
+
+      expect(s1 == s2, isFalse);
+      expect(s1.hashCode == s2.hashCode, isFalse);
+    });
+  });
 }

@@ -12,6 +12,8 @@ Future<HabitScheduleRepository> habitScheduleRepository(
   return HabitScheduleRepository(store);
 }
 
+// resp. .g.dart file
+// 2.
 @Riverpod(keepAlive: true)
 Future<HabitRepository> habitRepository(HabitRepositoryRef ref) async {
   final store = await ref.watch(objectBoxStoreProvider.future);
@@ -34,3 +36,28 @@ Future<HabitLimitRepository> habitLimitRepository(
   final store = await ref.watch(objectBoxStoreProvider.future);
   return HabitLimitRepository(store);
 }
+
+@Riverpod(keepAlive: true)
+Future<DayNoteRepository> dayNoteRepository(
+  DayNoteRepositoryRef ref,
+) async {
+  final store = await ref.watch(objectBoxStoreProvider.future);
+  return DayNoteRepository(store);
+}
+
+@Riverpod(keepAlive: true)
+Future<AiSettingsRepository> aiSettingsRepository(
+  AiSettingsRepositoryRef ref,
+) async {
+  final store = await ref.watch(objectBoxStoreProvider.future);
+  return AiSettingsRepository(store);
+}
+
+@Riverpod(keepAlive: true)
+Future<AiConversationRepository> aiConversationRepository(
+  AiConversationRepositoryRef ref,
+) async {
+  final store = await ref.watch(objectBoxStoreProvider.future);
+  return AiConversationRepository(store);
+}
+

@@ -14,10 +14,16 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'data/database/ai_conversation_entity.dart';
+import 'data/database/ai_message_entity.dart';
+import 'data/database/ai_settings_entity.dart';
+import 'data/database/custom_persona_entity.dart';
+import 'data/database/day_note_entity.dart';
 import 'data/database/habit_entity.dart';
 import 'data/database/habit_entry_entity.dart';
 import 'data/database/habit_limit_entity.dart';
 import 'data/database/habit_schedule_entity.dart';
+import 'data/database/quote_entity.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -25,7 +31,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(1, 573904481184556594),
     name: 'HabitEntity',
-    lastPropertyId: const obx_int.IdUid(10, 2670188055364762326),
+    lastPropertyId: const obx_int.IdUid(13, 9102578696693657833),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -87,6 +93,24 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(10, 2670188055364762326),
         name: 'isArchived',
         type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 5749340711390388064),
+        name: 'description',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(12, 7967285014577796115),
+        name: 'isOneTime',
+        type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(13, 9102578696693657833),
+        name: 'completedAt',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -301,6 +325,320 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(5, 5005733616380570088),
+    name: 'AiSettingsEntity',
+    lastPropertyId: const obx_int.IdUid(9, 5028190100970418142),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 8952807128888066544),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1932234390088953831),
+        name: 'apiEndpoint',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 5684610217580602981),
+        name: 'apiKey',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 5701296084784406420),
+        name: 'selectedPersona',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 4775225189248332428),
+        name: 'updatedAt',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 7122224351175181488),
+        name: 'contextWindowDays',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 614954975443147139),
+        name: 'contextWindowUnit',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 7873367689592206814),
+        name: 'modelName',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(9, 5028190100970418142),
+        name: 'enableMemory',
+        type: 1,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(6, 6052896404191348768),
+    name: 'DayNoteEntity',
+    lastPropertyId: const obx_int.IdUid(7, 6132765453695321585),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 4961989325448405236),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1387203109315783502),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(11, 3201012364451323085),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 3506958779899071486),
+        name: 'habitId',
+        type: 9,
+        flags: 2048,
+        indexId: const obx_int.IdUid(12, 5679756259947223909),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 9048472272143153494),
+        name: 'date',
+        type: 6,
+        flags: 8,
+        indexId: const obx_int.IdUid(13, 4878636005867211451),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 3019693586517204909),
+        name: 'note',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 5486359815009889065),
+        name: 'createdAt',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 6132765453695321585),
+        name: 'updatedAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(7, 3682582825121767893),
+    name: 'QuoteEntity',
+    lastPropertyId: const obx_int.IdUid(6, 3862449842546125298),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 8784464034598520755),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 6203486546156640318),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(14, 2407209613717327233),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 1991529644881456719),
+        name: 'text',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 837103728173244634),
+        name: 'author',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 2142796507481130374),
+        name: 'dayOfYear',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 3862449842546125298),
+        name: 'isActive',
+        type: 1,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(8, 3622490789929513134),
+    name: 'AiConversationEntity',
+    lastPropertyId: const obx_int.IdUid(6, 5179005327496731960),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 1381189723457199902),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 5393451133159063624),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(15, 1720785957434856678),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 5974347602889361249),
+        name: 'personaId',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 5203142906223109417),
+        name: 'contextWindowDays',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 8236149534985574253),
+        name: 'createdAt',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 5179005327496731960),
+        name: 'updatedAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(9, 4947387148949964182),
+    name: 'AiMessageEntity',
+    lastPropertyId: const obx_int.IdUid(6, 6860970816514282771),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 3420821971488129559),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1816992538843770884),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(16, 4430179666905276235),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 3255827936323103875),
+        name: 'conversationId',
+        type: 9,
+        flags: 2048,
+        indexId: const obx_int.IdUid(17, 1536929355519527031),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 2062961157566522907),
+        name: 'role',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 8021734972210535135),
+        name: 'content',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 6860970816514282771),
+        name: 'createdAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(10, 6722342221398348719),
+    name: 'CustomPersonaEntity',
+    lastPropertyId: const obx_int.IdUid(7, 4520891999868971980),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 7224165770618571021),
+        name: 'obId',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1702635371067227821),
+        name: 'id',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(18, 3100357439455150027),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 329078008042304069),
+        name: 'name',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 144775050923066366),
+        name: 'tagline',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 1614866082422907698),
+        name: 'systemPrompt',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 8097227590600320548),
+        name: 'imagePath',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 4520891999868971980),
+        name: 'createdAt',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -341,8 +679,8 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(4, 4949055564855433280),
-    lastIndexId: const obx_int.IdUid(10, 835623659848710079),
+    lastEntityId: const obx_int.IdUid(10, 6722342221398348719),
+    lastIndexId: const obx_int.IdUid(18, 3100357439455150027),
     lastRelationId: const obx_int.IdUid(3, 1994842980754943346),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [],
@@ -376,7 +714,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
             : fbb.writeString(object.unit!);
         final colorHexOffset = fbb.writeString(object.colorHex);
         final iconNameOffset = fbb.writeString(object.iconName);
-        fbb.startTable(11);
+        final descriptionOffset = object.description == null
+            ? null
+            : fbb.writeString(object.description!);
+        fbb.startTable(14);
         fbb.addInt64(0, object.obId);
         fbb.addOffset(1, idOffset);
         fbb.addOffset(2, nameOffset);
@@ -387,6 +728,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(7, iconNameOffset);
         fbb.addInt64(8, object.createdAt);
         fbb.addBool(9, object.isArchived);
+        fbb.addOffset(10, descriptionOffset);
+        fbb.addBool(11, object.isOneTime);
+        fbb.addInt64(12, object.completedAt);
         fbb.finish(fbb.endTable());
         return object.obId;
       },
@@ -422,6 +766,20 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final iconNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 18, '');
+        final descriptionParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 24);
+        final isOneTimeParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          26,
+          false,
+        );
+        final completedAtParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          28,
+        );
         final createdAtParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -443,6 +801,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
           targetValue: targetValueParam,
           colorHex: colorHexParam,
           iconName: iconNameParam,
+          description: descriptionParam,
+          isOneTime: isOneTimeParam,
+          completedAt: completedAtParam,
           createdAt: createdAtParam,
           isArchived: isArchivedParam,
         );
@@ -713,6 +1074,433 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    AiSettingsEntity: obx_int.EntityDefinition<AiSettingsEntity>(
+      model: _entities[4],
+      toOneRelations: (AiSettingsEntity object) => [],
+      toManyRelations: (AiSettingsEntity object) => {},
+      getId: (AiSettingsEntity object) => object.obId,
+      setId: (AiSettingsEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (AiSettingsEntity object, fb.Builder fbb) {
+        final apiEndpointOffset = fbb.writeString(object.apiEndpoint);
+        final apiKeyOffset = fbb.writeString(object.apiKey);
+        final selectedPersonaOffset = object.selectedPersona == null
+            ? null
+            : fbb.writeString(object.selectedPersona!);
+        final contextWindowUnitOffset = fbb.writeString(
+          object.contextWindowUnit,
+        );
+        final modelNameOffset = object.modelName == null
+            ? null
+            : fbb.writeString(object.modelName!);
+        fbb.startTable(10);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, apiEndpointOffset);
+        fbb.addOffset(2, apiKeyOffset);
+        fbb.addOffset(3, selectedPersonaOffset);
+        fbb.addInt64(4, object.updatedAt);
+        fbb.addInt64(5, object.contextWindowDays);
+        fbb.addOffset(6, contextWindowUnitOffset);
+        fbb.addOffset(7, modelNameOffset);
+        fbb.addBool(8, object.enableMemory);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final apiEndpointParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final apiKeyParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final modelNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 18);
+        final selectedPersonaParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 10);
+        final contextWindowDaysParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final contextWindowUnitParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 16, '');
+        final enableMemoryParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          20,
+          false,
+        );
+        final updatedAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        final object = AiSettingsEntity(
+          obId: obIdParam,
+          apiEndpoint: apiEndpointParam,
+          apiKey: apiKeyParam,
+          modelName: modelNameParam,
+          selectedPersona: selectedPersonaParam,
+          contextWindowDays: contextWindowDaysParam,
+          contextWindowUnit: contextWindowUnitParam,
+          enableMemory: enableMemoryParam,
+          updatedAt: updatedAtParam,
+        );
+
+        return object;
+      },
+    ),
+    DayNoteEntity: obx_int.EntityDefinition<DayNoteEntity>(
+      model: _entities[5],
+      toOneRelations: (DayNoteEntity object) => [],
+      toManyRelations: (DayNoteEntity object) => {},
+      getId: (DayNoteEntity object) => object.obId,
+      setId: (DayNoteEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (DayNoteEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        final habitIdOffset = fbb.writeString(object.habitId);
+        final noteOffset = fbb.writeString(object.note);
+        fbb.startTable(8);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addOffset(2, habitIdOffset);
+        fbb.addInt64(3, object.date);
+        fbb.addOffset(4, noteOffset);
+        fbb.addInt64(5, object.createdAt);
+        fbb.addInt64(6, object.updatedAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final habitIdParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final dateParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final noteParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final updatedAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        final object = DayNoteEntity(
+          obId: obIdParam,
+          id: idParam,
+          habitId: habitIdParam,
+          date: dateParam,
+          note: noteParam,
+          createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
+        );
+
+        return object;
+      },
+    ),
+    QuoteEntity: obx_int.EntityDefinition<QuoteEntity>(
+      model: _entities[6],
+      toOneRelations: (QuoteEntity object) => [],
+      toManyRelations: (QuoteEntity object) => {},
+      getId: (QuoteEntity object) => object.obId,
+      setId: (QuoteEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (QuoteEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        final textOffset = fbb.writeString(object.text);
+        final authorOffset = object.author == null
+            ? null
+            : fbb.writeString(object.author!);
+        fbb.startTable(7);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addOffset(2, textOffset);
+        fbb.addOffset(3, authorOffset);
+        fbb.addInt64(4, object.dayOfYear);
+        fbb.addBool(5, object.isActive);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final textParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final authorParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 10);
+        final dayOfYearParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          12,
+        );
+        final isActiveParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          false,
+        );
+        final object = QuoteEntity(
+          obId: obIdParam,
+          id: idParam,
+          text: textParam,
+          author: authorParam,
+          dayOfYear: dayOfYearParam,
+          isActive: isActiveParam,
+        );
+
+        return object;
+      },
+    ),
+    AiConversationEntity: obx_int.EntityDefinition<AiConversationEntity>(
+      model: _entities[7],
+      toOneRelations: (AiConversationEntity object) => [],
+      toManyRelations: (AiConversationEntity object) => {},
+      getId: (AiConversationEntity object) => object.obId,
+      setId: (AiConversationEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (AiConversationEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        final personaIdOffset = object.personaId == null
+            ? null
+            : fbb.writeString(object.personaId!);
+        fbb.startTable(7);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addOffset(2, personaIdOffset);
+        fbb.addInt64(3, object.contextWindowDays);
+        fbb.addInt64(4, object.createdAt);
+        fbb.addInt64(5, object.updatedAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final personaIdParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 8);
+        final contextWindowDaysParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        final updatedAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final object = AiConversationEntity(
+          obId: obIdParam,
+          id: idParam,
+          personaId: personaIdParam,
+          contextWindowDays: contextWindowDaysParam,
+          createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
+        );
+
+        return object;
+      },
+    ),
+    AiMessageEntity: obx_int.EntityDefinition<AiMessageEntity>(
+      model: _entities[8],
+      toOneRelations: (AiMessageEntity object) => [],
+      toManyRelations: (AiMessageEntity object) => {},
+      getId: (AiMessageEntity object) => object.obId,
+      setId: (AiMessageEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (AiMessageEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        final conversationIdOffset = fbb.writeString(object.conversationId);
+        final roleOffset = fbb.writeString(object.role);
+        final contentOffset = fbb.writeString(object.content);
+        fbb.startTable(7);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addOffset(2, conversationIdOffset);
+        fbb.addOffset(3, roleOffset);
+        fbb.addOffset(4, contentOffset);
+        fbb.addInt64(5, object.createdAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final conversationIdParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final roleParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 10, '');
+        final contentParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final object = AiMessageEntity(
+          obId: obIdParam,
+          id: idParam,
+          conversationId: conversationIdParam,
+          role: roleParam,
+          content: contentParam,
+          createdAt: createdAtParam,
+        );
+
+        return object;
+      },
+    ),
+    CustomPersonaEntity: obx_int.EntityDefinition<CustomPersonaEntity>(
+      model: _entities[9],
+      toOneRelations: (CustomPersonaEntity object) => [],
+      toManyRelations: (CustomPersonaEntity object) => {},
+      getId: (CustomPersonaEntity object) => object.obId,
+      setId: (CustomPersonaEntity object, int id) {
+        object.obId = id;
+      },
+      objectToFB: (CustomPersonaEntity object, fb.Builder fbb) {
+        final idOffset = fbb.writeString(object.id);
+        final nameOffset = fbb.writeString(object.name);
+        final taglineOffset = fbb.writeString(object.tagline);
+        final systemPromptOffset = fbb.writeString(object.systemPrompt);
+        final imagePathOffset = object.imagePath == null
+            ? null
+            : fbb.writeString(object.imagePath!);
+        fbb.startTable(8);
+        fbb.addInt64(0, object.obId);
+        fbb.addOffset(1, idOffset);
+        fbb.addOffset(2, nameOffset);
+        fbb.addOffset(3, taglineOffset);
+        fbb.addOffset(4, systemPromptOffset);
+        fbb.addOffset(5, imagePathOffset);
+        fbb.addInt64(6, object.createdAt);
+        fbb.finish(fbb.endTable());
+        return object.obId;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final obIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final idParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final taglineParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 10, '');
+        final systemPromptParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final imagePathParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 14);
+        final createdAtParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        final object = CustomPersonaEntity(
+          obId: obIdParam,
+          id: idParam,
+          name: nameParam,
+          tagline: taglineParam,
+          systemPrompt: systemPromptParam,
+          imagePath: imagePathParam,
+          createdAt: createdAtParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -768,6 +1556,21 @@ class HabitEntity_ {
   /// See [HabitEntity.isArchived].
   static final isArchived = obx.QueryBooleanProperty<HabitEntity>(
     _entities[0].properties[9],
+  );
+
+  /// See [HabitEntity.description].
+  static final description = obx.QueryStringProperty<HabitEntity>(
+    _entities[0].properties[10],
+  );
+
+  /// See [HabitEntity.isOneTime].
+  static final isOneTime = obx.QueryBooleanProperty<HabitEntity>(
+    _entities[0].properties[11],
+  );
+
+  /// See [HabitEntity.completedAt].
+  static final completedAt = obx.QueryIntegerProperty<HabitEntity>(
+    _entities[0].properties[12],
   );
 
   /// see [HabitEntity.entries]
@@ -923,4 +1726,228 @@ class HabitScheduleEntity_ {
       obx.QueryRelationToOne<HabitScheduleEntity, HabitEntity>(
         _entities[3].properties[8],
       );
+}
+
+/// [AiSettingsEntity] entity fields to define ObjectBox queries.
+class AiSettingsEntity_ {
+  /// See [AiSettingsEntity.obId].
+  static final obId = obx.QueryIntegerProperty<AiSettingsEntity>(
+    _entities[4].properties[0],
+  );
+
+  /// See [AiSettingsEntity.apiEndpoint].
+  static final apiEndpoint = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[1],
+  );
+
+  /// See [AiSettingsEntity.apiKey].
+  static final apiKey = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[2],
+  );
+
+  /// See [AiSettingsEntity.selectedPersona].
+  static final selectedPersona = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[3],
+  );
+
+  /// See [AiSettingsEntity.updatedAt].
+  static final updatedAt = obx.QueryIntegerProperty<AiSettingsEntity>(
+    _entities[4].properties[4],
+  );
+
+  /// See [AiSettingsEntity.contextWindowDays].
+  static final contextWindowDays = obx.QueryIntegerProperty<AiSettingsEntity>(
+    _entities[4].properties[5],
+  );
+
+  /// See [AiSettingsEntity.contextWindowUnit].
+  static final contextWindowUnit = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[6],
+  );
+
+  /// See [AiSettingsEntity.modelName].
+  static final modelName = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[7],
+  );
+
+  /// See [AiSettingsEntity.enableMemory].
+  static final enableMemory = obx.QueryBooleanProperty<AiSettingsEntity>(
+    _entities[4].properties[8],
+  );
+}
+
+/// [DayNoteEntity] entity fields to define ObjectBox queries.
+class DayNoteEntity_ {
+  /// See [DayNoteEntity.obId].
+  static final obId = obx.QueryIntegerProperty<DayNoteEntity>(
+    _entities[5].properties[0],
+  );
+
+  /// See [DayNoteEntity.id].
+  static final id = obx.QueryStringProperty<DayNoteEntity>(
+    _entities[5].properties[1],
+  );
+
+  /// See [DayNoteEntity.habitId].
+  static final habitId = obx.QueryStringProperty<DayNoteEntity>(
+    _entities[5].properties[2],
+  );
+
+  /// See [DayNoteEntity.date].
+  static final date = obx.QueryIntegerProperty<DayNoteEntity>(
+    _entities[5].properties[3],
+  );
+
+  /// See [DayNoteEntity.note].
+  static final note = obx.QueryStringProperty<DayNoteEntity>(
+    _entities[5].properties[4],
+  );
+
+  /// See [DayNoteEntity.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<DayNoteEntity>(
+    _entities[5].properties[5],
+  );
+
+  /// See [DayNoteEntity.updatedAt].
+  static final updatedAt = obx.QueryIntegerProperty<DayNoteEntity>(
+    _entities[5].properties[6],
+  );
+}
+
+/// [QuoteEntity] entity fields to define ObjectBox queries.
+class QuoteEntity_ {
+  /// See [QuoteEntity.obId].
+  static final obId = obx.QueryIntegerProperty<QuoteEntity>(
+    _entities[6].properties[0],
+  );
+
+  /// See [QuoteEntity.id].
+  static final id = obx.QueryStringProperty<QuoteEntity>(
+    _entities[6].properties[1],
+  );
+
+  /// See [QuoteEntity.text].
+  static final text = obx.QueryStringProperty<QuoteEntity>(
+    _entities[6].properties[2],
+  );
+
+  /// See [QuoteEntity.author].
+  static final author = obx.QueryStringProperty<QuoteEntity>(
+    _entities[6].properties[3],
+  );
+
+  /// See [QuoteEntity.dayOfYear].
+  static final dayOfYear = obx.QueryIntegerProperty<QuoteEntity>(
+    _entities[6].properties[4],
+  );
+
+  /// See [QuoteEntity.isActive].
+  static final isActive = obx.QueryBooleanProperty<QuoteEntity>(
+    _entities[6].properties[5],
+  );
+}
+
+/// [AiConversationEntity] entity fields to define ObjectBox queries.
+class AiConversationEntity_ {
+  /// See [AiConversationEntity.obId].
+  static final obId = obx.QueryIntegerProperty<AiConversationEntity>(
+    _entities[7].properties[0],
+  );
+
+  /// See [AiConversationEntity.id].
+  static final id = obx.QueryStringProperty<AiConversationEntity>(
+    _entities[7].properties[1],
+  );
+
+  /// See [AiConversationEntity.personaId].
+  static final personaId = obx.QueryStringProperty<AiConversationEntity>(
+    _entities[7].properties[2],
+  );
+
+  /// See [AiConversationEntity.contextWindowDays].
+  static final contextWindowDays =
+      obx.QueryIntegerProperty<AiConversationEntity>(
+        _entities[7].properties[3],
+      );
+
+  /// See [AiConversationEntity.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<AiConversationEntity>(
+    _entities[7].properties[4],
+  );
+
+  /// See [AiConversationEntity.updatedAt].
+  static final updatedAt = obx.QueryIntegerProperty<AiConversationEntity>(
+    _entities[7].properties[5],
+  );
+}
+
+/// [AiMessageEntity] entity fields to define ObjectBox queries.
+class AiMessageEntity_ {
+  /// See [AiMessageEntity.obId].
+  static final obId = obx.QueryIntegerProperty<AiMessageEntity>(
+    _entities[8].properties[0],
+  );
+
+  /// See [AiMessageEntity.id].
+  static final id = obx.QueryStringProperty<AiMessageEntity>(
+    _entities[8].properties[1],
+  );
+
+  /// See [AiMessageEntity.conversationId].
+  static final conversationId = obx.QueryStringProperty<AiMessageEntity>(
+    _entities[8].properties[2],
+  );
+
+  /// See [AiMessageEntity.role].
+  static final role = obx.QueryStringProperty<AiMessageEntity>(
+    _entities[8].properties[3],
+  );
+
+  /// See [AiMessageEntity.content].
+  static final content = obx.QueryStringProperty<AiMessageEntity>(
+    _entities[8].properties[4],
+  );
+
+  /// See [AiMessageEntity.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<AiMessageEntity>(
+    _entities[8].properties[5],
+  );
+}
+
+/// [CustomPersonaEntity] entity fields to define ObjectBox queries.
+class CustomPersonaEntity_ {
+  /// See [CustomPersonaEntity.obId].
+  static final obId = obx.QueryIntegerProperty<CustomPersonaEntity>(
+    _entities[9].properties[0],
+  );
+
+  /// See [CustomPersonaEntity.id].
+  static final id = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[1],
+  );
+
+  /// See [CustomPersonaEntity.name].
+  static final name = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[2],
+  );
+
+  /// See [CustomPersonaEntity.tagline].
+  static final tagline = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[3],
+  );
+
+  /// See [CustomPersonaEntity.systemPrompt].
+  static final systemPrompt = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[4],
+  );
+
+  /// See [CustomPersonaEntity.imagePath].
+  static final imagePath = obx.QueryStringProperty<CustomPersonaEntity>(
+    _entities[9].properties[5],
+  );
+
+  /// See [CustomPersonaEntity.createdAt].
+  static final createdAt = obx.QueryIntegerProperty<CustomPersonaEntity>(
+    _entities[9].properties[6],
+  );
 }

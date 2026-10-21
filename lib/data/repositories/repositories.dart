@@ -2,3 +2,7 @@ export 'habit_repository.dart';
 export 'habit_entry_repository.dart';
 export 'habit_limit_repository.dart';
 export 'habit_schedule_repository.dart';
+export 'day_note_repository.dart';
+export 'ai_settings_repository.dart';
+export 'ai_conversation_repository.dart';
+export 'custom_persona_repository.dart';

@@ -1,0 +1,25 @@
+=== User Habit Data (last 7 days) ===
+Generated: Tue, 20 Oct 2026
+
+--- Habit: "Morning Run" ---
+Type: Habit (boolean) | Schedule: Daily | Streak: 3 days | Started: 20 Oct 2026
+Description: Run at least 3 km each morning to build cardiovascular endurance.
+  Wed 14 Oct ✅   Thu 15 Oct ✅   Fri 16 Oct ❌   Sat 17 Oct ✅   Sun 18 Oct ✅
+  Mon 19 Oct ✅   Tue 20 Oct —
+  Notes:
+    [Wed 14 Oct] "Felt strong today, hit 4 km."
+    [Fri 16 Oct] "Skipped due to rain."
+
+--- Habit: "Water Intake" ---
+Type: Habit (numeric) | Unit: glasses | Target: 8 | Schedule: Daily | Streak: 0 days | Started: 20 Oct 2026
+  Wed 14 Oct 7   Thu 15 Oct 8 ✅   Fri 16 Oct 5   Sat 17 Oct 8 ✅   Sun 18 Oct 8 ✅
+  Mon 19 Oct 6   Tue 20 Oct —
+
+--- One-time Task: "Read 50 Pages" ---
+Status: ✅ Completed on Wed 14 Oct 2026
+Description: Finish chapter 3 of Atomic Habits.
+
+--- One-time Task: "File Taxes" ---
+Status: ⏳ Pending
+
+===
