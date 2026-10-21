@@ -280,12 +280,12 @@ navigates to `HabitDetailScreen`. Keep delete functionality accessible elsewhere
 
 **Acceptance criteria for STRAT-01-E:**
 
-- [ ] "View More" button visible in expanded habit card.
-- [ ] Tapping "View More" navigates to `HabitDetailScreen` for that habit.
-- [ ] Delete remains accessible (selection mode action bar or equivalent).
-- [ ] One-time tasks also navigate to their detail screen (heatmap hidden).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] "View More" button visible in expanded habit card.
+- [x] Tapping "View More" navigates to `HabitDetailScreen` for that habit.
+- [x] Delete remains accessible (selection mode action bar or equivalent).
+- [x] One-time tasks also navigate to their detail screen (heatmap hidden).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (182/182).
 
 ---
 
