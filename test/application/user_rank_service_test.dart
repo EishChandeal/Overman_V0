@@ -82,5 +82,27 @@ void main() {
       );
       expect(rank, UserRank.exceptionalOne);
     });
+
+    test('nextRank, rankTargetDays, and daysUntilNextRank computations', () {
+      expect(UserRankService.nextRank(UserRank.commonMan), UserRank.man);
+      expect(UserRankService.nextRank(UserRank.man), UserRank.theMan);
+      expect(UserRankService.nextRank(UserRank.theMan), UserRank.exceptionalOne);
+      expect(UserRankService.nextRank(UserRank.exceptionalOne), UserRank.chosenOne);
+      expect(UserRankService.nextRank(UserRank.chosenOne), UserRank.uebermensch);
+      expect(UserRankService.nextRank(UserRank.uebermensch), isNull);
+
+      expect(UserRankService.rankTargetDays(UserRank.man), 15);
+      expect(UserRankService.rankTargetDays(UserRank.theMan), 30);
+      expect(UserRankService.rankTargetDays(UserRank.exceptionalOne), 60);
+      expect(UserRankService.rankTargetDays(UserRank.chosenOne), 100);
+
+      // Remaining days calculation
+      expect(UserRankService.daysUntilNextRank(UserRank.commonMan, 5), 10);
+      expect(UserRankService.daysUntilNextRank(UserRank.man, 20), 10);
+      expect(UserRankService.daysUntilNextRank(UserRank.theMan, 45), 15);
+      expect(UserRankService.daysUntilNextRank(UserRank.exceptionalOne, 75), 25);
+      expect(UserRankService.daysUntilNextRank(UserRank.chosenOne, 100), 0);
+      expect(UserRankService.daysUntilNextRank(UserRank.uebermensch, 120), 0);
+    });
   });
 }

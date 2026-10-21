@@ -149,64 +149,21 @@ class InsightsScreen extends ConsumerWidget {
     final rankAsync = ref.watch(userRankProvider);
     final totalDaysAsync = ref.watch(totalDaysOpenedProvider);
     final streakAsync = ref.watch(currentOpenStreakProvider);
+    final habitStatsAsync = ref.watch(allHabitCompletionStatsProvider);
 
     final rank = rankAsync.value ?? UserRank.commonMan;
     final totalDays = totalDaysAsync.value ?? 1;
     final openStreak = streakAsync.value ?? 1;
+    final habitStats = habitStatsAsync.value ?? [];
 
-    final rankLabel = UserRankService.rankLabel(rank);
     final rankColor = UserRankService.rankColor(rank);
 
     return Column(
       children: [
-        Container(
-          key: const Key('insights_user_rank_card'),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border(
-              left: BorderSide(color: rankColor, width: 3),
-            ),
-          ),
-          child: Column(
-            children: [
-              Text(
-                rankLabel,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: rankColor,
-                  fontFamily: AppTheme.fontPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                "You've opened the app $totalDays days",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: AppColors.mutedGrey,
-                  fontFamily: AppTheme.fontPrimary,
-                ),
-              ),
-              if (rank == UserRank.uebermensch) ...[
-                const SizedBox(height: 6),
-                Text(
-                  'All habits followed with excellence',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontStyle: FontStyle.italic,
-                    color: rankColor,
-                    fontFamily: AppTheme.fontPrimary,
-                  ),
-                ),
-              ],
-            ],
-          ),
+        _UserRankCard(
+          rank: rank,
+          totalDays: totalDays,
+          habitStats: habitStats,
         ),
         const SizedBox(height: 10),
         Container(
@@ -812,6 +769,354 @@ class InsightsScreen extends ConsumerWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _UserRankCard extends StatefulWidget {
+  final UserRank rank;
+  final int totalDays;
+  final List<HabitCompletionStat> habitStats;
+
+  const _UserRankCard({
+    required this.rank,
+    required this.totalDays,
+    required this.habitStats,
+  });
+
+  @override
+  State<_UserRankCard> createState() => _UserRankCardState();
+}
+
+class _UserRankCardState extends State<_UserRankCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final rank = widget.rank;
+    final totalDays = widget.totalDays;
+    final rankLabel = UserRankService.rankLabel(rank);
+    final rankColor = UserRankService.rankColor(rank);
+
+    final next = UserRankService.nextRank(rank);
+    final daysRemaining = UserRankService.daysUntilNextRank(rank, totalDays);
+    final nextLabel = next != null ? UserRankService.rankLabel(next) : null;
+    final nextColor = next != null ? UserRankService.rankColor(next) : null;
+
+    final targetDays = next != null ? UserRankService.rankTargetDays(next) : 100;
+    final prevTarget = UserRankService.rankTargetDays(rank);
+    final tierSpan = targetDays - prevTarget;
+    final daysInTier = (totalDays - prevTarget).clamp(0, tierSpan);
+    final tierProgress = tierSpan > 0 ? (daysInTier / tierSpan).clamp(0.0, 1.0) : 1.0;
+
+    final matureHabits = widget.habitStats.where((s) => s.activeDays >= 7).toList();
+    final matureCount = matureHabits.length;
+    final qualifyingCount = matureHabits.where((s) => s.completionRate >= 0.95).length;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        key: const Key('insights_user_rank_card'),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border(
+            left: BorderSide(color: rankColor, width: 3),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Header Row: Rank Label + Expand/Collapse Indicator
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(width: 24), // Balance chevron on the right
+                Expanded(
+                  child: Text(
+                    rankLabel,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: rankColor,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: AppColors.mutedGrey,
+                  size: 24,
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "You've opened the app $totalDays days",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.mutedGrey,
+                fontFamily: AppTheme.fontPrimary,
+              ),
+            ),
+            if (rank == UserRank.uebermensch) ...[
+              const SizedBox(height: 6),
+              Text(
+                'All habits followed with excellence',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: rankColor,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+              ),
+            ],
+            if (!_isExpanded) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Tap to see next category progress',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.mutedGrey.withValues(alpha: 0.6),
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+              ),
+            ],
+
+            // Expanded Details Section
+            if (_isExpanded) ...[
+              const SizedBox(height: 16),
+              Divider(
+                color: AppColors.mutedGrey.withValues(alpha: 0.2),
+                height: 1,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                key: const Key('user_rank_expanded_content'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Next Level Block
+                    if (next != null) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'NEXT CATEGORY',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.1,
+                              color: AppColors.mutedGrey,
+                              fontFamily: AppTheme.fontPrimary,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: nextColor!.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              nextLabel!,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: nextColor,
+                                fontFamily: AppTheme.fontPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        daysRemaining > 0
+                            ? '$daysRemaining days remaining to reach $nextLabel'
+                            : '100+ days milestone met! Complete habits to advance.',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryText,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: tierProgress,
+                          backgroundColor: AppColors.background,
+                          color: nextColor,
+                          minHeight: 6,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '$totalDays / $targetDays days opened',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.mutedGrey,
+                              fontFamily: AppTheme.fontPrimary,
+                            ),
+                          ),
+                          Text(
+                            '${(tierProgress * 100).round()}%',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: nextColor,
+                              fontFamily: AppTheme.fontPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Special Title: Übermensch Section
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border(
+                          left: BorderSide(
+                            color: UserRankService.rankColor(UserRank.uebermensch),
+                            width: 3,
+                          ),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.workspace_premium,
+                                size: 16,
+                                color: UserRankService.rankColor(UserRank.uebermensch),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  rank == UserRank.uebermensch
+                                      ? 'PINNACLE ATTAINED: ÜBERMENSCH'
+                                      : 'SPECIAL TITLE: ÜBERMENSCH',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.1,
+                                    color: UserRankService.rankColor(UserRank.uebermensch),
+                                    fontFamily: AppTheme.fontPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Criteria: 100+ days opened and >95% completion rate across all active habits.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.mutedGrey,
+                              fontFamily: AppTheme.fontPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                totalDays >= 100
+                                    ? Icons.check_circle
+                                    : Icons.radio_button_unchecked,
+                                size: 14,
+                                color: totalDays >= 100
+                                    ? const Color(0xFF4CAF50)
+                                    : AppColors.mutedGrey,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'App Consistency: $totalDays/100 days',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: totalDays >= 100
+                                        ? AppColors.primaryText
+                                        : AppColors.mutedGrey,
+                                    fontWeight: totalDays >= 100
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    fontFamily: AppTheme.fontPrimary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                matureCount > 0 && qualifyingCount == matureCount
+                                    ? Icons.check_circle
+                                    : Icons.radio_button_unchecked,
+                                size: 14,
+                                color: matureCount > 0 && qualifyingCount == matureCount
+                                    ? const Color(0xFF4CAF50)
+                                    : AppColors.mutedGrey,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  matureCount > 0
+                                      ? 'Habit Performance: $qualifyingCount/$matureCount mature habits ≥ 95%'
+                                      : 'Habit Performance: Requires mature habits (7+ days active)',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: matureCount > 0 && qualifyingCount == matureCount
+                                        ? AppColors.primaryText
+                                        : AppColors.mutedGrey,
+                                    fontWeight: matureCount > 0 && qualifyingCount == matureCount
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    fontFamily: AppTheme.fontPrimary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

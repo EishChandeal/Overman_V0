@@ -282,4 +282,78 @@ void main() {
     expect(find.descendant(of: tasksCard, matching: find.text('Completion Rate')), findsOneWidget);
     expect(find.descendant(of: tasksCard, matching: find.text('50%')), findsOneWidget);
   });
+
+  testWidgets('InsightsScreen user rank card expands on tap and displays remaining days and Übermensch criteria',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 1400 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final habit = HabitDto(
+      id: 'h_regular',
+      name: 'Meditation',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'self_improvement',
+      isOneTime: false,
+      isArchived: false,
+      createdAt: DateTime.now().subtract(const Duration(days: 10)),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          habitListProvider.overrideWith((ref) => Stream.value([habit])),
+          totalDaysOpenedProvider.overrideWith((ref) async => 5),
+          currentOpenStreakProvider.overrideWith((ref) async => 3),
+          userRankProvider.overrideWith((ref) async => UserRank.commonMan),
+          allHabitCompletionStatsProvider.overrideWith((ref) async => [
+                const HabitCompletionStat(
+                  habitId: 'h_regular',
+                  completedDays: 8,
+                  activeDays: 10,
+                ),
+              ]),
+        ],
+        child: const MaterialApp(
+          home: InsightsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 1. Initial collapsed state: expanded content is not shown
+    expect(find.byKey(const Key('user_rank_expanded_content')), findsNothing);
+    expect(find.text('Tap to see next category progress'), findsOneWidget);
+
+    // 2. Tap user rank card to expand
+    await tester.tap(find.byKey(const Key('insights_user_rank_card')));
+    await tester.pumpAndSettle();
+
+    // 3. Expanded content is now visible
+    expect(find.byKey(const Key('user_rank_expanded_content')), findsOneWidget);
+    expect(find.text('NEXT CATEGORY'), findsOneWidget);
+    expect(find.text('Man'), findsOneWidget);
+    expect(find.text('10 days remaining to reach Man'), findsOneWidget);
+    expect(find.text('5 / 15 days opened'), findsOneWidget);
+
+    // 4. Special Title: Übermensch section is visible with criteria
+    expect(find.text('SPECIAL TITLE: ÜBERMENSCH'), findsOneWidget);
+    expect(
+      find.text('Criteria: 100+ days opened and >95% completion rate across all active habits.'),
+      findsOneWidget,
+    );
+    expect(find.text('App Consistency: 5/100 days'), findsOneWidget);
+
+    // 5. Tap again to collapse
+    await tester.tap(find.byKey(const Key('insights_user_rank_card')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('user_rank_expanded_content')), findsNothing);
+    expect(find.text('Tap to see next category progress'), findsOneWidget);
+  });
 }

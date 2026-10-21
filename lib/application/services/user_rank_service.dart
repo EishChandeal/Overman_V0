@@ -89,4 +89,48 @@ class UserRankService {
         return const Color(0xFF9B59B6); // Purple / Violet
     }
   }
+
+  /// Returns the next sequential rank, or null if the user has reached Übermensch.
+  static UserRank? nextRank(UserRank rank) {
+    switch (rank) {
+      case UserRank.commonMan:
+        return UserRank.man;
+      case UserRank.man:
+        return UserRank.theMan;
+      case UserRank.theMan:
+        return UserRank.exceptionalOne;
+      case UserRank.exceptionalOne:
+        return UserRank.chosenOne;
+      case UserRank.chosenOne:
+        return UserRank.uebermensch;
+      case UserRank.uebermensch:
+        return null;
+    }
+  }
+
+  /// Returns the minimum days opened required to unlock the given rank.
+  static int rankTargetDays(UserRank rank) {
+    switch (rank) {
+      case UserRank.commonMan:
+        return 0;
+      case UserRank.man:
+        return 15;
+      case UserRank.theMan:
+        return 30;
+      case UserRank.exceptionalOne:
+        return 60;
+      case UserRank.chosenOne:
+      case UserRank.uebermensch:
+        return 100;
+    }
+  }
+
+  /// Calculates remaining app open days needed to reach the next rank.
+  static int daysUntilNextRank(UserRank currentRank, int totalDaysOpened) {
+    final next = nextRank(currentRank);
+    if (next == null) return 0;
+    final target = rankTargetDays(next);
+    final remaining = target - totalDaysOpened;
+    return remaining > 0 ? remaining : 0;
+  }
 }
