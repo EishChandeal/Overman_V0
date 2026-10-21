@@ -417,12 +417,12 @@ and (for the top rank) habit completion performance.
 
 **Acceptance criteria for STRAT-02-B:**
 
-- [ ] `UserRank` enum and `UserRankService` implemented.
-- [ ] Rank card renders at top of Insights screen with correct label and color.
-- [ ] Übermensch displayed only when both conditions are met.
-- [ ] All 7 unit tests for rank computation pass.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `UserRank` enum and `UserRankService` implemented.
+- [x] Rank card renders at top of Insights screen with correct label and color.
+- [x] Übermensch displayed only when both conditions are met.
+- [x] All 7 unit tests for rank computation pass.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (207/207).
 
 ---
 
@@ -474,12 +474,12 @@ and (for the top rank) habit completion performance.
 
 **Acceptance criteria for STRAT-02-C:**
 
-- [ ] `HabitStatsCalculator` implemented with all 3 static methods.
-- [ ] Insights screen shows correct (non-100%) completion percentages.
-- [ ] One-time tasks handled correctly.
-- [ ] All 5 unit tests pass.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `HabitStatsCalculator` implemented with all 3 static methods.
+- [x] Insights screen shows correct (non-100%) completion percentages.
+- [x] One-time tasks handled correctly.
+- [x] All 5 unit tests pass.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (207/207).
 
 ---
 

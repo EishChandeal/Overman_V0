@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/providers/providers.dart';
+import '../../../application/services/habit_stats_calculator.dart';
 import '../../../data/models/dtos/dtos.dart';
 import '../../../domain/enums/enums.dart';
 import '../../theme/app_theme.dart';
@@ -72,6 +73,11 @@ class InsightsScreen extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       children: [
+        // 0. User Rank & App Consistency Section
+        _buildUserRankSection(context, ref),
+
+        const SizedBox(height: 20),
+
         // 1. High-level Overview Cards Grid
         _buildOverviewCards(context, ref, habits),
 
@@ -96,6 +102,135 @@ class InsightsScreen extends ConsumerWidget {
         const SizedBox(height: 10),
 
         ...habits.map((habit) => _buildHabitPerformanceCard(context, ref, habit)),
+      ],
+    );
+  }
+
+  Widget _buildUserRankSection(BuildContext context, WidgetRef ref) {
+    final rankAsync = ref.watch(userRankProvider);
+    final totalDaysAsync = ref.watch(totalDaysOpenedProvider);
+    final streakAsync = ref.watch(currentOpenStreakProvider);
+
+    final rank = rankAsync.value ?? UserRank.commonMan;
+    final totalDays = totalDaysAsync.value ?? 1;
+    final openStreak = streakAsync.value ?? 1;
+
+    final rankLabel = UserRankService.rankLabel(rank);
+    final rankColor = UserRankService.rankColor(rank);
+
+    return Column(
+      children: [
+        Container(
+          key: const Key('insights_user_rank_card'),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border(
+              left: BorderSide(color: rankColor, width: 3),
+            ),
+          ),
+          child: Column(
+            children: [
+              Text(
+                rankLabel,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: rankColor,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "You've opened the app $totalDays days",
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.mutedGrey,
+                  fontFamily: AppTheme.fontPrimary,
+                ),
+              ),
+              if (rank == UserRank.uebermensch) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'All habits followed with excellence',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: rankColor,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.calendar_today_outlined, size: 16, color: rankColor),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        '$totalDays days total',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryText,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 18,
+                color: AppColors.mutedGrey.withValues(alpha: 0.2),
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.local_fire_department, size: 16, color: AppColors.orange),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        '$openStreak day streak',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.orange,
+                          fontFamily: AppTheme.fontPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -197,13 +332,17 @@ class InsightsScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryText,
-                  fontFamily: AppTheme.fontPrimary,
+              Flexible(
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryText,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (subtitle != null) ...[
@@ -249,15 +388,20 @@ class InsightsScreen extends ConsumerWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Weekly Activity',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryText,
-                  fontFamily: AppTheme.fontPrimary,
+              Flexible(
+                child: Text(
+                  'Weekly Activity',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryText,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              SizedBox(width: 8),
               Text(
                 'Current Week',
                 style: TextStyle(
@@ -321,11 +465,24 @@ class InsightsScreen extends ConsumerWidget {
   ) {
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
     final streakAsync = ref.watch(habitStreakProvider(habit.id));
-    final now = DateTime.now();
-    final todayUtc = DateTime.utc(now.year, now.month, now.day);
-    final oneYearAgo = todayUtc.subtract(const Duration(days: 365));
-    final range = DateRange(start: oneYearAgo, end: todayUtc);
-    final statsAsync = ref.watch(habitStatisticsProvider(habit.id, range));
+    final entriesAsync = ref.watch(habitEntriesProvider(habit.id));
+    final scheduleAsync = ref.watch(activeScheduleProvider(habit.id));
+
+    final entries = entriesAsync.value ?? [];
+    final activeSchedule = scheduleAsync.value;
+    final scheduledWeekdays = activeSchedule?.scheduledWeekdays
+            ?.map((w) => w.name)
+            .toList() ??
+        [];
+
+    final completionRate = HabitStatsCalculator.computeCompletionRate(
+      habit,
+      entries,
+      scheduledWeekdays,
+      DateTime.now(),
+    );
+    final completionFraction = (completionRate / 100.0).clamp(0.0, 1.0);
+    final percentText = '${completionRate.toStringAsFixed(0)}% completion';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -414,21 +571,14 @@ class InsightsScreen extends ConsumerWidget {
                 const Spacer(),
 
                 // Completion rate
-                statsAsync.when(
-                  data: (s) {
-                    final percent = (s.completionRate * 100).toStringAsFixed(0);
-                    return Text(
-                      '$percent% completion',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: habitColor,
-                        fontFamily: AppTheme.fontPrimary,
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                Text(
+                  percentText,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: habitColor,
+                    fontFamily: AppTheme.fontPrimary,
+                  ),
                 ),
               ],
             ),
@@ -436,20 +586,14 @@ class InsightsScreen extends ConsumerWidget {
             const SizedBox(height: 8),
 
             // Progress bar
-            statsAsync.when(
-              data: (s) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: s.completionRate.clamp(0.0, 1.0),
-                    backgroundColor: AppColors.background,
-                    color: habitColor,
-                    minHeight: 6,
-                  ),
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: completionFraction,
+                backgroundColor: AppColors.background,
+                color: habitColor,
+                minHeight: 6,
+              ),
             ),
           ],
         ),
