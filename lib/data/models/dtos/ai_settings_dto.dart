@@ -3,6 +3,7 @@ import 'dart:core';
 class AiSettingsDto {
   final String apiEndpoint;
   final String apiKey;
+  final String? modelName;
   final String? selectedPersona;
   final int contextWindowDays;
   final String contextWindowUnit;
@@ -11,6 +12,7 @@ class AiSettingsDto {
   const AiSettingsDto({
     required this.apiEndpoint,
     required this.apiKey,
+    this.modelName,
     this.selectedPersona,
     this.contextWindowDays = 30,
     this.contextWindowUnit = 'days',
@@ -22,6 +24,7 @@ class AiSettingsDto {
   AiSettingsDto copyWith({
     String? apiEndpoint,
     String? apiKey,
+    Object? modelName = _sentinel,
     Object? selectedPersona = _sentinel,
     int? contextWindowDays,
     String? contextWindowUnit,
@@ -30,6 +33,7 @@ class AiSettingsDto {
     return AiSettingsDto(
       apiEndpoint: apiEndpoint ?? this.apiEndpoint,
       apiKey: apiKey ?? this.apiKey,
+      modelName: modelName == _sentinel ? this.modelName : modelName as String?,
       selectedPersona: selectedPersona == _sentinel
           ? this.selectedPersona
           : selectedPersona as String?,
@@ -43,6 +47,7 @@ class AiSettingsDto {
     return {
       'apiEndpoint': apiEndpoint,
       'apiKey': apiKey,
+      'modelName': modelName,
       'selectedPersona': selectedPersona,
       'contextWindowDays': contextWindowDays,
       'contextWindowUnit': contextWindowUnit,
@@ -54,6 +59,7 @@ class AiSettingsDto {
     return AiSettingsDto(
       apiEndpoint: json['apiEndpoint'] as String,
       apiKey: json['apiKey'] as String,
+      modelName: json['modelName'] as String?,
       selectedPersona: json['selectedPersona'] as String?,
       contextWindowDays: (json['contextWindowDays'] as num?)?.toInt() ?? 30,
       contextWindowUnit: (json['contextWindowUnit'] as String?) ?? 'days',
@@ -68,6 +74,7 @@ class AiSettingsDto {
           runtimeType == other.runtimeType &&
           apiEndpoint == other.apiEndpoint &&
           apiKey == other.apiKey &&
+          modelName == other.modelName &&
           selectedPersona == other.selectedPersona &&
           contextWindowDays == other.contextWindowDays &&
           contextWindowUnit == other.contextWindowUnit &&
@@ -77,6 +84,7 @@ class AiSettingsDto {
   int get hashCode =>
       apiEndpoint.hashCode ^
       apiKey.hashCode ^
+      modelName.hashCode ^
       selectedPersona.hashCode ^
       contextWindowDays.hashCode ^
       contextWindowUnit.hashCode ^
@@ -84,6 +92,6 @@ class AiSettingsDto {
 
   @override
   String toString() {
-    return 'AiSettingsDto(apiEndpoint: $apiEndpoint, apiKey: $apiKey, selectedPersona: $selectedPersona, contextWindowDays: $contextWindowDays, contextWindowUnit: $contextWindowUnit, updatedAt: $updatedAt)';
+    return 'AiSettingsDto(apiEndpoint: $apiEndpoint, apiKey: $apiKey, modelName: $modelName, selectedPersona: $selectedPersona, contextWindowDays: $contextWindowDays, contextWindowUnit: $contextWindowUnit, updatedAt: $updatedAt)';
   }
 }

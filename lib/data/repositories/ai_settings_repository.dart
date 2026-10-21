@@ -35,6 +35,7 @@ class AiSettingsRepository {
     if (existing != null) {
       existing.apiEndpoint = dto.apiEndpoint;
       existing.apiKey = dto.apiKey;
+      existing.modelName = dto.modelName;
       existing.selectedPersona = dto.selectedPersona;
       existing.contextWindowDays = dto.contextWindowDays;
       existing.contextWindowUnit = dto.contextWindowUnit;
@@ -44,6 +45,7 @@ class AiSettingsRepository {
       final entity = AiSettingsEntity(
         apiEndpoint: dto.apiEndpoint,
         apiKey: dto.apiKey,
+        modelName: dto.modelName,
         selectedPersona: dto.selectedPersona,
         contextWindowDays: dto.contextWindowDays,
         contextWindowUnit: dto.contextWindowUnit,

@@ -201,6 +201,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         apiEndpoint: settings.apiEndpoint,
         apiKey: settings.apiKey,
         messages: dbMessages,
+        modelOverride: settings.modelName,
       );
 
       // 4. Save assistant response

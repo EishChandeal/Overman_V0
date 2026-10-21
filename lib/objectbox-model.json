@@ -270,7 +270,7 @@
     },
     {
       "id": "5:5005733616380570088",
-      "lastPropertyId": "7:614954975443147139",
+      "lastPropertyId": "8:7873367689592206814",
       "name": "AiSettingsEntity",
       "properties": [
         {
@@ -307,6 +307,11 @@
         {
           "id": "7:614954975443147139",
           "name": "contextWindowUnit",
+          "type": 9
+        },
+        {
+          "id": "8:7873367689592206814",
+          "name": "modelName",
           "type": 9
         }
       ],

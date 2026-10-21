@@ -8,6 +8,7 @@ class AiSettingsEntity {
 
   String apiEndpoint;
   String apiKey;
+  String? modelName;
   String? selectedPersona;
   int contextWindowDays;
   String contextWindowUnit;
@@ -17,6 +18,7 @@ class AiSettingsEntity {
     this.obId = 0,
     required this.apiEndpoint,
     required this.apiKey,
+    this.modelName,
     this.selectedPersona,
     this.contextWindowDays = 30,
     this.contextWindowUnit = 'days',
@@ -27,6 +29,7 @@ class AiSettingsEntity {
     return AiSettingsEntity(
       apiEndpoint: dto.apiEndpoint,
       apiKey: dto.apiKey,
+      modelName: dto.modelName,
       selectedPersona: dto.selectedPersona,
       contextWindowDays: dto.contextWindowDays,
       contextWindowUnit: dto.contextWindowUnit,
@@ -38,6 +41,7 @@ class AiSettingsEntity {
     return AiSettingsDto(
       apiEndpoint: apiEndpoint,
       apiKey: apiKey,
+      modelName: modelName,
       selectedPersona: selectedPersona,
       contextWindowDays: contextWindowDays,
       contextWindowUnit: contextWindowUnit,

@@ -1413,6 +1413,12 @@ void main() {
 
     // Enter API key and tap Save Settings
     await tester.enterText(find.widgetWithText(TextField, 'Your API key'), 'test-gemini-key');
+    await tester.enterText(
+      find.byWidgetPredicate((w) =>
+          w is TextField &&
+          w.decoration?.labelText == 'Model Name (optional)'),
+      'openai/gpt-oss-120b',
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(ElevatedButton, 'Save Settings'));
     await tester.pumpAndSettle();
@@ -1421,6 +1427,7 @@ void main() {
     expect(find.text('Settings saved'), findsOneWidget);
     final saved = await aiRepo.getSettings();
     expect(saved.apiKey, 'test-gemini-key');
+    expect(saved.modelName, 'openai/gpt-oss-120b');
 
     // Wait for snackbar to dismiss so it does not obscure lower widgets
     await tester.pump(const Duration(seconds: 3));
@@ -1512,6 +1519,8 @@ void main() {
 
     expect(find.byType(AiChatScreen), findsOneWidget);
     expect(find.text('Chat with Vegeta'), findsOneWidget);
+    final autoSaved = await aiRepo.getSettings();
+    expect(autoSaved.apiKey, 'my-active-api-key');
   });
 
   testWidgets('AiChatScreen renders persona header, context chip, and user/assistant messages',

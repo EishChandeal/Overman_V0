@@ -17,6 +17,7 @@ class AiSettingsScreen extends ConsumerStatefulWidget {
 class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   late final TextEditingController _endpointController;
   late final TextEditingController _keyController;
+  late final TextEditingController _modelController;
   bool _obscureKey = true;
   double _contextWindowDays = 30.0;
   String? _selectedPersona;
@@ -27,6 +28,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     super.initState();
     _endpointController = TextEditingController();
     _keyController = TextEditingController();
+    _modelController = TextEditingController();
     _loadSettings();
   }
 
@@ -34,6 +36,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   void dispose() {
     _endpointController.dispose();
     _keyController.dispose();
+    _modelController.dispose();
     super.dispose();
   }
 
@@ -45,6 +48,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
         setState(() {
           _endpointController.text = settings.apiEndpoint;
           _keyController.text = settings.apiKey;
+          _modelController.text = settings.modelName ?? '';
           _contextWindowDays = settings.contextWindowDays.toDouble().clamp(1.0, 90.0);
           _selectedPersona = settings.selectedPersona;
           _isLoading = false;
@@ -64,6 +68,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       final updated = current.copyWith(
         apiEndpoint: _endpointController.text.trim(),
         apiKey: _keyController.text.trim(),
+        modelName: _modelController.text.trim().isEmpty ? null : _modelController.text.trim(),
         selectedPersona: _selectedPersona,
         contextWindowDays: _contextWindowDays.round(),
         updatedAt: DateTime.now().toUtc(),
@@ -204,6 +209,34 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                         onPressed: () {
                           setState(() => _obscureKey = !_obscureKey);
                         },
+                      ),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: _modelController,
+                    style: const TextStyle(
+                      color: AppColors.primaryText,
+                      fontFamily: AppTheme.fontPrimary,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'Model Name (optional)',
+                      labelStyle: const TextStyle(color: AppColors.mutedGrey),
+                      hintText: 'e.g. openai/gpt-oss-120b, gpt-4o-mini',
+                      hintStyle: TextStyle(
+                        color: AppColors.mutedGrey.withValues(alpha: 0.5),
+                      ),
+                      helperText: 'Leave empty to auto-select best default for provider',
+                      helperStyle: TextStyle(
+                        color: AppColors.mutedGrey.withValues(alpha: 0.7),
+                        fontSize: 11,
+                      ),
+                      filled: true,
+                      fillColor: AppColors.background,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
                       ),
                     ),
                     onChanged: (_) => setState(() {}),
@@ -499,7 +532,9 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                 elevation: hasCredentials ? 2 : 0,
               ),
               onPressed: hasCredentials
-                  ? () {
+                  ? () async {
+                      await _saveSettings(showToast: false);
+                      if (!context.mounted) return;
                       final persona = AiPersona.fromIdString(_selectedPersona);
                       appNavigateTo(
                         context,

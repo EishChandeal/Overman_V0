@@ -79,8 +79,47 @@ void main() {
       expect(capturedRequest!.headers['Authorization'], 'Bearer gsk_test123');
 
       final body = jsonDecode(capturedRequest!.body) as Map<String, dynamic>;
-      expect(body['model'], 'llama-3.3-70b-versatile');
+      expect(body['model'], 'openai/gpt-oss-120b');
       expect((body['messages'] as List).length, 2);
+    });
+
+    test('modelOverride overrides default model', () async {
+      http.Request? capturedRequest;
+      final mockClient = MockClient((request) async {
+        capturedRequest = request;
+        return http.Response(
+          jsonEncode({
+            'choices': [
+              {
+                'message': {'role': 'assistant', 'content': 'Custom reply'},
+              },
+            ],
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      });
+
+      final service = AiClientService(client: mockClient);
+      final messages = [
+        AiMessageDto(
+          id: '1',
+          conversationId: 'c1',
+          role: 'user',
+          content: 'Hello',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ];
+
+      await service.sendMessage(
+        apiEndpoint: 'https://api.groq.com/openai/v1',
+        apiKey: 'gsk_test123',
+        messages: messages,
+        modelOverride: 'custom-groq-model-v2',
+      );
+
+      final body = jsonDecode(capturedRequest!.body) as Map<String, dynamic>;
+      expect(body['model'], 'custom-groq-model-v2');
     });
 
     test('Gemini OpenAI-compatible endpoint is routed properly', () async {
@@ -212,6 +251,56 @@ void main() {
           messages: messages,
         ),
         throwsA(predicate((e) => e is AiClientException && e.statusCode == 429)),
+      );
+    });
+
+    test('handles 404 model not found and endpoint not found with descriptive messages', () async {
+      final mockClientModel404 = MockClient((request) async {
+        return http.Response(
+          '{"error":{"message":"The model \'foo\' does not exist","type":"invalid_request_error","code":"model_not_found"}}',
+          404,
+        );
+      });
+      final serviceModel404 = AiClientService(client: mockClientModel404);
+
+      final messages = [
+        AiMessageDto(
+          id: '1',
+          conversationId: 'c1',
+          role: 'user',
+          content: 'hi',
+          createdAt: DateTime.now().toUtc(),
+        ),
+      ];
+
+      expect(
+        () => serviceModel404.sendMessage(
+          apiEndpoint: 'https://api.groq.com/openai/v1',
+          apiKey: 'key',
+          messages: messages,
+        ),
+        throwsA(predicate((e) =>
+            e is AiClientException &&
+            e.statusCode == 404 &&
+            e.message.contains('Model not found (404)') &&
+            e.message.contains("The model 'foo' does not exist"))),
+      );
+
+      final mockClientEndpoint404 = MockClient((request) async {
+        return http.Response('Not Found', 404);
+      });
+      final serviceEndpoint404 = AiClientService(client: mockClientEndpoint404);
+
+      expect(
+        () => serviceEndpoint404.sendMessage(
+          apiEndpoint: 'https://api.groq.com/bad/path',
+          apiKey: 'key',
+          messages: messages,
+        ),
+        throwsA(predicate((e) =>
+            e is AiClientException &&
+            e.statusCode == 404 &&
+            e.message.contains('Endpoint not found (404)'))),
       );
     });
   });

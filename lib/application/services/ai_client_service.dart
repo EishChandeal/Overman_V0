@@ -82,7 +82,7 @@ class AiClientService {
     }
     final lower = endpoint.toLowerCase();
     if (lower.contains('groq.com')) {
-      return 'llama-3.3-70b-versatile';
+      return 'openai/gpt-oss-120b';
     } else if (lower.contains('openai.com')) {
       return 'gpt-4o-mini';
     } else if (lower.contains('openrouter.ai')) {
@@ -323,13 +323,16 @@ class AiClientService {
     }
 
     if (statusCode == 401) {
-      throw const AiClientException('Unauthorized (401). Invalid API key.', statusCode: 401);
+      throw AiClientException('Unauthorized (401): $snippet', statusCode: 401);
     } else if (statusCode == 403) {
-      throw const AiClientException('Forbidden (403). Check your API permissions.', statusCode: 403);
+      throw AiClientException('Forbidden (403): $snippet', statusCode: 403);
     } else if (statusCode == 404) {
-      throw const AiClientException('Endpoint not found (404). Check API endpoint URL.', statusCode: 404);
+      if (snippet.toLowerCase().contains('model')) {
+        throw AiClientException('Model not found (404): $snippet', statusCode: 404);
+      }
+      throw AiClientException('Endpoint not found (404): $snippet', statusCode: 404);
     } else if (statusCode == 429) {
-      throw const AiClientException('Rate limit exceeded (429). Please wait a moment.', statusCode: 429);
+      throw AiClientException('Rate limit exceeded (429): $snippet', statusCode: 429);
     } else {
       throw AiClientException('Error $statusCode: $snippet', statusCode: statusCode);
     }

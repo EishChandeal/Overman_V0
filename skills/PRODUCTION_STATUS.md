@@ -1078,6 +1078,29 @@ Status: ⏳ Pending
   - `dart analyze lib/` → `No issues found!`
   - `flutter test` → `All tests passed! (128/128 passed)`
 
+### PROD-04-E / Refinement: Custom Model Selection, Auto-Save, and Provider Error Clarification
+
+- **Entities & Schema**:
+  - Added nullable `modelName` (`String?`) to `AiSettingsEntity` and `AiSettingsDto` (defaults to `null` to use provider-appropriate defaults).
+  - Regenerated ObjectBox bindings (`objectbox.g.dart`, `objectbox-model.json`).
+- **Repository & Client**:
+  - Updated `AiSettingsRepository` to persist and load `modelName`.
+  - Updated `AiClientService`:
+    - Updated default Groq model from `llama-3.3-70b-versatile` to `openai/gpt-oss-120b` (verified working with live Groq accounts).
+    - Added `modelOverride` support to `sendMessage(...)` so user-specified models take precedence across OpenAI-compatible, Gemini, and Claude endpoints.
+    - Enhanced HTTP 404 error handler to parse provider JSON payloads (e.g. `{"code": "model_not_found"}`) and surface clear messages (`Model not found (404): <message>` vs `Endpoint not found (404)`).
+- **UI Enhancements**:
+  - `AiSettingsScreen`:
+    - Added "Model Name (optional)" text field with helper guidance (`Leave empty to auto-select best default for provider`).
+    - Added auto-save on tapping "Start Chat" so credentials and model choices are automatically persisted even if the user does not tap "Save Settings".
+  - `AiChatScreen`:
+    - Passes `modelOverride: settings.modelName` when calling `_aiClientService.sendMessage`.
+- **Verification**:
+  - Unit tests in `test/application/ai_client_service_test.dart` for default Groq model, `modelOverride`, and descriptive 404 error handling.
+  - Widget tests in `test/widget_test.dart` for model name field persistence and auto-save on "Start Chat".
+  - `dart analyze lib/` → `No issues found!`
+  - `flutter test` → `All tests passed! (130/130 passed)`
+
 ## Previous completed tasks
 
 - **PROD-01** — Data model expansion (HabitEntity, HabitDto, DayNoteEntity, AiSettingsEntity, QuoteEntity, AppDatabase accessors, build_runner, 86/86 tests).
@@ -1088,6 +1111,7 @@ Status: ⏳ Pending
 - **PROD-04-B** — AiSettings screen + context window control + persona selection (113/113 tests).
 - **PROD-04-C** — AiChat screen + conversation history + multi-provider LLM integration (124/124 tests).
 - **PROD-04-D** — Conversation history list screen + resume chat + swipe-to-delete (128/128 tests).
+- **PROD-04 Refinement** — Custom Model Selection + Auto-Save + Descriptive Error Messages (130/130 tests).
 
 ## Current task
 

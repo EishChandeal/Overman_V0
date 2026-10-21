@@ -327,7 +327,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 5005733616380570088),
     name: 'AiSettingsEntity',
-    lastPropertyId: const obx_int.IdUid(7, 614954975443147139),
+    lastPropertyId: const obx_int.IdUid(8, 7873367689592206814),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -369,6 +369,12 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(7, 614954975443147139),
         name: 'contextWindowUnit',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 7873367689592206814),
+        name: 'modelName',
         type: 9,
         flags: 0,
       ),
@@ -1025,7 +1031,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final contextWindowUnitOffset = fbb.writeString(
           object.contextWindowUnit,
         );
-        fbb.startTable(8);
+        final modelNameOffset = object.modelName == null
+            ? null
+            : fbb.writeString(object.modelName!);
+        fbb.startTable(9);
         fbb.addInt64(0, object.obId);
         fbb.addOffset(1, apiEndpointOffset);
         fbb.addOffset(2, apiKeyOffset);
@@ -1033,6 +1042,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(4, object.updatedAt);
         fbb.addInt64(5, object.contextWindowDays);
         fbb.addOffset(6, contextWindowUnitOffset);
+        fbb.addOffset(7, modelNameOffset);
         fbb.finish(fbb.endTable());
         return object.obId;
       },
@@ -1051,6 +1061,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final apiKeyParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 8, '');
+        final modelNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 18);
         final selectedPersonaParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 10);
@@ -1073,6 +1086,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           obId: obIdParam,
           apiEndpoint: apiEndpointParam,
           apiKey: apiKeyParam,
+          modelName: modelNameParam,
           selectedPersona: selectedPersonaParam,
           contextWindowDays: contextWindowDaysParam,
           contextWindowUnit: contextWindowUnitParam,
@@ -1611,6 +1625,11 @@ class AiSettingsEntity_ {
   /// See [AiSettingsEntity.contextWindowUnit].
   static final contextWindowUnit = obx.QueryStringProperty<AiSettingsEntity>(
     _entities[4].properties[6],
+  );
+
+  /// See [AiSettingsEntity.modelName].
+  static final modelName = obx.QueryStringProperty<AiSettingsEntity>(
+    _entities[4].properties[7],
   );
 }
 
