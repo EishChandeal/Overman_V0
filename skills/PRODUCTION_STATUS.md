@@ -15,10 +15,10 @@
 ## Current status
 
 - Overall: Prototype complete (TASK-01 → TASK-12 done). Production phase begins here.
-- Last updated: 2026-10-20
-- Branch/commit: `overman` (ea99957 — PROD-03 complete)
+- Last updated: 2026-10-21
+- Branch/commit: `overman` (PROD-05 complete)
 - Target devices: Windows desktop (dev/test) + Android compact (412 × 917 px, primary)
-- App launches: ✅ Verified (81/81 tests passing from prototype)
+- App launches: ✅ Verified (138/138 tests passing)
 
 ---
 
@@ -739,14 +739,14 @@ screen navigates to `/home` after its delay. Adjust the initial location from
 
 **Acceptance criteria for PROD-05:**
 
-- [ ] App opens to splash screen (not the Flutter logo).
-- [ ] Overman icon/placeholder renders in a rounded container.
-- [ ] A quote from the seed pool displays below.
-- [ ] After 2.5 s the app navigates automatically to `/home`.
-- [ ] `QuoteSeeder` seeds exactly the 8 quotes above (or more, if user adds) only once.
-- [ ] `QuoteService.pickQuote()` covered by a unit test (day-match + random fallback).
-- [ ] `flutter analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] App opens to splash screen (not the Flutter logo).
+- [x] Overman icon/placeholder renders in a rounded container (`assets/icon_logo.png` with fallback).
+- [x] A quote from the seed pool displays below (italic Montserrat 15sp + muted author attribution).
+- [x] After 2.5 s the app navigates automatically to `/home` (also supports immediate tap).
+- [x] `QuoteSeeder` seeds the initial quotes only once when the box is empty.
+- [x] `QuoteService.pickQuote()` covered by unit tests (day-match + random fallback + hardcoded fallback).
+- [x] `flutter analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (138/138).
 
 ---
 

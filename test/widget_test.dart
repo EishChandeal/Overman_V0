@@ -17,6 +17,7 @@ import 'package:habit_tracker/presentation/screens/ai/ai_chat_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_history_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_personas.dart';
 import 'package:habit_tracker/presentation/screens/home/home_screen.dart';
+import 'package:habit_tracker/presentation/screens/splash/splash_screen.dart';
 import 'package:habit_tracker/presentation/navigation/app_router.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 
@@ -42,7 +43,7 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: HabitTrackerApp(),
+        child: HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -169,7 +170,7 @@ void main() {
 
     await tester.pumpWidget(
       const ProviderScope(
-        child: HabitTrackerApp(),
+        child: HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -468,7 +469,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -508,7 +509,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -607,7 +608,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -673,7 +674,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -727,7 +728,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -779,7 +780,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
 
@@ -1323,7 +1324,7 @@ void main() {
         overrides: [
           objectBoxStoreProvider.overrideWith((ref) async => testStore),
         ],
-        child: const HabitTrackerApp(),
+        child: const HabitTrackerApp(initialRoute: AppRoutes.home),
       ),
     );
     await tester.pumpAndSettle();
@@ -1867,7 +1868,7 @@ void main() {
         ],
         child: MaterialApp.router(
           theme: AppTheme.darkTheme,
-          routerConfig: appRouter,
+          routerConfig: createAppRouter(initialLocation: AppRoutes.home),
         ),
       ),
     );
@@ -1889,5 +1890,70 @@ void main() {
     expect(find.byType(AiChatScreen), findsOneWidget);
     expect(find.text('Friedrich Nietzsche'), findsWidgets);
     expect(find.text('What does not kill me makes me stronger.'), findsOneWidget);
+  });
+
+  testWidgets('SplashScreen displays brand visual, quote, and auto-navigates to /home after 2.5s',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.darkTheme,
+          routerConfig: createAppRouter(initialLocation: AppRoutes.splash),
+        ),
+      ),
+    );
+
+    // Initial pump renders SplashScreen
+    await tester.pump();
+
+    // Verify SplashScreen is active
+    expect(find.byType(SplashScreen), findsOneWidget);
+
+    // Verify asset image for icon_logo is present
+    final imageFinder = find.byType(Image);
+    expect(imageFinder, findsOneWidget);
+    final imageWidget = tester.widget<Image>(imageFinder);
+    expect((imageWidget.image as AssetImage).assetName, 'assets/icon_logo.png');
+
+    // Verify fallback or picked quote is rendered
+    expect(find.textContaining('Become who you are.'), findsWidgets);
+    expect(find.text('— Friedrich Nietzsche'), findsWidgets);
+
+    // Fast-forward 2.5s timer
+    await tester.pump(const Duration(milliseconds: 2600));
+    await tester.pumpAndSettle();
+
+    // Verify transition to HomeScreen
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(SplashScreen), findsNothing);
+  });
+
+  testWidgets('SplashScreen navigates immediately to /home on user tap',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.darkTheme,
+          routerConfig: createAppRouter(initialLocation: AppRoutes.splash),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    expect(find.byType(SplashScreen), findsOneWidget);
+
+    // Tap splash screen
+    await tester.tap(find.byType(SplashScreen));
+    await tester.pumpAndSettle();
+
+    // Verify immediate navigation to HomeScreen
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(SplashScreen), findsNothing);
   });
 }

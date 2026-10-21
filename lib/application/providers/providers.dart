@@ -8,3 +8,4 @@ export 'day_change_provider.dart';
 export 'day_note_providers.dart';
 export 'ai_settings_providers.dart';
 export 'ai_conversation_providers.dart';
+export 'quote_providers.dart';

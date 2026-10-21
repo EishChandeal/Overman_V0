@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:habit_tracker/data/database/app_database.dart';
+import 'package:habit_tracker/data/seeders/quote_seeder.dart';
 import 'package:habit_tracker/application/providers/providers.dart';
 
 import 'package:habit_tracker/presentation/theme/app_theme.dart';
@@ -12,6 +14,9 @@ void main() async {
 
   final dir = await getApplicationDocumentsDirectory();
   final store = await AppDatabase.openStore(directory: dir.path);
+
+  // Seed initial quotes on first launch if empty
+  await QuoteSeeder.seedIfEmpty(store);
 
   runApp(
     ProviderScope(
@@ -27,7 +32,14 @@ void main() async {
 }
 
 class HabitTrackerApp extends ConsumerWidget {
-  const HabitTrackerApp({super.key});
+  final String? initialRoute;
+  final GoRouter? router;
+
+  const HabitTrackerApp({
+    super.key,
+    this.initialRoute,
+    this.router,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,11 +47,14 @@ class HabitTrackerApp extends ConsumerWidget {
     // are observed for the lifetime of the application.
     ref.watch(dayChangeControllerProvider);
 
+    final effectiveRouter = router ??
+        (initialRoute != null ? createAppRouter(initialLocation: initialRoute!) : appRouter);
+
     return MaterialApp.router(
       title: 'Habit Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      routerConfig: appRouter,
+      routerConfig: effectiveRouter,
     );
   }
 }

@@ -9,10 +9,12 @@ import '../screens/history/history_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/insights/insights_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/splash/splash_screen.dart';
 
 /// Central route names for Overman application.
 class AppRoutes {
-  static const home = '/';
+  static const splash = '/splash';
+  static const home = '/home';
   static const add = '/add';
   static const history = '/history';
   static const insights = '/insights';
@@ -22,10 +24,18 @@ class AppRoutes {
   static const aiHistory = '/ai-history';
 }
 
-/// GoRouter configuration providing declarative navigation for all prototype screens.
-final appRouter = GoRouter(
-  initialLocation: AppRoutes.home,
+/// Factory function to create a GoRouter instance with configurable initialLocation.
+GoRouter createAppRouter({String initialLocation = AppRoutes.splash}) => GoRouter(
+  initialLocation: initialLocation,
   routes: [
+    GoRoute(
+      path: '/',
+      redirect: (context, state) => AppRoutes.splash,
+    ),
+    GoRoute(
+      path: AppRoutes.splash,
+      builder: (context, state) => const SplashScreen(),
+    ),
     GoRoute(
       path: AppRoutes.home,
       builder: (context, state) => const HomeScreen(),
@@ -78,6 +88,9 @@ final appRouter = GoRouter(
     ),
   ],
 );
+
+/// GoRouter configuration providing declarative navigation for all prototype screens.
+final appRouter = createAppRouter();
 
 /// Safe navigation helper that uses GoRouter when available, or falls back to
 /// standard Navigator push for isolated widget tests without a GoRouter ancestor.

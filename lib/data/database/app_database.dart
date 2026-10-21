@@ -36,6 +36,8 @@ class AppDatabase {
     return store;
   }
 
+  static bool get isOpen => _store != null;
+
   static void closeStore() {
     _store?.close();
     _store = null;
