@@ -15,6 +15,9 @@ import 'package:habit_tracker/presentation/screens/settings/settings_screen.dart
 import 'package:habit_tracker/presentation/screens/ai/ai_settings_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_chat_screen.dart';
 import 'package:habit_tracker/presentation/screens/ai/ai_history_screen.dart';
+import 'package:habit_tracker/presentation/screens/ai/ai_personas.dart';
+import 'package:habit_tracker/presentation/screens/home/home_screen.dart';
+import 'package:habit_tracker/presentation/navigation/app_router.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 
 import 'package:habit_tracker/presentation/widgets/notes_panel.dart';
@@ -1750,9 +1753,18 @@ void main() {
     await tester.tap(find.text('Albus Dumbledore'));
     await tester.pumpAndSettle();
 
-    // Verify AiChatScreen opened with conversation
+    // Verify AiChatScreen opened with conversation, correct persona, and message history
     expect(find.byType(AiChatScreen), findsOneWidget);
+    expect(find.text('Albus Dumbledore'), findsWidgets);
+    expect(find.text('How do I master patience?'), findsOneWidget);
     expect(find.text('Patience is a great virtue, young wizard.'), findsOneWidget);
+
+    // Tap memory pill: toggles cleanly without bottom SnackBar blocking input
+    expect(find.text('Memory ON'), findsOneWidget);
+    await tester.tap(find.text('Memory ON'));
+    await tester.pumpAndSettle();
+    expect(find.text('Memory OFF'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('AiHistoryScreen swipe-to-delete shows confirmation dialog and removes conversation',
@@ -1814,5 +1826,68 @@ void main() {
     expect(find.text('Peter Parker (Spider-Man)'), findsNothing);
     expect(find.text('No conversations yet'), findsOneWidget);
     expect(await aiConvRepo.getConversation(conv.id), isNull);
+  });
+
+  testWidgets('appRouter routes to AiChatScreen with conversationId and persona intact via extra',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final aiConvRepo = AiConversationRepository(testStore);
+    final conv = await aiConvRepo.createConversation(
+      personaId: 'nietzsche',
+      contextWindowDays: 20,
+    );
+    await aiConvRepo.addMessage(
+      conversationId: conv.id,
+      role: 'user',
+      content: 'What does not kill me makes me stronger.',
+    );
+
+    final aiSettingsRepo = AiSettingsRepository(testStore);
+    await aiSettingsRepo.saveSettings(
+      AiSettingsDto(
+        apiEndpoint: 'https://example.com',
+        apiKey: 'key',
+        selectedPersona: 'vegeta', // Settings has Vegeta
+        updatedAt: DateTime.now().toUtc(),
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+          aiConversationRepositoryProvider.overrideWith((ref) async => aiConvRepo),
+          aiSettingsRepositoryProvider.overrideWith((ref) async => aiSettingsRepo),
+        ],
+        child: MaterialApp.router(
+          theme: AppTheme.darkTheme,
+          routerConfig: appRouter,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Navigate to aiChat with extra
+    final ctx = tester.element(find.byType(HomeScreen));
+    appNavigateTo(
+      ctx,
+      AppRoutes.aiChat,
+      AiChatScreen(
+        conversationId: conv.id,
+        persona: AiPersona.fromIdString('nietzsche'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify it opened with Friedrich Nietzsche, NOT Vegeta, and has the message
+    expect(find.byType(AiChatScreen), findsOneWidget);
+    expect(find.text('Friedrich Nietzsche'), findsWidgets);
+    expect(find.text('What does not kill me makes me stronger.'), findsOneWidget);
   });
 }

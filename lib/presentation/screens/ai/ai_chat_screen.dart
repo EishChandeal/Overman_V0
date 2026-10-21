@@ -84,9 +84,14 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       if (_conversationId != null) {
         final existingConv = await convRepo.getConversation(_conversationId!);
         if (existingConv != null) {
-          _persona = AiPersona.fromIdString(existingConv.personaId);
+          if (existingConv.personaId != null) {
+            _persona = AiPersona.fromIdString(existingConv.personaId);
+          } else {
+            _persona = null;
+          }
           _contextWindowDays = existingConv.contextWindowDays;
           final dbMessages = await convRepo.getMessages(_conversationId!);
+          _messages.clear();
           _messages.addAll(dbMessages);
         }
       } else {
@@ -113,19 +118,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       final current = await settingsRepo.getSettings();
       await settingsRepo.saveSettings(current.copyWith(enableMemory: newMemory));
     } catch (_) {}
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            newMemory
-                ? 'Memory enabled: Prior messages will be remembered'
-                : 'Memory disabled: Token saver active (only latest query sent)',
-          ),
-          backgroundColor: AppColors.surface,
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   void _scrollToBottom() {
@@ -404,13 +396,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 _conversationId = null;
                 _messages.clear();
               });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Started new conversation'),
-                  backgroundColor: AppColors.surface,
-                  duration: Duration(seconds: 2),
-                ),
-              );
             },
           ),
           PopupMenuButton<String>(
