@@ -99,14 +99,14 @@ void main() {
         find.byKey(const Key('heatmap_cell_2025-05-11')),
       );
       expect(
-          missedCell.color, equals(testColor.withValues(alpha: 0.20)));
+          missedCell.color, equals(YearHeatmapWidget.emptyCellColor));
       expect(missedCell.tooltip, contains('❌'));
 
       final noEntryCell = tester.widget<HeatmapCell>(
         find.byKey(const Key('heatmap_cell_2025-05-12')),
       );
       expect(noEntryCell.color,
-          equals(AppColors.surface.withValues(alpha: 0.35)));
+          equals(YearHeatmapWidget.emptyCellColor));
       expect(noEntryCell.tooltip, contains('No entry'));
     });
 

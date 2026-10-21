@@ -48,6 +48,9 @@ class HeatmapCell extends StatelessWidget {
 
 /// Reusable horizontal yearly heatmap widget (GitHub-style).
 class YearHeatmapWidget extends StatefulWidget {
+  /// Visible gray color for days where the habit was not followed, missed, or has no entry.
+  static const Color emptyCellColor = Color(0xFF353B47);
+
   final int year;
   final List<HabitEntryDto> entries;
   final Color habitColor;
@@ -125,15 +128,15 @@ class _YearHeatmapWidgetState extends State<YearHeatmapWidget> {
   }
 
   Color _calculateColor(HabitEntryDto? entry) {
-    if (entry == null) {
-      return AppColors.surface.withValues(alpha: 0.35);
+    if (entry == null || entry.value <= 0.0) {
+      return YearHeatmapWidget.emptyCellColor;
     }
 
     if (widget.habitType == HabitType.boolean) {
       if (entry.value >= 1.0) {
         return widget.habitColor;
       } else {
-        return widget.habitColor.withValues(alpha: 0.20);
+        return YearHeatmapWidget.emptyCellColor;
       }
     } else {
       final target = (widget.target != null && widget.target! > 0)
@@ -336,7 +339,7 @@ class _YearHeatmapWidgetState extends State<YearHeatmapWidget> {
           ),
         ),
         const SizedBox(width: 6),
-        _buildLegendSquare(AppColors.surface.withValues(alpha: 0.35)),
+        _buildLegendSquare(YearHeatmapWidget.emptyCellColor),
         const SizedBox(width: 3),
         _buildLegendSquare(widget.habitColor.withValues(alpha: 0.20)),
         const SizedBox(width: 3),
