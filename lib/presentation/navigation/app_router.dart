@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../data/models/dtos/dtos.dart';
 import '../screens/add/add_habit_screen.dart';
 import '../screens/ai/ai_chat_screen.dart';
 import '../screens/ai/ai_history_screen.dart';
 import '../screens/ai/ai_personas.dart';
 import '../screens/ai/ai_settings_screen.dart';
+import '../screens/habit_detail/habit_detail_screen.dart';
 import '../screens/history/history_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/insights/insights_screen.dart';
@@ -22,6 +24,9 @@ class AppRoutes {
   static const aiSettings = '/ai-settings';
   static const aiChat = '/ai-chat';
   static const aiHistory = '/ai-history';
+  static const habitDetail = '/habit-detail/:id';
+
+  static String habitDetailPath(String id) => '/habit-detail/$id';
 }
 
 /// Factory function to create a GoRouter instance with configurable initialLocation.
@@ -85,6 +90,23 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.splash}) => GoRoute
       path: AppRoutes.aiHistory,
       builder: (context, state) =>
           (state.extra is Widget) ? state.extra as Widget : const AiHistoryScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.habitDetail,
+      builder: (context, state) {
+        if (state.extra is Widget) {
+          return state.extra as Widget;
+        }
+        final habitId = state.pathParameters['id'] ?? '';
+        HabitDto? initialHabit;
+        if (state.extra is HabitDto) {
+          initialHabit = state.extra as HabitDto;
+        }
+        return HabitDetailScreen(
+          habitId: habitId,
+          initialHabit: initialHabit,
+        );
+      },
     ),
   ],
 );

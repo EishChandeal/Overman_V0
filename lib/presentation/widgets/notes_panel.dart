@@ -16,8 +16,9 @@ class NotesPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final palette = context.palette;
     final notesAsync = ref.watch(habitDayNotesProvider(habitId));
-    final accentColor = habitColor ?? AppColors.orange;
+    final accentColor = habitColor ?? (palette.isDark ? AppColors.orange : palette.interactiveAccent);
 
     return notesAsync.when(
       data: (notes) {
@@ -26,15 +27,16 @@ class NotesPanel extends ConsumerWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: palette.innerTileBackground,
               borderRadius: BorderRadius.circular(12),
+              border: palette.isDark ? null : Border.all(color: palette.innerTileBorder),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
                 'No notes yet. Hold the card to add one.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.mutedGrey,
+                  color: palette.accessibleSecondaryText,
                   fontSize: 13,
                   fontFamily: AppTheme.fontPrimary,
                 ),
@@ -47,15 +49,16 @@ class NotesPanel extends ConsumerWidget {
         return Container(
           constraints: const BoxConstraints(maxHeight: 260),
           decoration: BoxDecoration(
-            color: AppColors.background,
+            color: palette.innerTileBackground,
             borderRadius: BorderRadius.circular(12),
+            border: palette.isDark ? null : Border.all(color: palette.innerTileBorder),
           ),
           child: ListView.separated(
             shrinkWrap: true,
             padding: const EdgeInsets.all(12),
             itemCount: notes.length,
             separatorBuilder: (_, __) =>
-                const Divider(color: AppColors.surface, height: 16),
+                Divider(color: palette.isDark ? AppColors.surface : palette.cardBorder, height: 16),
             itemBuilder: (context, index) {
               final note = notes[index];
               final dateFormatted =
@@ -86,9 +89,9 @@ class NotesPanel extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Text(
                     note.note,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.primaryText,
+                      color: palette.primaryText,
                       fontFamily: AppTheme.fontPrimary,
                       height: 1.35,
                     ),
@@ -105,7 +108,7 @@ class NotesPanel extends ConsumerWidget {
         child: Center(
           child: Text(
             'Failed to load notes: $err',
-            style: const TextStyle(color: AppColors.mutedGrey, fontSize: 13),
+            style: TextStyle(color: palette.accessibleSecondaryText, fontSize: 13),
           ),
         ),
       ),

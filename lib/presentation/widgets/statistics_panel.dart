@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:habit_tracker/application/providers/providers.dart';
+import 'package:habit_tracker/application/services/habit_stats_calculator.dart';
 import 'package:habit_tracker/data/models/dtos/dtos.dart';
 import 'package:habit_tracker/domain/enums/enums.dart';
 import 'package:habit_tracker/domain/services/statistics_service.dart';
@@ -20,9 +21,43 @@ class StatisticsPanel extends ConsumerWidget {
     final range = DateRange(start: oneYearAgo, end: todayUtc);
 
     final statsAsync = ref.watch(habitStatisticsProvider(habit.id, range));
+    final entriesAsync = ref.watch(habitEntriesProvider(habit.id));
+    final scheduleAsync = ref.watch(activeScheduleProvider(habit.id));
 
     return statsAsync.when(
-      data: (stats) => _buildContent(context, stats),
+      data: (stats) {
+        final entries = entriesAsync.value ?? [];
+        final activeSchedule = scheduleAsync.value;
+        final scheduledWeekdays = activeSchedule?.scheduledWeekdays
+                ?.map((w) => w.name)
+                .toList() ??
+            [];
+
+        final activeDays = HabitStatsCalculator.computeActiveDays(
+          habit,
+          scheduledWeekdays,
+          now,
+        );
+        final completedDays = HabitStatsCalculator.computeCompletedDays(
+          entries,
+          habit,
+        );
+        final missedDays = (activeDays - completedDays).clamp(0, activeDays);
+        final completionRate = HabitStatsCalculator.computeCompletionRate(
+          habit,
+          entries,
+          scheduledWeekdays,
+          now,
+        );
+
+        return _buildContent(
+          context,
+          stats: stats,
+          completionRate: completionRate,
+          completedDays: completedDays,
+          missedDays: missedDays,
+        );
+      },
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(
@@ -44,9 +79,16 @@ class StatisticsPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, StatisticsResult stats) {
+  Widget _buildContent(
+    BuildContext context, {
+    required StatisticsResult stats,
+    required double completionRate,
+    required int completedDays,
+    required int missedDays,
+  }) {
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
-    final ratePercent = (stats.completionRate * 100).toStringAsFixed(0);
+    final ratePercent = completionRate.toStringAsFixed(0);
+    final palette = context.palette;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,6 +98,7 @@ class StatisticsPanel extends ConsumerWidget {
           children: [
             Expanded(
               child: _buildStatTile(
+                context,
                 title: 'Completion Rate',
                 value: '$ratePercent%',
                 icon: Icons.pie_chart_outline,
@@ -65,8 +108,9 @@ class StatisticsPanel extends ConsumerWidget {
             const SizedBox(width: 10),
             Expanded(
               child: _buildStatTile(
+                context,
                 title: 'Completed Days',
-                value: '${stats.totalTrackedDays}',
+                value: '$completedDays',
                 icon: Icons.check_circle_outline,
                 accentColor: habitColor,
               ),
@@ -81,16 +125,18 @@ class StatisticsPanel extends ConsumerWidget {
           children: [
             Expanded(
               child: _buildStatTile(
+                context,
                 title: 'Missed Days',
-                value: '${stats.totalMissedDays}',
+                value: '$missedDays',
                 icon: Icons.cancel_outlined,
-                accentColor: AppColors.mutedGrey,
+                accentColor: palette.isDark ? AppColors.mutedGrey : palette.accessibleSecondaryText,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: habit.type == HabitType.numeric
                   ? _buildStatTile(
+                      context,
                       title: 'Daily Average',
                       value: _formatVal(stats.average),
                       subtitle: habit.unit,
@@ -98,8 +144,9 @@ class StatisticsPanel extends ConsumerWidget {
                       accentColor: habitColor,
                     )
                   : _buildStatTile(
+                      context,
                       title: 'Consistency',
-                      value: stats.totalTrackedDays > 0 ? 'Active' : 'New',
+                      value: completedDays > 0 ? 'Active' : 'New',
                       icon: Icons.trending_up,
                       accentColor: habitColor,
                     ),
@@ -114,6 +161,7 @@ class StatisticsPanel extends ConsumerWidget {
             children: [
               Expanded(
                 child: _buildStatTile(
+                  context,
                   title: 'Best Record',
                   value: _formatVal(stats.bestValue),
                   subtitle: habit.unit,
@@ -124,6 +172,7 @@ class StatisticsPanel extends ConsumerWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _buildStatTile(
+                  context,
                   title: 'Total Logged',
                   value: _formatVal(stats.sum),
                   subtitle: habit.unit,
@@ -138,18 +187,21 @@ class StatisticsPanel extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatTile({
+  Widget _buildStatTile(
+    BuildContext context, {
     required String title,
     required String value,
     String? subtitle,
     required IconData icon,
     required Color accentColor,
   }) {
+    final palette = context.palette;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: palette.innerTileBackground,
         borderRadius: BorderRadius.circular(12),
+        border: palette.isDark ? null : Border.all(color: palette.innerTileBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,9 +212,9 @@ class StatisticsPanel extends ConsumerWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.mutedGrey,
+                    color: palette.accessibleSecondaryText,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                   maxLines: 1,
@@ -180,10 +232,10 @@ class StatisticsPanel extends ConsumerWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryText,
+                  color: palette.primaryText,
                   fontFamily: AppTheme.fontPrimary,
                 ),
               ),
@@ -191,9 +243,9 @@ class StatisticsPanel extends ConsumerWidget {
                 const SizedBox(width: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.mutedGrey,
+                    color: palette.accessibleSecondaryText,
                     fontFamily: AppTheme.fontPrimary,
                   ),
                 ),

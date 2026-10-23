@@ -84,11 +84,11 @@ have a stable destination to render into.
 
 **Acceptance criteria for STRAT-01-A:**
 
-- [ ] `HabitDetailScreen` file exists and compiles.
-- [ ] `/habit-detail/:id` route registered; app navigates to it without crashing.
-- [ ] AppBar shows habit name; back arrow returns to previous screen.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `HabitDetailScreen` file exists and compiles.
+- [x] `/habit-detail/:id` route registered; app navigates to it without crashing.
+- [x] AppBar shows habit name; back arrow returns to previous screen.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (161/161).
 
 ---
 
@@ -142,15 +142,15 @@ all days in a year, colored by completion intensity, scrollable left-right.
 
 **Acceptance criteria for STRAT-01-B:**
 
-- [ ] `YearHeatmapWidget` renders all 365/366 days as a grid in `HabitDetailScreen`.
-- [ ] Horizontal scroll works; month labels aligned correctly.
-- [ ] Color intensity reflects entry values correctly for both boolean and numeric habits.
-- [ ] Year switcher navigates between years; right arrow disabled for current year.
-- [ ] Cell tap shows date + value tooltip.
-- [ ] Scrolls to current week on initial render.
-- [ ] Widget test: renders with mock entries; correct cell count (364–366 cells).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `YearHeatmapWidget` renders all 365/366 days as a grid in `HabitDetailScreen`.
+- [x] Horizontal scroll works; month labels aligned correctly.
+- [x] Color intensity reflects entry values correctly for both boolean and numeric habits.
+- [x] Year switcher navigates between years; right arrow disabled for current year.
+- [x] Cell tap shows date + value tooltip.
+- [x] Scrolls to current week on initial render.
+- [x] Widget test: renders with mock entries; correct cell count (364–366 cells).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (168/168).
 
 ---
 
@@ -186,13 +186,13 @@ Use the `fl_chart` package (already in `pubspec.yaml` if added; add it if missin
 
 **Acceptance criteria for STRAT-01-C:**
 
-- [ ] `fl_chart` dependency present in `pubspec.yaml`.
-- [ ] Boolean habit shows bar chart in `HabitDetailScreen`; numeric shows line chart.
-- [ ] "Perfect week" dashed line present on bar chart.
-- [ ] Target dashed line present on line chart.
-- [ ] No-data state shows placeholder text (not a crash).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `fl_chart` dependency present in `pubspec.yaml`.
+- [x] Boolean habit shows bar chart in `HabitDetailScreen`; numeric shows line chart.
+- [x] "Perfect week" dashed line present on bar chart.
+- [x] Target dashed line present on line chart.
+- [x] No-data state shows placeholder text (not a crash).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (172/172).
 
 ---
 
@@ -247,13 +247,13 @@ in the current year, all-time greatest streak, and current streak.
 
 **Acceptance criteria for STRAT-01-D:**
 
-- [ ] `StreakCalculator` implemented with all three static methods.
-- [ ] Streak section renders in `HabitDetailScreen` with correct values.
-- [ ] Current streak uses `AppColors.orange`.
-- [ ] Top 5 list renders with rank, length, and date range.
-- [ ] Unit tests for all three `StreakCalculator` methods pass.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `StreakCalculator` implemented with all three static methods.
+- [x] Streak section renders in `HabitDetailScreen` with correct values.
+- [x] Current streak uses `AppColors.orange`.
+- [x] Top 5 list renders with rank, length, and date range.
+- [x] Unit tests for all three `StreakCalculator` methods pass.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (182/182).
 
 ---
 
@@ -280,12 +280,12 @@ navigates to `HabitDetailScreen`. Keep delete functionality accessible elsewhere
 
 **Acceptance criteria for STRAT-01-E:**
 
-- [ ] "View More" button visible in expanded habit card.
-- [ ] Tapping "View More" navigates to `HabitDetailScreen` for that habit.
-- [ ] Delete remains accessible (selection mode action bar or equivalent).
-- [ ] One-time tasks also navigate to their detail screen (heatmap hidden).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] "View More" button visible in expanded habit card.
+- [x] Tapping "View More" navigates to `HabitDetailScreen` for that habit.
+- [x] Delete remains accessible (selection mode action bar or equivalent).
+- [x] One-time tasks also navigate to their detail screen (heatmap hidden).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (182/182).
 
 ---
 
@@ -339,13 +339,13 @@ a "consecutive app-open streak."
 
 **Acceptance criteria for STRAT-02-A:**
 
-- [ ] `AppSessionEntity` and `AppSessionDto` created and registered in `AppDatabase`.
-- [ ] `build_runner` runs cleanly after entity addition.
-- [ ] `AppSessionRepository` implements all 4 methods.
-- [ ] `recordTodayIfAbsent()` called in `main.dart`.
-- [ ] Unit tests: `totalDaysOpened` returns correct count; `currentOpenStreak` counts consecutive days.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AppSessionEntity` and `AppSessionDto` created and registered in `AppDatabase`.
+- [x] `build_runner` runs cleanly after entity addition.
+- [x] `AppSessionRepository` implements all 4 methods.
+- [x] `recordTodayIfAbsent()` called in `main.dart`.
+- [x] Unit tests: `totalDaysOpened` returns correct count; `currentOpenStreak` counts consecutive days.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (191/191).
 
 ---
 
@@ -417,12 +417,12 @@ and (for the top rank) habit completion performance.
 
 **Acceptance criteria for STRAT-02-B:**
 
-- [ ] `UserRank` enum and `UserRankService` implemented.
-- [ ] Rank card renders at top of Insights screen with correct label and color.
-- [ ] Übermensch displayed only when both conditions are met.
-- [ ] All 7 unit tests for rank computation pass.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `UserRank` enum and `UserRankService` implemented.
+- [x] Rank card renders at top of Insights screen with correct label and color.
+- [x] Übermensch displayed only when both conditions are met.
+- [x] All 7 unit tests for rank computation pass.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (207/207).
 
 ---
 
@@ -474,12 +474,12 @@ and (for the top rank) habit completion performance.
 
 **Acceptance criteria for STRAT-02-C:**
 
-- [ ] `HabitStatsCalculator` implemented with all 3 static methods.
-- [ ] Insights screen shows correct (non-100%) completion percentages.
-- [ ] One-time tasks handled correctly.
-- [ ] All 5 unit tests pass.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `HabitStatsCalculator` implemented with all 3 static methods.
+- [x] Insights screen shows correct (non-100%) completion percentages.
+- [x] One-time tasks handled correctly.
+- [x] All 5 unit tests pass.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (207/207).
 
 ---
 
@@ -532,13 +532,13 @@ any new theme itself.
 
 **Acceptance criteria for STRAT-03-A:**
 
-- [ ] `AppSettingsEntity` and `AppSettingsDto` exist and are registered.
-- [ ] `build_runner` runs cleanly.
-- [ ] `AppSettingsRepository` implements all 3 methods.
-- [ ] `appSettingsProvider` stream provider created.
-- [ ] `MaterialApp` reads `themeMode` from `appSettingsProvider` (defaults to dark — no visible change yet).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AppSettingsEntity` and `AppSettingsDto` exist and are registered.
+- [x] `build_runner` runs cleanly.
+- [x] `AppSettingsRepository` implements all 3 methods.
+- [x] `appSettingsProvider` stream provider created.
+- [x] `MaterialApp` reads `themeMode` from `appSettingsProvider` (defaults to dark — no visible change yet).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (210/210).
 
 ---
 
@@ -584,11 +584,11 @@ any new theme itself.
 
 **Acceptance criteria for STRAT-03-B:**
 
-- [ ] `AppTheme.warmTheme` implemented with the palette above.
-- [ ] `AppTheme.themeForMode("warm")` returns `warmTheme`.
-- [ ] Switching to warm theme (manually in code for testing) renders readable UI: no dark-text-on-dark-background or light-text-on-light-background issues on Scaffold, AppBar, Cards, Habit cards.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `AppTheme.warmTheme` implemented with the palette above.
+- [x] `AppTheme.themeForMode("warm")` returns `warmTheme`.
+- [x] Switching to warm theme (manually in code for testing) renders readable UI: no dark-text-on-dark-background or light-text-on-light-background issues on Scaffold, AppBar, Cards, Habit cards.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (220/220).
 
 ---
 
@@ -638,13 +638,13 @@ partially visible through them.
 
 **Acceptance criteria for STRAT-03-C:**
 
-- [ ] `WallpaperThemeExtension` implemented with `cardOpacity` and `surfaceOpacity`.
-- [ ] `AppTheme.customTheme` returns theme with extension attached.
-- [ ] With `themeMode == "custom"` and a valid `wallpaperPath`, the wallpaper is visible behind UI elements.
-- [ ] Habit cards, AppBar, bottom nav all render at ≤ 80% opacity in custom mode.
-- [ ] No crash when `wallpaperPath` is null (falls back to `darkTheme` appearance).
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] `WallpaperThemeExtension` implemented with `cardOpacity` and `surfaceOpacity`.
+- [x] `AppTheme.customTheme` returns theme with extension attached.
+- [x] With `themeMode == "custom"` and a valid `wallpaperPath`, the wallpaper is visible behind UI elements.
+- [x] Habit cards, AppBar, bottom nav all render at ≤ 80% opacity in custom mode.
+- [x] No crash when `wallpaperPath` is null (falls back to `darkTheme` appearance).
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (220/220).
 
 ---
 
@@ -684,14 +684,14 @@ Dark, Warm, and Custom themes.
 
 **Acceptance criteria for STRAT-03-D:**
 
-- [ ] APPEARANCE section appears in Settings screen above AI ASSISTANT.
-- [ ] Tapping Theme opens the bottom sheet with all 3 tiles.
-- [ ] Selecting Dark or Warm changes the app theme immediately (reactive via `appSettingsProvider`).
-- [ ] Selecting Custom opens the file picker; on success the wallpaper is applied immediately.
-- [ ] Cancelling the picker leaves the theme unchanged and shows SnackBar.
-- [ ] Active theme shows checkmark in the sheet.
-- [ ] `dart analyze lib/` → 0 issues.
-- [ ] `flutter test` → all tests pass.
+- [x] APPEARANCE section appears in Settings screen above AI ASSISTANT.
+- [x] Tapping Theme opens the bottom sheet with all 3 tiles.
+- [x] Selecting Dark or Warm changes the app theme immediately (reactive via `appSettingsProvider`).
+- [x] Selecting Custom opens the file picker; on success the wallpaper is applied immediately.
+- [x] Cancelling the picker leaves the theme unchanged and shows SnackBar.
+- [x] Active theme shows checkmark in the sheet.
+- [x] `dart analyze lib/` → 0 issues.
+- [x] `flutter test` → all tests pass (220/220).
 
 ---
 
@@ -760,27 +760,33 @@ only on a stable codebase (no dependency on STRAT-01 or STRAT-02).
 
 ## Latest completed task
 
-**Task ID:** Phase 0 — Hot Reload Error Resolution & Baseline Verification
+**Task ID:** STRAT-01-D — Streak analytics section
 
-- **Root Cause Verified:**
-  - Dart VM and Flutter's Hot Reload mechanism cannot patch field alterations/removals on classes that have `const` constructors or active `const` instances in memory.
-  - When `AiPersona` was updated to support custom personas (`PersonaIdentifier` dynamic wrapper, `isCustom`, `imagePath`), the runtime delta between the previously compiled `AiPersona` in memory and the modified definition caused hot reload to reject the change with:
-    `Const class cannot remove fields: Library:'package:habit_tracker/presentation/screens/ai/ai_personas.dart' Class: AiPersona. Try performing a hot restart instead.`
-  - The code itself is 100% syntactically and architecturally valid.
-- **Resolution:**
-  - Perform a **Hot Restart** (press `R` in the Flutter console) or stop and re-run the app.
-  - Hot reload is rejected only across the one-time transition boundary when class fields on previously-const classes change; subsequent hot reloads work smoothly.
-- **Verification Results:**
-  - `flutter analyze lib/` → 0 issues found! (clean)
-  - `flutter test` → All 156/156 tests passed!
+- **Implemented:**
+  - `lib/application/services/streak_calculator.dart`:
+    - `currentStreak`: Computes current consecutive streak backwards from today, preserving streak when today is still pending if yesterday was completed, and skipping unscheduled rest days.
+    - `allTimeGreatestStreak`: Evaluates all historical streaks and returns the longest consecutive run.
+    - `topStreaksInYear`: Extracts top $N$ longest streaks falling into a target year, sorted by length descending and recency, returning `({int length, DateTime start, DateTime end})` records.
+  - `lib/presentation/widgets/streak_analytics_widget.dart`:
+    - Current streak displayed with large bold font (28sp) in `AppColors.orange`.
+    - All-Time Best streak displayed beneath current streak with clean separation.
+    - Top 5 Streaks list rendered with rank badges (`#1`, `#2`, etc.), streak lengths, and date ranges (`MMM d → MMM d`).
+    - Clean empty-state message: `"No streaks yet — start your first one today!"`.
+  - `lib/presentation/screens/habit_detail/habit_detail_screen.dart`:
+    - Integrated `StreakAnalyticsWidget` beneath the Performance chart section with section title `"Streaks"`.
+  - Automated Tests:
+    - Added `test/application/streak_calculator_test.dart` (10 tests) covering: empty entries, current streak counting, today pending logic, 0 streak on missed days, scheduled vs unscheduled day skipping, all-time best max calculation, year-bounded streak extraction, empty state widget rendering, current streak orange styling and rank badges, and integration into `HabitDetailScreen`.
+- **Verification:**
+  - `dart analyze lib/` → `No issues found!` (0 errors, 0 warnings)
+  - `flutter test` → `All tests passed! (182/182 passed)`
 
 ## Current task
 
-**STRAT-01-A** — HabitDetailScreen scaffold + routing
+**STRAT-01-E** — "View More" button integration
 
 - Status: Ready to start
-- Goal: Create `HabitDetailScreen` shell and wire `/habit-detail/:id` route in `app_router.dart`.
+- Goal: Replace the delete button in the expanded habit card footer with a "View More" button that navigates to `/habit-detail/:id`, while ensuring delete functionality remains fully accessible in selection mode.
 
 ## Next action
 
-Execute **STRAT-01-A**: Create `HabitDetailScreen` scaffold and wire the `/habit-detail/:id` route.
+Execute **STRAT-01-E**: Update expanded habit card footer with "View More" button and verify delete accessibility.

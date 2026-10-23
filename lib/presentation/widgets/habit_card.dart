@@ -72,10 +72,11 @@ class _HabitCardState extends ConsumerState<HabitCard> {
   }
 
   void _openDayNoteSheet(BuildContext context) {
+    final palette = context.palette;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: palette.isDark ? AppColors.surface : palette.secondarySurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -114,15 +115,43 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     // Accent color on the left edge: habit color if completed, subtle tint otherwise
     final accentColor = _isCompleted ? habitColor : habitColor.withValues(alpha: 0.35);
 
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+    final cardOpacity = wallpaperExt?.cardOpacity ?? 1.0;
+    final palette = context.palette;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
+    final cardColor = palette.getHabitCardBackground(
+      habitColor,
+      colorHex: habit.colorHex,
+      iconName: habit.iconName,
+      cardOpacity: cardOpacity,
+    );
+
+    final cardBorder = widget.isSelected
+        ? BorderSide(color: habitColor, width: 2)
+        : BorderSide(
+            color: palette.getHabitCardBorder(
+              habitColor,
+              isSelected: false,
+              colorHex: habit.colorHex,
+              iconName: habit.iconName,
+            ),
+            width: 1,
+          );
+
+    final iconColor = palette.getHabitIconColor(
+      habitColor,
+      colorHex: habit.colorHex,
+      iconName: habit.iconName,
+    );
+
     return Opacity(
       opacity: isCheckedOneTime ? 0.5 : 1.0,
       child: Material(
-        color: Color.alphaBlend(habitColor.withValues(alpha: 0.05), AppColors.surface),
+        color: cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: widget.isSelected
-              ? BorderSide(color: habitColor, width: 2)
-              : BorderSide(color: habitColor.withValues(alpha: 0.22), width: 1),
+          side: cardBorder,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -155,16 +184,16 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                             width: 42,
                             height: 42,
                             decoration: BoxDecoration(
-                              color: habitColor.withValues(alpha: 0.15),
+                              color: habitColor.withValues(alpha: palette.isDark ? 0.15 : 0.18),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: habitColor.withValues(alpha: 0.35),
+                                color: habitColor.withValues(alpha: palette.isDark ? 0.35 : 0.40),
                                 width: 1,
                               ),
                             ),
                             child: Icon(
                               HabitVisuals.getIcon(habit.iconName),
-                              color: habitColor,
+                              color: iconColor,
                               size: 22,
                             ),
                           ),
@@ -202,12 +231,12 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                           color: isCheckedOneTime
-                                              ? AppColors.primaryText.withValues(alpha: 0.7)
-                                              : AppColors.primaryText,
+                                              ? onSurface.withValues(alpha: 0.7)
+                                              : onSurface,
                                           decoration: isCheckedOneTime
                                               ? TextDecoration.lineThrough
                                               : null,
-                                          decorationColor: AppColors.primaryText.withValues(alpha: 0.7),
+                                          decorationColor: onSurface.withValues(alpha: 0.7),
                                           fontFamily: AppTheme.fontPrimary,
                                         ),
                                         maxLines: 1,
@@ -222,19 +251,23 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.surface,
+                                          color: palette.isDark
+                                              ? AppColors.surface
+                                              : palette.secondarySurface,
                                           borderRadius: BorderRadius.circular(6),
                                           border: Border.all(
-                                            color: AppColors.mutedGrey.withValues(alpha: 0.25),
+                                            color: palette.isDark
+                                                ? AppColors.mutedGrey.withValues(alpha: 0.25)
+                                                : palette.cardBorder,
                                             width: 1,
                                           ),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'One-time',
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w600,
-                                            color: AppColors.mutedGrey,
+                                            color: palette.accessibleSecondaryText,
                                             fontFamily: AppTheme.fontPrimary,
                                           ),
                                         ),
@@ -264,7 +297,12 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
                   // Expanded Panel Section
                   if (_isExpanded) ...[
-                    const Divider(color: AppColors.background, height: 1),
+                    Divider(
+                      color: palette.isDark
+                          ? AppColors.background
+                          : palette.cardBorder,
+                      height: 1,
+                    ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                       child: _buildExpandedSection(context, habitColor),
@@ -283,6 +321,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     final titles = _panelTitles;
     final safeIndex = _activePanelIndex.clamp(0, titles.length - 1);
     final currentTitle = titles[safeIndex];
+    final palette = context.palette;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -304,7 +343,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
             children: [
               // Previous button (<)
               IconButton(
-                icon: const Icon(Icons.chevron_left, color: AppColors.primaryText),
+                icon: Icon(Icons.chevron_left, color: palette.primaryText),
                 onPressed: titles.length > 1 ? _previousPanel : null,
                 splashRadius: 20,
                 tooltip: 'Previous panel',
@@ -316,11 +355,11 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                 children: [
                   Text(
                     currentTitle.toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
-                      color: AppColors.primaryText,
+                      color: palette.primaryText,
                       fontFamily: AppTheme.fontPrimary,
                     ),
                   ),
@@ -334,7 +373,11 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                         width: isActive ? 12 : 5,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: isActive ? habitColor : AppColors.mutedGrey.withValues(alpha: 0.3),
+                          color: isActive
+                              ? habitColor
+                              : (palette.isDark
+                                  ? AppColors.mutedGrey.withValues(alpha: 0.3)
+                                  : palette.cardBorder),
                           borderRadius: BorderRadius.circular(3),
                         ),
                       );
@@ -345,7 +388,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
               // Next button (>)
               IconButton(
-                icon: const Icon(Icons.chevron_right, color: AppColors.primaryText),
+                icon: Icon(Icons.chevron_right, color: palette.primaryText),
                 onPressed: titles.length > 1 ? _nextPanel : null,
                 splashRadius: 20,
                 tooltip: 'Next panel',
@@ -355,12 +398,18 @@ class _HabitCardState extends ConsumerState<HabitCard> {
 
           const SizedBox(height: 12),
 
-          // Active Panel Content
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: KeyedSubtree(
-              key: ValueKey<int>(safeIndex),
-              child: _buildPanelContent(habitColor, currentTitle),
+          // Active Panel Content (scrollable container)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 280),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: KeyedSubtree(
+                  key: ValueKey<int>(safeIndex),
+                  child: _buildPanelContent(habitColor, currentTitle),
+                ),
+              ),
             ),
           ),
         ],
@@ -401,27 +450,28 @@ class _HabitCardState extends ConsumerState<HabitCard> {
   Widget _buildSubtitle(BuildContext context, dynamic streakResult) {
     final habit = widget.item.habit;
     final habitColor = HabitVisuals.parseColor(habit.colorHex);
+    final palette = context.palette;
     final List<Widget> metaItems = [];
 
     if (habit.isOneTime) {
       if (_isCompleted) {
         metaItems.add(
-          const Text(
+          Text(
             'Completed',
             style: TextStyle(
               fontSize: 13,
-              color: AppColors.mutedGrey,
+              color: palette.accessibleSecondaryText,
               fontFamily: AppTheme.fontPrimary,
             ),
           ),
         );
       } else {
         metaItems.add(
-          const Text(
+          Text(
             'One-time task',
             style: TextStyle(
               fontSize: 13,
-              color: AppColors.mutedGrey,
+              color: palette.accessibleSecondaryText,
               fontFamily: AppTheme.fontPrimary,
             ),
           ),
@@ -460,9 +510,9 @@ class _HabitCardState extends ConsumerState<HabitCard> {
         metaItems.add(
           Text(
             scheduleName,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.mutedGrey,
+              color: palette.accessibleSecondaryText,
               fontFamily: AppTheme.fontPrimary,
             ),
           ),
@@ -474,9 +524,9 @@ class _HabitCardState extends ConsumerState<HabitCard> {
       metaItems.add(
         Text(
           ' • Target: ${_formatNumber(habit.targetValue!)} ${habit.unit ?? ''}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
-            color: AppColors.mutedGrey,
+            color: palette.accessibleSecondaryText,
             fontFamily: AppTheme.fontPrimary,
           ),
         ),
@@ -497,6 +547,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
   ) {
     const double controlSize = 72;
     final onHabitColor = HabitVisuals.getOnColor(habitColor);
+    final palette = context.palette;
 
     if (habit.type == HabitType.boolean) {
       final isDone = _isCompleted;
@@ -504,7 +555,7 @@ class _HabitCardState extends ConsumerState<HabitCard> {
         button: true,
         label: isDone ? 'Mark habit as incomplete' : 'Mark habit as complete',
         child: Material(
-          color: isDone ? habitColor : AppColors.background,
+          color: isDone ? habitColor : palette.trackingButtonBackground,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: widget.onCompletionTap,
@@ -545,14 +596,15 @@ class _HabitCardState extends ConsumerState<HabitCard> {
       // Numeric entry control
       final isDone = _isCompleted;
       final hasValue = entry != null && entry.value > 0;
+      final uncompletedColor = hasValue
+          ? (palette.isDark ? AppColors.surface : palette.trackingButtonBackground)
+          : palette.trackingButtonBackground;
 
       return Semantics(
         button: true,
         label: hasValue ? 'Logged ${entry.value}' : 'Log numeric value',
         child: Material(
-          color: isDone
-              ? habitColor
-              : (hasValue ? AppColors.surface : AppColors.background),
+          color: isDone ? habitColor : uncompletedColor,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: widget.onCompletionTap,
@@ -594,7 +646,9 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                           fontSize: 11,
                           color: isDone
                               ? onHabitColor.withValues(alpha: 0.85)
-                              : AppColors.mutedGrey,
+                              : (palette.isDark
+                                  ? AppColors.mutedGrey
+                                  : palette.textOnDarkSurface.withValues(alpha: 0.75)),
                           fontFamily: AppTheme.fontPrimary,
                         ),
                         maxLines: 1,
@@ -612,8 +666,10 @@ class _HabitCardState extends ConsumerState<HabitCard> {
                     if (habit.unit != null && habit.unit!.isNotEmpty)
                       Text(
                         habit.unit!,
-                        style: const TextStyle(
-                          color: AppColors.mutedGrey,
+                        style: TextStyle(
+                          color: palette.isDark
+                              ? AppColors.mutedGrey
+                              : palette.textOnDarkSurface.withValues(alpha: 0.75),
                           fontSize: 11,
                         ),
                         maxLines: 1,

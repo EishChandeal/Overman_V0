@@ -19,6 +19,7 @@ import 'package:habit_tracker/presentation/screens/ai/ai_personas.dart';
 import 'package:habit_tracker/presentation/screens/home/home_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:habit_tracker/presentation/screens/splash/splash_screen.dart';
+import 'package:habit_tracker/presentation/screens/habit_detail/habit_detail_screen.dart';
 import 'package:habit_tracker/presentation/navigation/app_router.dart';
 import 'package:habit_tracker/presentation/widgets/details_panel.dart';
 
@@ -759,7 +760,7 @@ void main() {
     expect(find.text('Deleted habit "Temporary Habit"'), findsOneWidget);
   });
 
-  testWidgets('DetailsPanel exposes direct Edit and Delete buttons on expanded habit',
+  testWidgets('DetailsPanel exposes direct Edit and View More buttons on expanded habit',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
     tester.view.devicePixelRatio = 3.0;
@@ -802,7 +803,14 @@ void main() {
 
     // Verify Details panel buttons
     expect(find.widgetWithText(OutlinedButton, 'Edit'), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Delete'), findsOneWidget);
+    expect(find.byKey(const Key('details_panel_view_more_btn')), findsOneWidget);
+    expect(find.byKey(const Key('habit_card_view_more_btn')), findsNothing);
+
+    // Tapping View More navigates to HabitDetailScreen
+    await tester.tap(find.byKey(const Key('details_panel_view_more_btn')));
+    await tester.pumpAndSettle();
+    expect(find.byType(HabitDetailScreen), findsOneWidget);
+    expect(find.text('Deep Breathing'), findsWidgets);
   });
 
   testWidgets(
@@ -1969,9 +1977,10 @@ void main() {
     });
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const SettingsScreen(),
+      const ProviderScope(
+        child: MaterialApp(
+          home: SettingsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -2008,13 +2017,14 @@ void main() {
     FilePickerResult? mockResult;
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: SettingsScreen(
-          onPickImportFile: () async {
-            pickerCalled = true;
-            return mockResult;
-          },
+      ProviderScope(
+        child: MaterialApp(
+          home: SettingsScreen(
+            onPickImportFile: () async {
+              pickerCalled = true;
+              return mockResult;
+            },
+          ),
         ),
       ),
     );

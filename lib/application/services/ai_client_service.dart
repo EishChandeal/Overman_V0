@@ -49,10 +49,13 @@ class AiClientService {
         // OpenAI-compatible endpoint (OpenAI, Groq, OpenRouter, Ollama, Gemini OpenAI endpoint)
         return await _callOpenAiCompatible(cleanEndpoint, cleanKey, messages, modelOverride);
       }
-    } on SocketException {
-      throw const AiClientException('Network error. Check your connection.');
-    } on http.ClientException {
-      throw const AiClientException('Network error. Check your connection.');
+    } on SocketException catch (e) {
+      final details = e.osError != null ? '${e.message} (${e.osError!.message})' : e.message;
+      throw AiClientException('Network error: $details');
+    } on http.ClientException catch (e) {
+      throw AiClientException('Network client error: ${e.message}');
+    } on HandshakeException catch (e) {
+      throw AiClientException('SSL/TLS error: ${e.message}');
     } on TimeoutException {
       throw const AiClientException('Request timed out. Please try again.');
     } on AiClientException {

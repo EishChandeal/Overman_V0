@@ -34,8 +34,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             .where((h) => h.habit.id == _selectedHabitStatus!.habit.id)
             .firstOrNull;
 
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: wallpaperExt?.wallpaperPath != null
+          ? Colors.transparent
+          : Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
@@ -134,6 +138,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final totalScheduled = scheduledHabits.length;
 
     const double headerHeight = 88;
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+    final cardOpacity = wallpaperExt?.cardOpacity ?? 1.0;
+    final surfaceColor =
+        Theme.of(context).colorScheme.surface.withValues(alpha: cardOpacity);
+    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+    final palette = context.palette;
 
     return Row(
       children: [
@@ -141,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 2,
           child: Material(
-            color: AppColors.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
@@ -157,19 +167,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       formattedDate,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primaryText,
+                        color: onSurfaceColor,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '$completedCount / $totalScheduled completed',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.mutedGrey,
+                        color: palette.accessibleSecondaryText,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                       maxLines: 1,
@@ -188,20 +198,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 appNavigateTo(context, AppRoutes.add, const AddHabitScreen());
               },
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Center(
                   child: Icon(
                     Icons.add,
                     size: 28,
-                    color: AppColors.primaryText,
+                    color: onSurfaceColor,
                   ),
                 ),
               ),
@@ -215,20 +225,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 appNavigateTo(context, AppRoutes.settings, const SettingsScreen());
               },
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Center(
                   child: Icon(
                     Icons.settings_outlined,
                     size: 28,
-                    color: AppColors.primaryText,
+                    color: onSurfaceColor,
                   ),
                 ),
               ),
@@ -249,6 +259,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ) {
     const double headerHeight = 88;
     final habit = selectedItem.habit;
+    final palette = context.palette;
+    final buttonSurface = palette.isDark ? AppColors.surface : palette.secondarySurface;
+    final buttonTextColor = palette.primaryText;
+    final deleteColor = palette.errorColor;
 
     return Row(
       children: [
@@ -256,14 +270,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: buttonSurface,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () {
                 setState(() => _selectedHabitStatus = null);
               },
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -271,15 +285,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Icon(
                       Icons.close,
                       size: 26,
-                      color: AppColors.primaryText,
+                      color: buttonTextColor,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Close',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryText,
+                        color: buttonTextColor,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
@@ -296,12 +310,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: buttonSurface,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => _openNoteDialog(habit),
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -309,15 +323,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Icon(
                       Icons.note_alt_outlined,
                       size: 26,
-                      color: AppColors.primaryText,
+                      color: buttonTextColor,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Note',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryText,
+                        color: buttonTextColor,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
@@ -334,12 +348,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: buttonSurface,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => _editHabit(selectedItem),
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -347,15 +361,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Icon(
                       Icons.edit_outlined,
                       size: 26,
-                      color: AppColors.primaryText,
+                      color: buttonTextColor,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Edit',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryText,
+                        color: buttonTextColor,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
@@ -372,12 +386,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Expanded(
           flex: 1,
           child: Material(
-            color: AppColors.surface,
+            color: buttonSurface,
             borderRadius: BorderRadius.circular(16),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => _confirmDelete(habit),
-              child: const SizedBox(
+              child: SizedBox(
                 height: headerHeight,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -385,15 +399,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Icon(
                       Icons.delete_outline,
                       size: 26,
-                      color: Colors.redAccent,
+                      color: deleteColor,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       'Delete',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.redAccent,
+                        color: deleteColor,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
@@ -408,10 +422,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openNoteDialog(HabitDto habit) {
+    final palette = context.palette;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: palette.isDark ? AppColors.surface : palette.secondarySurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -473,6 +488,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     HabitDto habit,
   ) async {
     bool confirmed = true;
+    final palette = context.palette;
 
     // Only show confirmation dialog for recurring habits, not one-time tasks
     if (!habit.isOneTime) {
@@ -480,36 +496,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         context: context,
         builder: (dialogContext) {
           return AlertDialog(
-            backgroundColor: AppColors.surface,
+            backgroundColor: palette.isDark ? AppColors.surface : palette.secondarySurface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text(
+            title: Text(
               'Delete Habit',
               style: TextStyle(
-                color: AppColors.primaryText,
+                color: palette.primaryText,
                 fontWeight: FontWeight.bold,
                 fontFamily: AppTheme.fontPrimary,
               ),
             ),
             content: Text(
               'Are you sure you want to delete "${habit.name}"? This will permanently delete all its logged entries and history.',
-              style: const TextStyle(
-                color: AppColors.mutedGrey,
+              style: TextStyle(
+                color: palette.accessibleSecondaryText,
                 fontFamily: AppTheme.fontPrimary,
               ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text(
+                child: Text(
                   'Cancel',
-                  style: TextStyle(color: AppColors.mutedGrey),
+                  style: TextStyle(color: palette.accessibleSecondaryText),
                 ),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
+                  backgroundColor: palette.errorColor,
                 ),
                 onPressed: () => Navigator.of(dialogContext).pop(true),
                 child: const Text(
@@ -543,8 +559,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SnackBar(
               content: Text(
                 'Deleted ${habit.isOneTime ? "task" : "habit"} "${habit.name}"',
+                style: TextStyle(
+                  color: palette.isDark ? AppColors.primaryText : palette.textOnDarkSurface,
+                ),
               ),
-              backgroundColor: AppColors.surface,
+              backgroundColor: palette.isDark ? AppColors.surface : palette.darkSurface,
               duration: const Duration(seconds: 2),
             ),
           );
@@ -554,7 +573,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to delete: $e'),
-              backgroundColor: Colors.redAccent,
+              backgroundColor: palette.errorColor,
             ),
           );
         }
@@ -756,6 +775,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final palette = context.palette;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -765,35 +785,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: palette.isDark ? AppColors.surface : palette.secondarySurface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.mutedGrey.withValues(alpha: 0.2),
+                  color: palette.isDark
+                      ? AppColors.mutedGrey.withValues(alpha: 0.2)
+                      : palette.cardBorder,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.track_changes,
                 size: 48,
-                color: AppColors.blue,
+                color: palette.interactiveAccent,
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No habits yet',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primaryText,
+                color: palette.primaryText,
                 fontFamily: AppTheme.fontPrimary,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Tap the orange + button above to create your first habit or task.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.mutedGrey,
+                color: palette.accessibleSecondaryText,
                 fontFamily: AppTheme.fontPrimary,
                 height: 1.4,
               ),

@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
+import '../../../application/providers/providers.dart';
 import '../../../application/services/data_export_service.dart';
 import '../../../data/database/app_database.dart';
 import '../../navigation/app_router.dart';
@@ -10,36 +12,50 @@ import '../../screens/ai/ai_settings_screen.dart';
 import '../../screens/history/history_screen.dart';
 import '../../screens/insights/insights_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/theme_selector_sheet.dart';
 
 /// Screen presenting settings, real data exports (CSV, JSON, XLSX), and data import.
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   final DataExportService? exportService;
   final Future<FilePickerResult?> Function()? onPickImportFile;
+  final Future<FilePickerResult?> Function()? onPickWallpaperFile;
 
   const SettingsScreen({
     super.key,
     this.exportService,
     this.onPickImportFile,
+    this.onPickWallpaperFile,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(appSettingsProvider);
+    final settings = settingsAsync.value;
+    final themeMode = settings?.themeMode ?? 'dark';
+    final currentThemeName = switch (themeMode) {
+      'warm' => 'Warm (Blanchedalmond)',
+      'custom' => 'Custom Wallpaper',
+      _ => 'Dark',
+    };
+    final theme = Theme.of(context);
+    final palette = context.palette;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryText),
+          icon: Icon(Icons.arrow_back, color: theme.colorScheme.onSurface),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: 'Back',
         ),
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.primaryText,
+            color: theme.colorScheme.onSurface,
             fontFamily: AppTheme.fontPrimary,
           ),
         ),
@@ -49,10 +65,11 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
             // 1. Navigation Section
-            _buildSectionHeader('NAVIGATION SHORTCUTS'),
+            _buildSectionHeader(context, 'NAVIGATION SHORTCUTS'),
             _buildSettingTile(
+              context: context,
               icon: Icons.insights_outlined,
-              iconColor: AppColors.blue,
+              iconColor: palette.interactiveAccent,
               title: 'Insights & Analytics',
               subtitle: 'Weekly consistency, metrics, and completion trends',
               onTap: () {
@@ -65,6 +82,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _buildSettingTile(
+              context: context,
               icon: Icons.history_outlined,
               iconColor: AppColors.orange,
               title: 'History Log',
@@ -79,8 +97,9 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _buildSettingTile(
+              context: context,
               icon: Icons.add_circle_outline,
-              iconColor: AppColors.blue,
+              iconColor: palette.interactiveAccent,
               title: 'Create New Habit',
               subtitle: 'Configure boolean or numeric tracking habits',
               onTap: () {
@@ -90,9 +109,24 @@ class SettingsScreen extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // AI Assistant Section
-            _buildSectionHeader('AI ASSISTANT'),
+            // Appearance Section (STRAT-03-D)
+            _buildSectionHeader(context, 'APPEARANCE'),
             _buildSettingTile(
+              context: context,
+              key: const Key('settings_theme_tile'),
+              icon: Icons.palette_outlined,
+              iconColor: palette.interactiveAccent,
+              title: 'Theme',
+              subtitle: currentThemeName,
+              onTap: () => _openThemeSelector(context, ref),
+            ),
+
+            const SizedBox(height: 24),
+
+            // AI Assistant Section
+            _buildSectionHeader(context, 'AI ASSISTANT'),
+            _buildSettingTile(
+              context: context,
               icon: Icons.auto_awesome_outlined,
               iconColor: AppColors.orange,
               title: 'AI Assistant',
@@ -109,34 +143,38 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // 2. Data Export & Import Section
-            _buildSectionHeader('DATA EXPORT'),
+            _buildSectionHeader(context, 'DATA EXPORT'),
             _buildSettingTile(
+              context: context,
               icon: Icons.table_chart_outlined,
-              iconColor: AppColors.primaryText,
+              iconColor: palette.isDark ? AppColors.primaryText : palette.interactiveAccent,
               title: 'Export to CSV',
               subtitle: 'Comma-separated values for spreadsheet analysis',
               onTap: () => _handleExport(context, 'CSV'),
             ),
             const SizedBox(height: 8),
             _buildSettingTile(
+              context: context,
               icon: Icons.data_object_outlined,
-              iconColor: AppColors.primaryText,
+              iconColor: palette.isDark ? AppColors.primaryText : palette.interactiveAccent,
               title: 'Export to JSON',
               subtitle: 'Raw structured JSON schema backup',
               onTap: () => _handleExport(context, 'JSON'),
             ),
             const SizedBox(height: 8),
             _buildSettingTile(
+              context: context,
               icon: Icons.description_outlined,
-              iconColor: AppColors.primaryText,
+              iconColor: palette.isDark ? AppColors.primaryText : palette.interactiveAccent,
               title: 'Export to Excel (XLSX)',
               subtitle: 'Multi-sheet workbook with formatting',
               onTap: () => _handleExport(context, 'XLSX'),
             ),
             const SizedBox(height: 8),
             _buildSettingTile(
+              context: context,
               icon: Icons.file_upload_outlined,
-              iconColor: AppColors.blue,
+              iconColor: palette.interactiveAccent,
               title: 'Import Data',
               subtitle: 'Restore habits and entries from CSV or JSON backup',
               onTap: () => _handleImport(context),
@@ -145,20 +183,16 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // 3. Application Preferences
-            _buildSectionHeader('PREFERENCES'),
+            _buildSectionHeader(context, 'PREFERENCES'),
             _buildInfoTile(
-              icon: Icons.dark_mode_outlined,
-              title: 'Theme',
-              value: 'Quiet Dark (Active)',
-            ),
-            const SizedBox(height: 8),
-            _buildInfoTile(
+              context: context,
               icon: Icons.calendar_today_outlined,
               title: 'First Day of Week',
               value: 'Monday',
             ),
             const SizedBox(height: 8),
             _buildInfoTile(
+              context: context,
               icon: Icons.access_time_outlined,
               title: 'Day-Change Reset',
               value: 'Midnight (00:00 UTC)',
@@ -167,14 +201,14 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // 4. About Section
-            _buildSectionHeader('ABOUT OVERMAN'),
+            _buildSectionHeader(context, 'ABOUT OVERMAN'),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: palette.settingsCardBackground,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -182,11 +216,11 @@ class SettingsScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primaryText,
+                      color: palette.settingsCardTitle,
                       fontFamily: AppTheme.fontPrimary,
                     ),
                   ),
-                  SizedBox(height: 6),
+                  const SizedBox(height: 6),
                   Text(
                     'This is a Working Multi-Screen Prototype\n'
                     'Architecture: Clean Architecture + ObjectBox Offline-First + Riverpod 2.0\n'
@@ -194,7 +228,7 @@ class SettingsScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.5,
-                      color: AppColors.mutedGrey,
+                      color: palette.settingsCardSubtitle,
                       fontFamily: AppTheme.fontPrimary,
                     ),
                   ),
@@ -207,16 +241,30 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  void _openThemeSelector(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return ThemeSelectorSheet(
+          onPickWallpaperFile: onPickWallpaperFile,
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final palette = context.palette;
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
-          color: AppColors.mutedGrey,
+          color: palette.sectionHeader,
           fontFamily: AppTheme.fontPrimary,
         ),
       ),
@@ -224,14 +272,18 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildSettingTile({
+    required BuildContext context,
+    Key? key,
     required IconData icon,
     required Color iconColor,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final palette = context.palette;
     return Material(
-      color: AppColors.surface,
+      key: key,
+      color: palette.settingsCardBackground,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -248,29 +300,29 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryText,
+                        color: palette.settingsCardTitle,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.mutedGrey,
+                        color: palette.settingsCardSubtitle,
                         fontFamily: AppTheme.fontPrimary,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
                 size: 20,
-                color: AppColors.mutedGrey,
+                color: palette.isDark ? AppColors.mutedGrey : palette.interactiveAccent,
               ),
             ],
           ),
@@ -280,25 +332,31 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildInfoTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String value,
   }) {
+    final palette = context.palette;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: palette.settingsCardBackground,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.mutedGrey),
+          Icon(
+            icon,
+            size: 20,
+            color: palette.isDark ? AppColors.mutedGrey : palette.interactiveAccent,
+          ),
           const SizedBox(width: 12),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: AppColors.primaryText,
+              color: palette.settingsCardTitle,
               fontFamily: AppTheme.fontPrimary,
             ),
           ),
@@ -307,10 +365,10 @@ class SettingsScreen extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.mutedGrey,
+                color: palette.settingsCardSubtitle,
                 fontFamily: AppTheme.fontPrimary,
               ),
               maxLines: 1,
