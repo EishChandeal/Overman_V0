@@ -199,6 +199,18 @@ class AppTheme {
         color: AppColors.surface,
         thickness: 1,
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.surface,
+        contentTextStyle: const TextStyle(
+          color: AppColors.primaryText,
+          fontFamily: fontPrimary,
+          fontSize: 14,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
     );
   }
 
@@ -335,6 +347,18 @@ class AppTheme {
       dividerTheme: const DividerThemeData(
         color: WarmColors.divider,
         thickness: 1,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: WarmColors.darkSurface,
+        contentTextStyle: const TextStyle(
+          color: WarmColors.textOnDark,
+          fontFamily: fontPrimary,
+          fontSize: 14,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }

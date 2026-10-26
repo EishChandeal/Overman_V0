@@ -26,6 +26,15 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
   bool _enableMemory = true;
   String? _selectedPersona;
   bool _isLoading = true;
+  bool _isSaved = false;
+
+  void _onInputChanged() {
+    if (_isSaved) {
+      setState(() => _isSaved = false);
+    } else {
+      setState(() {});
+    }
+  }
 
   @override
   void initState() {
@@ -66,7 +75,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
     }
   }
 
-  Future<void> _saveSettings({bool showToast = true}) async {
+  Future<void> _saveSettings({bool showToast = false}) async {
     try {
       final repo = await ref.read(aiSettingsRepositoryProvider.future);
       final current = await repo.getSettings();
@@ -81,17 +90,21 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
       );
       await repo.saveSettings(updated);
 
-      if (showToast && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Settings saved'),
-            backgroundColor: AppColors.surface,
-            duration: Duration(seconds: 2),
-          ),
-        );
+      if (mounted) {
+        setState(() {
+          _isSaved = true;
+        });
+        if (showToast) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Settings saved'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
       }
     } catch (e) {
-      if (showToast && mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save settings: $e'),
@@ -223,7 +236,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) => _onInputChanged(),
                   ),
                   const SizedBox(height: 14),
                   TextField(
@@ -256,7 +269,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                         },
                       ),
                     ),
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) => _onInputChanged(),
                   ),
                   const SizedBox(height: 14),
                   TextField(
@@ -284,25 +297,35 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    onChanged: (_) => setState(() {}),
+                    onChanged: (_) => _onInputChanged(),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.blue,
-                      foregroundColor: AppColors.controlText,
+                      backgroundColor: _isSaved ? const Color(0xFF2E7D32) : AppColors.blue,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    onPressed: () => _saveSettings(showToast: true),
-                    child: const Text(
-                      'Save Settings',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: AppTheme.fontPrimary,
-                      ),
+                    onPressed: () => _saveSettings(showToast: false),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_isSaved) ...[
+                          const Icon(Icons.check, size: 18, color: Colors.white),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          _isSaved ? 'Saved!' : 'Save Settings',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: AppTheme.fontPrimary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -260,7 +260,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const double headerHeight = 88;
     final habit = selectedItem.habit;
     final palette = context.palette;
-    final buttonSurface = palette.isDark ? AppColors.surface : palette.secondarySurface;
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+    final cardOpacity = wallpaperExt?.cardOpacity ?? 1.0;
+    final buttonSurface =
+        Theme.of(context).colorScheme.surface.withValues(alpha: cardOpacity);
     final buttonTextColor = palette.primaryText;
     final deleteColor = palette.errorColor;
 
