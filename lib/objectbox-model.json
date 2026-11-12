@@ -578,7 +578,7 @@
     },
     {
       "id": "12:6037634120974265972",
-      "lastPropertyId": "4:9218047880227819464",
+      "lastPropertyId": "5:7393225962977146058",
       "name": "AppSettingsEntity",
       "properties": [
         {
@@ -601,6 +601,11 @@
           "id": "4:9218047880227819464",
           "name": "updatedAt",
           "type": 6
+        },
+        {
+          "id": "5:7393225962977146058",
+          "name": "enableCompletionEffects",
+          "type": 1
         }
       ],
       "relations": []

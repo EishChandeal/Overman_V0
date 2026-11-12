@@ -123,6 +123,26 @@ class SettingsScreen extends ConsumerWidget {
 
             const SizedBox(height: 24),
 
+            // Effects & Feedback Section
+            _buildSectionHeader(context, 'EFFECTS & SOUND'),
+            _buildSwitchTile(
+              context: context,
+              key: const Key('settings_completion_effects_tile'),
+              icon: Icons.auto_awesome_motion_outlined,
+              iconColor: palette.interactiveAccent,
+              title: 'Completion Effects',
+              subtitle: 'Fluid bloom animation and sound on completion',
+              value: settings?.enableCompletionEffects ?? false,
+              onChanged: (enabled) async {
+                final repo = await ref.read(appSettingsRepositoryProvider.future);
+                final current = await repo.getSettings();
+                await repo.saveSettings(current.copyWith(enableCompletionEffects: enabled));
+                ref.invalidate(appSettingsProvider);
+              },
+            ),
+
+            const SizedBox(height: 24),
+
             // AI Assistant Section
             _buildSectionHeader(context, 'AI ASSISTANT'),
             _buildSettingTile(
@@ -323,6 +343,68 @@ class SettingsScreen extends ConsumerWidget {
                 Icons.chevron_right,
                 size: 20,
                 color: palette.isDark ? AppColors.mutedGrey : palette.interactiveAccent,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required BuildContext context,
+    Key? key,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final palette = context.palette;
+    return Material(
+      key: key,
+      color: palette.settingsCardBackground,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: iconColor),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: palette.settingsCardTitle,
+                        fontFamily: AppTheme.fontPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: palette.settingsCardSubtitle,
+                        fontFamily: AppTheme.fontPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: value,
+                activeThumbColor: palette.interactiveAccent,
+                activeTrackColor: palette.interactiveAccent.withValues(alpha: 0.5),
+                onChanged: onChanged,
               ),
             ],
           ),
