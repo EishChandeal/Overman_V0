@@ -21,6 +21,7 @@ class AppSettingsRepository {
       themeMode: 'dark',
       wallpaperPath: null,
       updatedAt: DateTime.now().toUtc(),
+      enableCompletionEffects: false,
     );
   }
 
@@ -33,12 +34,14 @@ class AppSettingsRepository {
       existing.themeMode = dto.themeMode;
       existing.wallpaperPath = dto.wallpaperPath;
       existing.updatedAt = nowMs;
+      existing.enableCompletionEffects = dto.enableCompletionEffects;
       _box.put(existing);
     } else {
       final entity = AppSettingsEntity(
         themeMode: dto.themeMode,
         wallpaperPath: dto.wallpaperPath,
         updatedAt: nowMs,
+        enableCompletionEffects: dto.enableCompletionEffects,
       );
       _box.put(entity);
     }
@@ -58,6 +61,7 @@ class AppSettingsRepository {
             themeMode: 'dark',
             wallpaperPath: null,
             updatedAt: DateTime.now().toUtc(),
+            enableCompletionEffects: false,
           );
         });
   }

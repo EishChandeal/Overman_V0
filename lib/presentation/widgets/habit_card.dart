@@ -10,6 +10,7 @@ import 'package:habit_tracker/presentation/widgets/numeric_graph_panel.dart';
 import 'package:habit_tracker/presentation/widgets/statistics_panel.dart';
 import 'package:habit_tracker/presentation/widgets/notes_panel.dart';
 import 'package:habit_tracker/presentation/widgets/day_note_bottom_sheet.dart';
+import 'package:habit_tracker/presentation/widgets/habit_completion_button.dart';
 
 /// Card component representing a habit on the Home screen.
 /// Supports in-place expansion with circular panel sequence:
@@ -548,141 +549,27 @@ class _HabitCardState extends ConsumerState<HabitCard> {
     const double controlSize = 72;
     final onHabitColor = HabitVisuals.getOnColor(habitColor);
     final palette = context.palette;
+    final isBoolean = habit.type == HabitType.boolean || (habit.isOneTime as bool);
+    final hasValue = entry != null && entry.value > 0;
+    final uncompletedColor = !isBoolean && hasValue
+        ? (palette.isDark ? AppColors.surface : palette.trackingButtonBackground)
+        : palette.trackingButtonBackground;
+    final enableEffects =
+        ref.watch(appSettingsProvider).value?.enableCompletionEffects ?? false;
 
-    if (habit.type == HabitType.boolean) {
-      final isDone = _isCompleted;
-      return Semantics(
-        button: true,
-        label: isDone ? 'Mark habit as incomplete' : 'Mark habit as complete',
-        child: Material(
-          color: isDone ? habitColor : palette.trackingButtonBackground,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            onTap: widget.onCompletionTap,
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              width: controlSize,
-              height: controlSize,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                border: isDone
-                    ? null
-                    : Border.all(
-                        color: habitColor.withValues(alpha: 0.35),
-                        width: 1.5,
-                      ),
-              ),
-              child: Center(
-                child: isDone
-                    ? Icon(
-                        Icons.check,
-                        size: 32,
-                        color: onHabitColor,
-                      )
-                    : Text(
-                        '—',
-                        style: TextStyle(
-                          color: habitColor.withValues(alpha: 0.7),
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ),
-          ),
-        ),
-      );
-    } else {
-      // Numeric entry control
-      final isDone = _isCompleted;
-      final hasValue = entry != null && entry.value > 0;
-      final uncompletedColor = hasValue
-          ? (palette.isDark ? AppColors.surface : palette.trackingButtonBackground)
-          : palette.trackingButtonBackground;
-
-      return Semantics(
-        button: true,
-        label: hasValue ? 'Logged ${entry.value}' : 'Log numeric value',
-        child: Material(
-          color: isDone ? habitColor : uncompletedColor,
-          borderRadius: BorderRadius.circular(14),
-          child: InkWell(
-            onTap: widget.onCompletionTap,
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              width: controlSize,
-              height: controlSize,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isDone
-                      ? habitColor
-                      : (hasValue
-                          ? habitColor.withValues(alpha: 0.7)
-                          : habitColor.withValues(alpha: 0.35)),
-                  width: 1.5,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (hasValue) ...[
-                    Text(
-                      _formatNumber(entry.value),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDone ? onHabitColor : habitColor,
-                        fontFamily: AppTheme.fontPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (habit.unit != null && habit.unit!.isNotEmpty)
-                      Text(
-                        habit.unit!,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: isDone
-                              ? onHabitColor.withValues(alpha: 0.85)
-                              : (palette.isDark
-                                  ? AppColors.mutedGrey
-                                  : palette.textOnDarkSurface.withValues(alpha: 0.75)),
-                          fontFamily: AppTheme.fontPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ] else ...[
-                    Text(
-                      '—',
-                      style: TextStyle(
-                        color: habitColor.withValues(alpha: 0.7),
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (habit.unit != null && habit.unit!.isNotEmpty)
-                      Text(
-                        habit.unit!,
-                        style: TextStyle(
-                          color: palette.isDark
-                              ? AppColors.mutedGrey
-                              : palette.textOnDarkSurface.withValues(alpha: 0.75),
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+    return HabitCompletionButton(
+      isCompleted: _isCompleted,
+      isBoolean: isBoolean,
+      habitColor: habitColor,
+      onHabitColor: onHabitColor,
+      uncompletedColor: uncompletedColor,
+      numericValue: entry != null ? (entry.value as double) : null,
+      numericUnit: habit.unit,
+      formattedNumber: entry != null ? _formatNumber(entry.value) : '',
+      onTap: widget.onCompletionTap,
+      size: controlSize,
+      enableAnimation: enableEffects,
+    );
   }
 
   String _formatNumber(double value) {

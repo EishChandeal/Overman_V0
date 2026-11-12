@@ -11,6 +11,7 @@ import 'package:habit_tracker/presentation/screens/history/history_screen.dart';
 import 'package:habit_tracker/presentation/screens/settings/settings_screen.dart';
 import 'package:habit_tracker/presentation/navigation/app_router.dart';
 import 'package:habit_tracker/presentation/widgets/day_note_bottom_sheet.dart';
+import 'package:habit_tracker/application/services/ui_sound_service.dart';
 
 /// Main Home screen displaying the date/progress header and today's habits.
 /// Corresponds to Section 48-84 of PROJECT_BRIEF.md and DESIGN.md.
@@ -260,7 +261,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     const double headerHeight = 88;
     final habit = selectedItem.habit;
     final palette = context.palette;
-    final buttonSurface = palette.isDark ? AppColors.surface : palette.secondarySurface;
+    final wallpaperExt = Theme.of(context).extension<WallpaperThemeExtension>();
+    final cardOpacity = wallpaperExt?.cardOpacity ?? 1.0;
+    final buttonSurface =
+        Theme.of(context).colorScheme.surface.withValues(alpha: cardOpacity);
     final buttonTextColor = palette.primaryText;
     final deleteColor = palette.errorColor;
 
@@ -589,6 +593,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final now = DateTime.now();
     final todayUtc = DateTime.utc(now.year, now.month, now.day);
     final actions = ref.read(entryActionsProvider.notifier);
+    final soundService = ref.read(uiSoundServiceProvider);
 
     if (item.habit.isOneTime) {
       final repo = await ref.read(habitRepositoryProvider.future);
@@ -598,6 +603,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       if (isCompleted) {
         // Toggle off
+        soundService.playUncompletionSound();
         final updated = item.habit.copyWith(completedAt: null);
         await repo.updateHabit(updated);
         if (item.entry != null) {
@@ -608,6 +614,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       } else {
         // Mark complete
+        soundService.playCompletionSound();
         final updated = item.habit.copyWith(completedAt: now.toUtc());
         await repo.updateHabit(updated);
         await actions.logEntry(
@@ -626,12 +633,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           item.status == DayStatus.met || item.status == DayStatus.exceeded;
       if (isCompleted && item.entry != null) {
         // Toggle off
+        soundService.playUncompletionSound();
         actions.deleteEntry(
           entryId: item.entry!.id,
           habitId: item.habit.id,
         );
       } else {
         // Mark complete
+        soundService.playCompletionSound();
         actions.logEntry(
           habitId: item.habit.id,
           date: todayUtc,
@@ -650,6 +659,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     HabitDayStatus item,
     DateTime date,
   ) {
+    final soundService = ref.read(uiSoundServiceProvider);
+    final target = item.habit.targetValue ?? 1.0;
+    final wasMet = (item.entry != null) && (item.entry!.value >= target);
+
     final controller = TextEditingController(
       text: item.entry != null
           ? (item.entry!.value == item.entry!.value.roundToDouble()
@@ -714,6 +727,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         final isOneTime = item.habit.isOneTime;
                         final habitDto = item.habit;
 
+                        if (wasMet) {
+                          soundService.playUncompletionSound();
+                        }
+
                         Navigator.of(sheetContext).pop();
 
                         await ref.read(entryActionsProvider.notifier).deleteEntry(
@@ -747,6 +764,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Navigator.of(sheetContext).pop();
 
                       if (val != null) {
+                        final isMet = val >= target;
+                        if (!wasMet && isMet) {
+                          soundService.playCompletionSound();
+                        } else if (wasMet && !isMet) {
+                          soundService.playUncompletionSound();
+                        }
+
                         await ref.read(entryActionsProvider.notifier).logEntry(
                               habitId: item.habit.id,
                               date: date,
@@ -754,7 +778,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             );
                         if (item.habit.isOneTime) {
                           final repo = await ref.read(habitRepositoryProvider.future);
-                          final isMet = val >= (item.habit.targetValue ?? 1.0);
                           await repo.updateHabit(item.habit.copyWith(
                             completedAt: isMet ? DateTime.now().toUtc() : null,
                           ));

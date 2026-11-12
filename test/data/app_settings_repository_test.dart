@@ -13,13 +13,30 @@ void main() {
   });
 
   group('AppSettingsRepository (STRAT-03-A)', () {
-    test('getSettings returns default dark theme when empty', () async {
+    test('getSettings returns default dark theme and disabled effects when empty', () async {
       final store = AppDatabase.instance;
       final repo = AppSettingsRepository(store);
 
       final settings = await repo.getSettings();
       expect(settings.themeMode, 'dark');
       expect(settings.wallpaperPath, isNull);
+      expect(settings.enableCompletionEffects, isFalse);
+    });
+
+    test('saveSettings persists and updates enableCompletionEffects toggle', () async {
+      final store = AppDatabase.instance;
+      final repo = AppSettingsRepository(store);
+
+      final newSettings = AppSettingsDto(
+        themeMode: 'dark',
+        enableCompletionEffects: true,
+        updatedAt: DateTime.now().toUtc(),
+      );
+
+      await repo.saveSettings(newSettings);
+
+      final fetched = await repo.getSettings();
+      expect(fetched.enableCompletionEffects, isTrue);
     });
 
     test('saveSettings persists and updates settings singleton', () async {

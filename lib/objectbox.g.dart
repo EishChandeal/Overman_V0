@@ -680,7 +680,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(12, 6037634120974265972),
     name: 'AppSettingsEntity',
-    lastPropertyId: const obx_int.IdUid(4, 9218047880227819464),
+    lastPropertyId: const obx_int.IdUid(5, 7393225962977146058),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -705,6 +705,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(4, 9218047880227819464),
         name: 'updatedAt',
         type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 7393225962977146058),
+        name: 'enableCompletionEffects',
+        type: 1,
         flags: 0,
       ),
     ],
@@ -1638,11 +1644,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final wallpaperPathOffset = object.wallpaperPath == null
             ? null
             : fbb.writeString(object.wallpaperPath!);
-        fbb.startTable(5);
+        fbb.startTable(6);
         fbb.addInt64(0, object.obId);
         fbb.addOffset(1, themeModeOffset);
         fbb.addOffset(2, wallpaperPathOffset);
         fbb.addInt64(3, object.updatedAt);
+        fbb.addBool(4, object.enableCompletionEffects);
         fbb.finish(fbb.endTable());
         return object.obId;
       },
@@ -1667,11 +1674,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
+        final enableCompletionEffectsParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          false,
+        );
         final object = AppSettingsEntity(
           obId: obIdParam,
           themeMode: themeModeParam,
           wallpaperPath: wallpaperPathParam,
           updatedAt: updatedAtParam,
+          enableCompletionEffects: enableCompletionEffectsParam,
         );
 
         return object;
@@ -2172,4 +2186,8 @@ class AppSettingsEntity_ {
   static final updatedAt = obx.QueryIntegerProperty<AppSettingsEntity>(
     _entities[11].properties[3],
   );
+
+  /// See [AppSettingsEntity.enableCompletionEffects].
+  static final enableCompletionEffects =
+      obx.QueryBooleanProperty<AppSettingsEntity>(_entities[11].properties[4]);
 }

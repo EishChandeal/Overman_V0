@@ -760,6 +760,53 @@ void main() {
     expect(find.text('Deleted habit "Temporary Habit"'), findsOneWidget);
   });
 
+  testWidgets('Selection header buttons are translucent when wallpaper is active',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(412 * 3, 917 * 3);
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final repo = HabitRepository(testStore, HabitScheduleRepository(testStore));
+    await repo.createHabit(
+      name: 'Glass Habit',
+      type: HabitType.boolean,
+      colorHex: '#216CCF',
+      iconName: 'check',
+      scheduleType: ScheduleType.daily,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          objectBoxStoreProvider.overrideWith((ref) async => testStore),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.customTheme(wallpaperPath: '/dummy/wallpaper.png'),
+          home: const HomeScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('Glass Habit'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Close'), findsOneWidget);
+    expect(find.text('Note'), findsOneWidget);
+    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
+
+    final deleteMaterialFinder = find.ancestor(
+      of: find.text('Delete'),
+      matching: find.byType(Material),
+    ).first;
+    final material = tester.widget<Material>(deleteMaterialFinder);
+    expect(material.color?.a, closeTo(0.75, 0.01));
+  });
+
   testWidgets('DetailsPanel exposes direct Edit and View More buttons on expanded habit',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(412 * 3, 917 * 3);
@@ -1438,11 +1485,22 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Save Settings'));
     await tester.pumpAndSettle();
 
-    // Verify snackbar & repository persistence
-    expect(find.text('Settings saved'), findsOneWidget);
+    // Verify button feedback & repository persistence
+    expect(find.text('Saved!'), findsOneWidget);
     final saved = await aiRepo.getSettings();
     expect(saved.apiKey, 'test-gemini-key');
     expect(saved.modelName, 'openai/gpt-oss-120b');
+
+    // Changing input should revert button back to 'Save Settings'
+    await tester.enterText(find.widgetWithText(TextField, 'test-gemini-key'), 'new-gemini-key');
+    await tester.pumpAndSettle();
+    expect(find.text('Save Settings'), findsOneWidget);
+    expect(find.text('Saved!'), findsNothing);
+
+    // Save again
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Save Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('Saved!'), findsOneWidget);
 
     // Wait for snackbar to dismiss so it does not obscure lower widgets
     await tester.pump(const Duration(seconds: 3));
