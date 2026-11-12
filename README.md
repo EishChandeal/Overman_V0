@@ -1,17 +1,61 @@
-# Overman — Habit Tracking, Without the Noise
+<p align="center">
+  <img src="assets/icon_logo.png" width="130" alt="Overman Logo" />
+</p>
+
+<h1 align="center">Overman — Habit Tracking, Without the Noise</h1>
+
+<p align="center">
+  <strong>Track your habits, understand your progress, and get back to your life.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/EishChandeal/Habit_Tracker/releases/latest"><img src="https://img.shields.io/badge/Download_APK-v1.0.0-blue.svg?style=for-the-badge&logo=android" alt="Download APK" /></a>
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84.svg?style=for-the-badge&logo=android&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/Flutter-3.41-02569B.svg?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />
+  <img src="https://img.shields.io/badge/Privacy-100%25_Local_First-success.svg?style=for-the-badge" alt="Local First" />
+</p>
+
+---
 
 **Overman** is a Flutter-based habit-tracking application designed to help users build consistency, monitor progress, and work towards their goals without turning self-improvement into another source of screen time.
 
-The core philosophy is simple: **track your habits, understand your progress, and get back to your life.**
+Overman combines a lightweight habit-tracking system with an optional AI-powered companion that can interpret habit data, provide personalized suggestions, and motivate users through selectable character-inspired personalities. Users retain full control over their data, their AI configuration, and how they choose to interact with the application.
 
-Overman combines a lightweight habit-tracking system with an optional AI-powered companion that can interpret habit data, provide personalized suggestions, and motivate users through selectable character-inspired personalities. Users retain control over their data, their AI configuration, and how they choose to interact with the application.
+---
 
-> **Project status:** Under active development. The project follows a layered architecture, with a focus on building and verifying the data and domain layers before expanding the user interface.
+## 📱 App Screenshots
+
+<p align="center">
+  <em>A clean, focused dark-mode interface designed for quick interactions and zero distraction.</em>
+</p>
+
+### Daily Tracking & In-Depth Analytics
+| Home Dashboard | Streak & Heatmap View | Annual Progress & Charts |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/pic1.jpeg" width="240" alt="Home Dashboard" /> | <img src="assets/screenshots/4.jpeg" width="240" alt="Heatmap & Streaks" /> | <img src="assets/screenshots/5.jpeg" width="240" alt="Yearly Charts" /> |
+| **Daily Habit Tracker**<br><sub>Quick completions, streaks, and progress counters</sub> | **Calendar Heatmap**<br><sub>Per-habit consistency with met/missed days</sub> | **Annual Analytics**<br><sub>GitHub-style activity grid & target thresholds</sub> |
+
+<br/>
+
+### Logging, Reflection & Habit Creation
+| Contextual Quick Actions | History & Reflection Notes | New Habit Configuration |
+| :---: | :---: | :---: |
+| <img src="assets/screenshots/3.jpeg" width="240" alt="Contextual Actions" /> | <img src="assets/screenshots/pic2.jpeg" width="240" alt="History & Notes" /> | <img src="assets/screenshots/7.jpeg" width="240" alt="Create Habit" /> |
+| **Quick Action Menu**<br><sub>Log notes, edit targets, or manage habits in place</sub> | **Reflection & History**<br><sub>Interactive calendar strip and daily reflection notes</sub> | **Flexible Habit Creation**<br><sub>Boolean or numeric targets with custom schedules</sub> |
+
+<br/>
+
+### AI Companion, Customization & Data Sovereignty
+| Character Personas | Private BYOK Configuration | Appearance & Effects | 100% Data Export |
+| :---: | :---: | :---: | :---: |
+| <img src="assets/screenshots/10.jpeg" width="180" alt="AI Personas" /> | <img src="assets/screenshots/9.jpeg" width="180" alt="BYOK Configuration" /> | <img src="assets/screenshots/6.jpeg" width="180" alt="Settings & Themes" /> | <img src="assets/screenshots/8.jpeg" width="180" alt="Data Export" /> |
+| **Motivational Personas**<br><sub>Dumbledore, Spidey, Nietzsche, or custom</sub> | **Privacy & BYOK**<br><sub>Direct API keys with context window sliders</sub> | **Fluid Aesthetics**<br><sub>Dark themes & completion bloom animations</sub> | **Offline Sovereignty**<br><sub>Export to CSV, JSON, or Excel anytime</sub> |
 
 ---
 
 ## Table of Contents
 
+- [App Screenshots](#-app-screenshots)
 - [Project Overview](#project-overview)
 - [Core Features](#core-features)
 - [AI-Powered Habit Companion](#ai-powered-habit-companion)
